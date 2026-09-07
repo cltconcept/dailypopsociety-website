@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dailypopsociety.be/sitemap-index.xml
