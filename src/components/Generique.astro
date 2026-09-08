@@ -1,0 +1,186 @@
+---
+/* ===== LE GÉNÉRIQUE =====
+   L'intro Marvel Studios avec les vrais logos mensuels du bar : deux bandes
+   obliques de cases défilent, « DAILY POP » se remplit du défilé puis se fige
+   en blanc, « SOCIETY » se compose, la title card du mois apparaît.
+   Desktop : scène épinglée, scrubée au scroll (rejouable). Mobile : intro
+   courte au chargement. Sans JS / reduced-motion : état final statique. */
+import { LOGOS, MONTAGE } from '../data/logos';
+import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
+const bande1 = LOGOS.filter((_, i) => i % 2 === 0);
+const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
+---
+<section class="gen letterbox" id="generique" aria-label="Daily Pop Society, le bar pop culture de Charleroi">
+  <div class="gen__grain" aria-hidden="true"></div>
+  <p class="gen__presente">Daily Pop Society présente</p>
+
+  <div class="gen__bande gen__bande--1" aria-hidden="true">
+    <div class="gen__piste">
+      {[...bande1, ...bande1].map((l) => <img src={l.src} alt="" width="160" height="160" loading="eager" decoding="async" />)}
+    </div>
+  </div>
+
+  <h1 class="gen__titre">
+    <span class="gen__nom">
+      <span class="gen__nom-fill" aria-hidden="true" style={`background-image: url(${MONTAGE.src})`}>Daily Pop</span>
+      <span class="gen__nom-blanc">Daily Pop</span>
+    </span>
+    <span class="gen__society">Society</span>
+  </h1>
+
+  <div class="gen__bande gen__bande--2" aria-hidden="true">
+    <div class="gen__piste">
+      {[...bande2, ...bande2].map((l) => <img src={l.src} alt="" width="160" height="160" loading="eager" decoding="async" />)}
+    </div>
+  </div>
+
+  <div class="gen__pied">
+    <p class="gen__scroll" aria-hidden="true"><span></span>Scroll pour lancer le générique</p>
+    <a class="gen__carte" href="/events/">Ce mois-ci · <b>{LICENCE_DU_MOIS.nom}</b> · {LICENCE_DU_MOIS.dates}</a>
+    <p class="gen__lieu">{IDENTITE.ville} · Terre-6000</p>
+  </div>
+</section>
+
+<style>
+  .gen {
+    position: relative; overflow: hidden;
+    height: 100svh; min-height: 620px;
+    color: var(--blanc);
+    background: radial-gradient(ellipse at 50% 60%, #9A2334 0%, var(--bdx) 45%, var(--bdx-deep) 100%);
+  }
+  .gen__grain {
+    position: absolute; inset: 0; opacity: 0.16; pointer-events: none;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 0.8px);
+    background-size: 4px 4px;
+  }
+  .gen__presente {
+    position: absolute; left: 0; right: 0; top: clamp(96px, 15vh, 140px);
+    text-align: center; font-size: 0.78rem; letter-spacing: 0.42em; text-transform: uppercase; opacity: 0.85;
+  }
+  /* Bandes obliques : ROTATION et non skewX. Le skew déformait les vignettes en
+     ellipses ; le contre-skew sur l'image les redressait mais aplatissait la
+     bande, qui redevenait une rangée horizontale. La rotation incline vraiment
+     la bande et laisse les disques ronds, juste penchés. Angles doux (−5°/+4°)
+     pour que les extrémités ne montent pas dans le header ni sur le pied. */
+  .gen__bande {
+    position: absolute; left: -14vw; right: -14vw;
+    height: clamp(70px, 9vw, 130px);
+    overflow: hidden;
+  }
+  .gen__bande--1 { top: 21%; transform: rotate(-5deg); }
+  .gen__bande--2 { bottom: 22%; transform: rotate(4deg); opacity: 0.6; }
+  .gen__piste { display: flex; gap: 8px; width: max-content; height: 100%; will-change: transform; }
+  /* Les vignettes sont détourées en disque par scripts/logos.py (leurs coins
+     portaient les traits de la timeline source) : on les affiche donc rondes. */
+  .gen__piste img {
+    height: 100%; width: auto; aspect-ratio: 1;
+    border: 2px solid rgba(255, 255, 255, 0.75); border-radius: 50%; background: var(--blanc);
+  }
+  .gen__titre {
+    position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-54%);
+    text-align: center; font-family: var(--font-title); font-weight: 400; text-transform: uppercase; z-index: 2;
+  }
+  .gen__nom { display: block; position: relative; font-size: clamp(4.4rem, 15vw, 15rem); line-height: 0.86; letter-spacing: 0.02em; }
+  /* La couche de remplissage est la doublure du nom : au repos elle est
+     invisible et c'est le nom blanc qui s'affiche (état statique sans JS).
+     Ce opacity:0-là n'est donc PAS un état d'intro, il ne dépend pas de
+     js-intro : sans JS, cette couche ne doit jamais apparaître. */
+  .gen__nom-fill {
+    position: absolute; inset: 0; opacity: 0;
+    background-size: auto 100%; background-repeat: repeat-x; background-position: 0 0;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+  }
+  .gen__nom-blanc { position: relative; color: var(--blanc); filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.18)); }
+  .gen__society { display: block; margin-top: 0.35em; font-size: clamp(1.3rem, 3.6vw, 2.6rem); letter-spacing: 0.6em; text-indent: 0.6em; }
+  .gen__pied {
+    position: absolute; left: var(--gutter); right: var(--gutter); bottom: clamp(34px, 5vh, 48px);
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; z-index: 3;
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  /* La title card doit tomber au MILIEU du hero : space-between la décalait,
+     les deux mentions latérales n'ayant pas la même largeur. On leur donne la
+     même part de place, la carte garde la sienne. */
+  .gen__scroll, .gen__lieu { flex: 1 1 0; }
+  .gen__scroll { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.75; font-size: 0.62rem; }
+  .gen__scroll span { display: block; width: 1px; height: 28px; background: var(--blanc); }
+  .gen__lieu { text-align: right; opacity: 0.8; }
+  .gen__carte {
+    /* 0 1 auto, pas 0 0 auto : sur un écran étroit la carte doit pouvoir
+       rétrécir et passer à la ligne, sinon elle sort du hero des deux côtés. */
+    flex: 0 1 auto;
+    font-family: var(--font-title); font-size: clamp(0.9rem, 1.4vw, 1.15rem); letter-spacing: 0.14em;
+    border: 1.5px solid var(--blanc); padding: 8px 16px; background: rgba(0, 0, 0, 0.25);
+    color: var(--blanc); text-decoration: none; text-align: center;
+  }
+  .gen__carte b { color: var(--rose); font-weight: 400; }
+  .gen__carte:hover { background: var(--blanc); color: var(--noir); }
+  .gen__carte:hover b { color: var(--bdx); }
+  @media (max-width: 600px) {
+    .gen__scroll, .gen__lieu { display: none; }
+    .gen__pied { justify-content: center; }
+    .gen__carte { font-size: 0.82rem; letter-spacing: 0.06em; padding: 8px 12px; line-height: 1.4; }
+    .gen__bande--1 { top: 20%; } .gen__bande--2 { bottom: 18%; }
+  }
+  /* Pré-paint (class js-intro posée avant le premier rendu par index.astro) :
+     les éléments que GSAP fait entrer partent invisibles — aucun flash. */
+  :global(html.js-intro) .gen__nom-blanc,
+  :global(html.js-intro) .gen__society,
+  :global(html.js-intro) .gen__carte { opacity: 0; }
+</style>
+
+<script>
+  import { REDUCED, isDesktop, loadGsap } from '../lib/motion';
+
+  if (!REDUCED && document.documentElement.classList.contains('js-intro')) {
+    loadGsap().then(({ gsap, ScrollTrigger }) => {
+      const gen = document.querySelector<HTMLElement>('.gen');
+      if (!gen) return;
+      const pistes = gen.querySelectorAll('.gen__piste');
+      const bandes = gen.querySelectorAll('.gen__bande');
+      const fill = gen.querySelector('.gen__nom-fill');
+      const blanc = gen.querySelector('.gen__nom-blanc');
+      const society = gen.querySelector('.gen__society');
+      const carte = gen.querySelector('.gen__carte');
+      const presente = gen.querySelector('.gen__presente');
+      const scroll = gen.querySelector('.gen__scroll');
+
+      /* Les trois temps du générique, en fractions de la timeline (0 → 1) :
+         1. 0 → 0.40  les bandes défilent, de plus en plus vite
+         2. 0.28 → 0.72  « DAILY POP » se remplit du défilé puis se fige en blanc
+         3. 0.72 → 1  « SOCIETY » se compose, les bandes s'estompent, title card */
+      const composer = (tl: ReturnType<typeof gsap.timeline>, mobile: boolean) => {
+        const d = mobile ? 2.6 : 1; // durée totale : secondes en mobile, fraction en scrub
+        tl.to(pistes, { xPercent: -50, duration: d, ease: mobile ? 'power2.inOut' : 'power1.in' }, 0)
+          .to(presente, { opacity: 0, y: -20, duration: 0.1 * d }, 0.25 * d)
+          .fromTo(fill, { opacity: 0 }, { opacity: 1, duration: 0.12 * d }, 0.28 * d)
+          .fromTo(fill, { backgroundPositionX: '0px' }, { backgroundPositionX: '-1600px', duration: 0.5 * d, ease: 'none' }, 0.28 * d)
+          .fromTo(blanc, { opacity: 0 }, { opacity: 1, duration: 0.1 * d }, 0.64 * d)
+          .to(fill, { opacity: 0, duration: 0.08 * d }, 0.68 * d)
+          .fromTo(society, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.72 * d)
+          .to(bandes, { opacity: 0.22, duration: 0.15 * d }, 0.78 * d)
+          .fromTo(carte, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.86 * d)
+          .to(scroll, { opacity: 0, duration: 0.06 * d }, 0.9 * d);
+      };
+
+      if (isDesktop()) {
+        /* Desktop : scène épinglée, scrubée. end = 250 % de hauteur de viewport. */
+        const tl = gsap.timeline({
+          defaults: { ease: 'power2.out' },
+          scrollTrigger: { trigger: gen, start: 'top top', end: '+=250%', scrub: 0.6, pin: true, anticipatePin: 1 },
+        });
+        composer(tl, false);
+        /* Duo obligatoire après chaque création de pin (cf. motion.ts) */
+        ScrollTrigger.sort();
+        ScrollTrigger.refresh();
+      } else {
+        /* Mobile / tablette : intro courte au chargement, pas de pin (fragile au tactile) */
+        composer(gsap.timeline({ defaults: { ease: 'power3.out' } }), true);
+      }
+
+      /* GSAP a posé tous les états initiaux : le pré-paint peut tomber. */
+      clearTimeout((window as unknown as { __introSecours?: number }).__introSecours);
+      document.documentElement.classList.remove('js-intro');
+    });
+  }
+</script>

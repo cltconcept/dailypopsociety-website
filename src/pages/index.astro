@@ -1,17 +1,21 @@
 ---
 import Base from '../layouts/Base.astro';
+import Generique from '../components/Generique.astro';
 import Horaires from '../components/Horaires.astro';
-import { IDENTITE } from '../data/site';
 ---
 <Base title="Daily Pop Society — Bar pop culture à Charleroi" description="Food, drinks, fandom : cocktails à personnages, burgers, bubble teas, events mensuels, blind tests et JDR au cœur de Charleroi. Cosplay bienvenu, tout le temps.">
-  <section class="tc tc--bordeaux letterbox">
-    <div class="container">
-      <span class="kicker">{IDENTITE.accroche}</span>
-      <h1 class="titre">Daily Pop<br /><em>Society</em></h1>
-      <p class="copy">{IDENTITE.slogan}</p>
-    </div>
-  </section>
-  <section class="section">
+  <!-- Pré-paint : pose l'état « avant générique » AVANT le premier rendu (jamais de flash).
+       Garde-fou : si GSAP ne démarre pas en 3 s, tout s'affiche en statique. -->
+  <script is:inline>
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.documentElement.classList.add('js-intro');
+      window.__introSecours = setTimeout(function () {
+        document.documentElement.classList.remove('js-intro');
+      }, 3000);
+    }
+  </script>
+  <Generique />
+  <section class="section feuille" style="background: var(--blanc)">
     <div class="container">
       <span class="kicker">Ouvertures</span>
       <h2 class="titre titre--md">Quand passer <em>nous voir</em></h2>
