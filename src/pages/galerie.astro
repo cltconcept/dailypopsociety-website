@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import TitleCard from '../components/TitleCard.astro';
+import { THEMES } from '../data/galerie';
+---
+<Base title="Galerie — Daily Pop Society, Charleroi" description="Le shop, la carte, les soirées et les logos du mois en images. La galerie par thèmes du bar pop culture de Charleroi, cosplay bienvenu.">
+  <TitleCard kicker="Chapitre 3 · La galerie" variante="blanc">Les cases <em>du mois</em><Fragment slot="copy">Le shop, la carte, les soirées, les logos. Les photos des events arrivent au fil des mois.</Fragment></TitleCard>
+
+  <section class="section">
+    <div class="container">
+      <div class="filtres" role="group" aria-label="Filtrer par thème">
+        <button class="filtre is-active" data-theme="tous" aria-pressed="true">Tout</button>
+        {THEMES.map((t) => <button class="filtre" data-theme={t.slug} aria-pressed="false">{t.nom}</button>)}
+      </div>
+      <p class="sr-only" aria-live="polite" id="gal-etat"></p>
+      <div class="grille grille--3 gal">
+        {THEMES.flatMap((t) => t.visuels.map((v) => (
+          <figure class:list={['gal__item', { 'gal__item--logo': t.slug === 'logos' }]} data-theme={t.slug}>
+            <div class="gal__media"><img src={v.src} alt={v.alt} width="960" height="720" loading="lazy" decoding="async" /></div>
+            <figcaption><span class="gal__theme">{t.nom}</span>{v.legende}</figcaption>
+          </figure>
+        )))}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  /* Filtre progressif : sans JS, tout est affiché. */
+  const boutons = document.querySelectorAll<HTMLButtonElement>('.filtre');
+  const items = document.querySelectorAll<HTMLElement>('.gal__item');
+  const etat = document.getElementById('gal-etat');
+  boutons.forEach((b) => b.addEventListener('click', () => {
+    const theme = b.dataset.theme;
+    boutons.forEach((x) => { const on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', String(on)); });
+    let visibles = 0;
+    items.forEach((it) => {
+      const affiche = theme === 'tous' || it.dataset.theme === theme;
+      it.hidden = !affiche;
+      if (affiche) visibles += 1;
+    });
+    if (etat) etat.textContent = `${visibles} visuel${visibles > 1 ? 's' : ''} affiché${visibles > 1 ? 's' : ''}.`;
+  }));
+</script>
+
+<style>
+  .filtres { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+  .filtre { padding: 8px 16px; border: var(--bord); background: var(--blanc); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+  .filtre.is-active { background: var(--noir); color: var(--blanc); text-decoration: underline; text-underline-offset: 4px; }
+  .gal__item { border: var(--bord); box-shadow: var(--ombre-case); background: var(--blanc); }
+  .gal__media { aspect-ratio: 4 / 3; overflow: hidden; border-bottom: var(--bord); background: var(--creme); }
+  .gal__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
+  .gal__item:hover img { transform: scale(1.04); }
+  .gal__item figcaption { padding: 12px 16px 14px; font-size: 0.92rem; color: var(--txt-doux); }
+  .gal__theme { display: block; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+  .gal__item--logo .gal__media img { object-fit: contain; padding: 12%; }
+</style>
