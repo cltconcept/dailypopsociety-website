@@ -11,6 +11,24 @@
    courte au chargement. Sans JS / reduced-motion : état final statique. */
 import { MONTAGE, MONTAGE_HD } from '../data/logos';
 import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
+/* Lignes de vitesse (集中線 du manga) : 84 triangles fins qui convergent vers le
+   centre, où vit le titre. Longueurs pseudo-aléatoires mais DÉTERMINISTES
+   (générateur à graine fixe) : le build est reproductible, le contrôleur de
+   dist ne voit jamais deux HTML différents. viewBox 1200×900, centre (600,450). */
+const LIGNES = (() => {
+  let graine = 7;
+  const alea = () => { graine = (graine * 16807) % 2147483647; return graine / 2147483647; };
+  const cx = 600, cy = 450, R = 900, n = 84;
+  const parts: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + alea() * 0.05;
+    const r0 = 250 + alea() * 280; // le trou du centre laisse le titre respirer
+    const w = 0.005 + alea() * 0.012; // demi-angle à la base : traits fins, inégaux
+    const f = (v: number) => v.toFixed(1);
+    parts.push(`M${f(cx + Math.cos(a) * r0)} ${f(cy + Math.sin(a) * r0)}L${f(cx + Math.cos(a - w) * R)} ${f(cy + Math.sin(a - w) * R)}L${f(cx + Math.cos(a + w) * R)} ${f(cy + Math.sin(a + w) * R)}Z`);
+  }
+  return parts.join('');
+})();
 ---
 {/* Le montage est la ressource du plus grand élément peint de la page (le titre
     est détouré DEDANS) et c'est aussi le plus gros fichier du site : tant qu'il
@@ -29,6 +47,45 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
 <link rel="preload" as="image" href={MONTAGE_HD.src} media="(min-width: 1024px)" fetchpriority="high" />
 <section class="gen letterbox" id="generique" aria-label="Daily Pop Society, le bar pop culture de Charleroi">
   <div class="gen__grain" aria-hidden="true"></div>
+  {/* ===== LE FOND MANGA (2026-09-08, demande utilisateur : « ça manque d'effet
+      dans le background, style manga, ombre de one piece ») =====
+      Tout est décoratif (aria-hidden) et animé au scrub par le même composer
+      que le titre. Des ÉVOCATIONS, jamais une œuvre sous licence : chapeau de
+      paille, galion, crâne aux os croisés (le Jolly Roger classique, domaine
+      public), vagues seigaiha, onomatopées ゴゴゴ (le grondement) et ドン!!
+      (l'impact) — dessinées ici en SVG, pas une image à charger. */}
+  <div class="gen__fond" aria-hidden="true">
+    {/* Le div porte la transformation GSAP (rotation, échelle) : sur un <svg>
+        racine, GSAP tournait autour du coin haut-gauche et les lignes ne
+        rayonnaient plus que vers la droite. */}
+    <div class="gen__lignes"><svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice"><path d={LIGNES} /></svg></div>
+    <div class="gen__vagues"></div>
+    <svg class="gen__ombre gen__navire" viewBox="0 0 600 420">
+      <path d="M30 300 Q50 340 95 385 L515 385 Q555 345 585 270 L540 300 Z" />
+      <path d="M540 300 L598 250 L590 244 L530 292 Z" />
+      <rect x="196" y="48" width="9" height="255" /><rect x="326" y="18" width="9" height="285" /><rect x="446" y="80" width="9" height="225" />
+      <path d="M132 70 Q200 50 268 70 L262 140 Q200 158 138 140 Z" /><path d="M120 152 Q200 132 280 152 L272 232 Q200 250 128 232 Z" />
+      <path d="M254 36 Q330 16 406 36 L400 110 Q330 128 260 110 Z" /><path d="M240 122 Q330 100 420 122 L410 210 Q330 228 250 210 Z" />
+      <path d="M392 98 Q450 80 508 98 L502 165 Q450 182 398 165 Z" /><path d="M382 178 Q450 160 518 178 L510 250 Q450 268 390 250 Z" />
+      <path d="M335 18 L392 30 L335 44 Z" />
+    </svg>
+    <svg class="gen__ombre gen__crane" viewBox="0 0 200 200">
+      <g transform="rotate(35 100 129)"><rect x="16" y="120" width="168" height="18" rx="9" /><circle cx="18" cy="118" r="11" /><circle cx="18" cy="140" r="11" /><circle cx="182" cy="118" r="11" /><circle cx="182" cy="140" r="11" /></g>
+      <g transform="rotate(-35 100 129)"><rect x="16" y="120" width="168" height="18" rx="9" /><circle cx="18" cy="118" r="11" /><circle cx="18" cy="140" r="11" /><circle cx="182" cy="118" r="11" /><circle cx="182" cy="140" r="11" /></g>
+      <path fill-rule="evenodd" d="M100 18 C54 18 34 52 34 86 C34 108 46 122 60 130 L60 152 L140 152 L140 130 C154 122 166 108 166 86 C166 52 146 18 100 18 Z M66 80 a14 12 0 1 0 28 0 a14 12 0 1 0 -28 0 Z M106 80 a14 12 0 1 0 28 0 a14 12 0 1 0 -28 0 Z M100 98 L90 118 L110 118 Z" />
+      <rect x="68" y="152" width="12" height="16" rx="2" /><rect x="84" y="152" width="12" height="16" rx="2" /><rect x="100" y="152" width="12" height="16" rx="2" /><rect x="116" y="152" width="12" height="16" rx="2" />
+    </svg>
+    <svg class="gen__ombre gen__chapeau" viewBox="0 0 400 220">
+      <ellipse cx="200" cy="158" rx="198" ry="44" />
+      <path d="M92 152 C92 62 142 26 200 26 C258 26 308 62 308 152 Z" />
+      <path class="ruban" d="M93 124 C140 138 260 138 307 124 L308 152 L92 152 Z" />
+    </svg>
+    <span class="gen__gogo gen__gogo--1">ゴゴゴ</span>
+    <span class="gen__gogo gen__gogo--2">ゴゴゴ</span>
+    <span class="gen__gogo gen__gogo--3">ゴゴゴ</span>
+    <div class="gen__flash"></div>
+  </div>
+  <span class="gen__don" aria-hidden="true">ドン!!</span>
   <p class="gen__presente">Daily Pop Society présente</p>
 
   <h1 class="gen__titre">
@@ -82,6 +139,45 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
     position: absolute; inset: 0; opacity: 0.16; pointer-events: none;
     background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 0.8px);
     background-size: 4px 4px;
+  }
+  /* ===== Le fond manga ===== sous le titre (z 1 < 2), au-dessus du grain.
+     Chaque couche porte en CSS son état FINAL (celui du hero statique sans
+     JS) ; GSAP la fait partir de zéro. Les onomatopées, elles, n'existent
+     que pendant le générique : opacité 0 au repos. */
+  .gen__fond { position: absolute; inset: 0; overflow: hidden; z-index: 1; pointer-events: none; }
+  .gen__lignes { position: absolute; inset: -25%; width: 150%; height: 150%; opacity: 0.12; will-change: transform, opacity; transform-origin: 50% 50%; }
+  .gen__lignes svg { display: block; width: 100%; height: 100%; fill: var(--blanc); }
+  .gen__ombre { position: absolute; fill: rgba(22, 0, 8, 0.62); will-change: transform, opacity; }
+  .gen__ombre .ruban { fill: rgba(205, 30, 58, 0.55); }
+  .gen__chapeau { left: -4%; bottom: 5%; width: clamp(240px, 34vw, 520px); opacity: 0.3; transform: rotate(-4deg); }
+  .gen__navire { right: 4%; top: 15%; width: clamp(200px, 27vw, 420px); opacity: 0.25; }
+  .gen__crane { left: 9%; top: 14%; width: clamp(80px, 9vw, 140px); opacity: 0.2; }
+  /* Vagues seigaiha (écailles japonaises, domaine public) : deux couches d'arcs
+     concentriques décalées d'une demi-tuile, fondues vers le haut par un masque. */
+  .gen__vagues {
+    position: absolute; left: -10%; right: -10%; bottom: 0; height: 24%; opacity: 0.25; will-change: transform, opacity;
+    background-image:
+      radial-gradient(circle at 50% 100%, transparent 34%, rgba(22, 0, 8, 0.75) 35%, rgba(22, 0, 8, 0.75) 41%, transparent 42%, transparent 56%, rgba(22, 0, 8, 0.75) 57%, rgba(22, 0, 8, 0.75) 63%, transparent 64%),
+      radial-gradient(circle at 50% 100%, transparent 34%, rgba(22, 0, 8, 0.75) 35%, rgba(22, 0, 8, 0.75) 41%, transparent 42%, transparent 56%, rgba(22, 0, 8, 0.75) 57%, rgba(22, 0, 8, 0.75) 63%, transparent 64%);
+    background-size: 120px 60px; background-position: 0 0, 60px 30px;
+    -webkit-mask-image: linear-gradient(to top, #000 35%, transparent); mask-image: linear-gradient(to top, #000 35%, transparent);
+  }
+  /* ゴゴゴ vertical, comme dans la case : police japonaise système, jamais chargée. */
+  .gen__gogo {
+    position: absolute; opacity: 0; writing-mode: vertical-rl;
+    font-family: 'Yu Gothic', 'Hiragino Sans', 'Noto Sans JP', 'Meiryo', sans-serif; font-weight: 900;
+    font-size: clamp(2.4rem, 6vw, 6rem); line-height: 1; letter-spacing: -0.06em; color: rgba(22, 0, 8, 0.72);
+  }
+  .gen__gogo--1 { left: 5%; top: 8%; }
+  .gen__gogo--2 { right: 7%; top: 44%; }
+  .gen__gogo--3 { left: 24%; bottom: 6%; }
+  .gen__flash { position: absolute; inset: 0; background: var(--blanc); opacity: 0; }
+  /* ドン!! au-dessus du titre (z 4) : l'impact du nom qui se fige. */
+  .gen__don {
+    position: absolute; right: 5%; top: 50%; z-index: 4; opacity: 0; pointer-events: none;
+    font-family: 'Yu Gothic', 'Hiragino Sans', 'Noto Sans JP', 'Meiryo', sans-serif; font-weight: 900;
+    font-size: clamp(4rem, 12vw, 12rem); line-height: 1; letter-spacing: -0.04em; color: var(--blanc);
+    -webkit-text-stroke: 3px #1A0004; text-shadow: 7px 7px 0 #1A0004;
   }
   .gen__presente {
     position: absolute; left: 0; right: 0; top: clamp(96px, 15vh, 140px);
@@ -170,6 +266,11 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
     .gen__pied { justify-content: center; }
     .gen__carte { font-size: 0.82rem; letter-spacing: 0.06em; padding: 8px 12px; line-height: 1.4; }
     .gen__top { font-size: 0.62rem; }
+    .gen__chapeau { width: 62vw; left: -14%; bottom: 13%; }
+    .gen__navire { width: 54vw; right: -8%; top: 13%; }
+    .gen__crane { width: 20vw; left: 6%; top: 12%; }
+    .gen__gogo { font-size: 2.2rem; }
+    .gen__don { right: 2%; top: 56%; font-size: 4.6rem; }
   }
   /* Pré-paint (class js-intro posée avant le premier rendu par index.astro) :
      les éléments que GSAP fait entrer partent invisibles — aucun flash.
@@ -181,6 +282,9 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
      montre tout de suite (GSAP le confirme par un set à 0 de la timeline).
      Sans JS, js-intro n'existe pas et c'est le nom blanc qui s'affiche. */
   :global(html.js-intro) .gen__nom-fill { opacity: 1; }
+  /* Le fond manga part de zéro : rien de ses couches ne doit se voir avant
+     que GSAP ait posé leurs états de départ. */
+  :global(html.js-intro) .gen__fond > * { opacity: 0; }
   /* La carte, elle, est un LIEN : transparente mais toujours dans l'ordre de
      tabulation, elle se faisait atteindre au clavier avant d'exister (lien
      fantôme). visibility:hidden la retire du parcours ET du pointeur ; GSAP
@@ -212,6 +316,15 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
         const gen = document.querySelector<HTMLElement>('.gen');
         if (!gen) return;
         const nom = gen.querySelector('.gen__nom');
+        /* Le fond manga */
+        const lignes = gen.querySelector('.gen__lignes');
+        const chapeau = gen.querySelector('.gen__chapeau');
+        const navire = gen.querySelector('.gen__navire');
+        const crane = gen.querySelector('.gen__crane');
+        const vagues = gen.querySelector('.gen__vagues');
+        const flashFond = gen.querySelector('.gen__flash');
+        const don = gen.querySelector('.gen__don');
+        const gogo = gen.querySelectorAll('.gen__gogo');
         const fill = gen.querySelector<HTMLElement>('.gen__nom-fill');
         const blanc = gen.querySelector('.gen__nom-blanc');
         const society = gen.querySelector('.gen__society');
@@ -252,6 +365,24 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
             .fromTo(blanc, { opacity: 0 }, { opacity: 1, duration: 0.1 * d }, 0.64 * d)
             .to(fill, { opacity: 0, duration: 0.08 * d }, 0.68 * d)
             .fromTo(society, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.72 * d)
+            /* ----- le fond manga ----- (mêmes fractions ; rien ne se chevauche sur une même propriété)
+               Lignes de vitesse : montent avec le défilé, éclatent à l'impact, retombent en trame discrète */
+            .fromTo(lignes, { opacity: 0, rotation: 0, scale: 1 }, { opacity: 0.45, rotation: 22, scale: 1.25, duration: 0.62 * d, ease: 'power1.in' }, 0)
+            .to(lignes, { opacity: 0.9, scale: 1.4, duration: 0.05 * d, ease: 'power3.out' }, 0.63 * d)
+            .to(lignes, { opacity: 0.12, duration: 0.15 * d }, 0.7 * d)
+            /* Les ombres pirates entrent chacune de son côté et restent, faibles, derrière la title card */
+            .fromTo(chapeau, { opacity: 0, yPercent: 40, rotation: -16 }, { opacity: 0.3, yPercent: 0, rotation: -4, duration: 0.6 * d, ease: 'power2.out' }, 0.08 * d)
+            .fromTo(navire, { opacity: 0, xPercent: 30 }, { opacity: 0.25, xPercent: 0, duration: 0.7 * d, ease: 'power2.out' }, 0.15 * d)
+            .fromTo(crane, { opacity: 0, scale: 0.7, rotation: 12 }, { opacity: 0.2, scale: 1, rotation: 0, duration: 0.5 * d, ease: 'power2.out' }, 0.3 * d)
+            .fromTo(vagues, { opacity: 0, xPercent: -8 }, { opacity: 0.25, xPercent: 0, duration: d, ease: 'none' }, 0)
+            /* ゴゴゴ rampe vers le haut pendant le grondement, puis s'efface avant l'impact */
+            .fromTo(gogo, { opacity: 0, y: 30, rotation: -6 }, { opacity: 0.4, y: -30, rotation: -6, duration: 0.45 * d, stagger: 0.05 * d, ease: 'none' }, 0.05 * d)
+            .to(gogo, { opacity: 0, duration: 0.06 * d, stagger: 0.03 * d }, 0.6 * d)
+            /* ドン!! + éclair : l'impact du nom qui se fige en blanc (0.64) */
+            .fromTo(flashFond, { opacity: 0 }, { opacity: 0.55, duration: 0.02 * d, ease: 'none' }, 0.63 * d)
+            .to(flashFond, { opacity: 0, duration: 0.08 * d }, 0.65 * d)
+            .fromTo(don, { opacity: 0, scale: 0.3, rotation: -14 }, { opacity: 1, scale: 1.1, rotation: -8, duration: 0.05 * d, ease: 'back.out(2)' }, 0.62 * d)
+            .to(don, { opacity: 0, scale: 1.35, duration: 0.12 * d, ease: 'power2.in' }, 0.7 * d)
             /* autoAlpha et non opacity : la carte est un LIEN et START un
                BOUTON, ils doivent rester non focusables et non cliquables tant
                qu'ils ne sont pas apparus. */
