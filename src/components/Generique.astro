@@ -77,8 +77,19 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
   </div>
 
   <div class="gen__pied">
+    {/* Le classement du mois du mini-jeu : rempli par borne.ts au boot, masqué
+        tant que personne n'a marqué (ou si l'API ne répond pas). PREMIER ENFANT
+        du pied et non frère absolu (comme prévu au plan) : posé en absolu, il
+        chevauchait la title card dès que celle-ci passait sur deux lignes
+        (mobile 390). En ligne pleine du pied, il se range TOUJOURS au-dessus,
+        quelle que soit la hauteur prise en dessous. */}
+    <p class="gen__top" id="gen-top" hidden></p>
     <p class="gen__scroll" aria-hidden="true"><span></span>Scroll pour lancer le générique</p>
     <a class="gen__carte" href="/events/">Ce mois-ci · <b>{LICENCE_DU_MOIS.nom}</b> · {LICENCE_DU_MOIS.dates}</a>
+    {/* START est un <button> et non un lien : il n'ouvre pas une page, il pose
+        un calque. `hidden` par défaut — sans JS le jeu n'existe pas, la
+        promesse ne doit donc pas s'afficher ; borne.ts le révèle au boot. */}
+    <button type="button" class="gen__start" id="gen-start" hidden>Start</button>
     <p class="gen__lieu">{IDENTITE.ville} · Terre-6000</p>
   </div>
 </section>
@@ -154,10 +165,27 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
      d'empilement et repasse tout le nom par le compositeur à chaque frame. */
   .gen__nom-blanc { position: relative; color: var(--blanc); text-shadow: 0 6px 0 rgba(0, 0, 0, 0.18); }
   .gen__society { display: block; margin-top: 0.35em; font-size: clamp(1.3rem, 3.6vw, 2.6rem); letter-spacing: 0.6em; text-indent: 0.6em; }
+  /* flex-wrap + center : START s'installe à côté de la title card et passe
+     SOUS elle quand la ligne devient trop étroite (mobile). Les deux mentions
+     latérales gardant `flex: 1 1 0`, il ne reste aucun espace libre sur une
+     ligne pleine : `center` s'y comporte donc exactement comme l'ancien
+     `space-between`, il ne sert que la ligne repliée. */
   .gen__pied {
     position: absolute; left: var(--gutter); right: var(--gutter); bottom: clamp(34px, 5vh, 48px);
-    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; z-index: 3;
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 16px; z-index: 3;
     font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .gen__start {
+    flex: 0 0 auto;
+    font-family: var(--font-title); font-size: 1rem; letter-spacing: 0.24em; text-transform: uppercase;
+    padding: 9px 22px; border: var(--bord); background: var(--rouge); color: var(--blanc);
+    box-shadow: var(--ombre-btn) 4px 4px 0; cursor: pointer;
+  }
+  .gen__start:hover { transform: translate(-2px, -2px); }
+  /* Le classement du mois : une ligne pleine, donc une ligne à elle seule. */
+  .gen__top {
+    flex: 1 0 100%; margin-bottom: 2px;
+    text-align: center; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.9;
   }
   /* La title card doit tomber au MILIEU du hero : space-between la décalait,
      les deux mentions latérales n'ayant pas la même largeur. On leur donne la
@@ -188,6 +216,7 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
     .gen--scrub .gen__scroll, .gen__lieu { display: none; }
     .gen__pied { justify-content: center; }
     .gen__carte { font-size: 0.82rem; letter-spacing: 0.06em; padding: 8px 12px; line-height: 1.4; }
+    .gen__top { font-size: 0.62rem; }
     .gen__bande--1 { top: 20%; } .gen__bande--2 { bottom: 18%; }
   }
   /* Pré-paint (class js-intro posée avant le premier rendu par index.astro) :
@@ -201,10 +230,16 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
      fantôme). visibility:hidden la retire du parcours ET du pointeur ; GSAP
      prend le relais avec autoAlpha, qui pilote les deux propriétés. */
   :global(html.js-intro) .gen__carte { opacity: 0; visibility: hidden; }
+  /* START et la ligne du classement entrent AVEC la title card (même tween) :
+     même pré-paint qu'elle, visibility comprise — un bouton transparent mais
+     focusable serait le même « lien fantôme » que la carte avant correction. */
+  :global(html.js-intro) .gen__start,
+  :global(html.js-intro) .gen__top { opacity: 0; visibility: hidden; }
   /* Filet : si un focus l'atteint malgré tout (recherche dans la page,
      extension, restauration de scroll), elle se montre plutôt que de laisser
      un contour posé sur du vide. */
-  .gen__carte:focus-visible { opacity: 1 !important; visibility: visible !important; }
+  .gen__carte:focus-visible,
+  .gen__start:focus-visible { opacity: 1 !important; visibility: visible !important; }
 </style>
 
 <script>
@@ -228,6 +263,13 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
         const carte = gen.querySelector('.gen__carte');
         const presente = gen.querySelector('.gen__presente');
         const scroll = gen.querySelector('.gen__scroll');
+        /* La title card, le bouton START du jeu et la ligne « Top du mois »
+           n'ont qu'une entrée pour trois : ils apparaissent au même temps du
+           générique. Filtre typé (et non `.filter(Boolean)`) : GSAP refuse un
+           tableau qui peut contenir null, et `Boolean` ne narrowe pas. */
+        const start = gen.querySelector('.gen__start');
+        const top = gen.querySelector('.gen__top');
+        const entree = [carte, start, top].filter((el): el is Element => el !== null);
 
         /* Course des bandes : une demi-piste (elle est doublée, la boucle est
            donc parfaite) MAIS jamais plus que ce qui dépasse du cadre. Le
@@ -262,9 +304,10 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
             .to(fill, { opacity: 0, duration: 0.08 * d }, 0.68 * d)
             .fromTo(society, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.72 * d)
             .to(bandes, { opacity: 0.22, duration: 0.15 * d }, 0.78 * d)
-            /* autoAlpha et non opacity : la carte est un LIEN, elle doit rester
-               non focusable et non cliquable tant qu'elle n'est pas apparue. */
-            .fromTo(carte, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.1 * d }, 0.86 * d)
+            /* autoAlpha et non opacity : la carte est un LIEN et START un
+               BOUTON, ils doivent rester non focusables et non cliquables tant
+               qu'ils ne sont pas apparus. */
+            .fromTo(entree, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.1 * d }, 0.86 * d)
             .to(scroll, { opacity: 0, duration: 0.06 * d }, 0.9 * d);
         };
 

@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Generique from '../components/Generique.astro';
+import Borne from '../components/Borne.astro';
 import Case from '../components/Case.astro';
 import Horaires from '../components/Horaires.astro';
 import LienExterne from '../components/LienExterne.astro';
@@ -27,6 +28,9 @@ const caseFandom = illu('coin-gaming');
     }
   </script>
   <Generique />
+  {/* Le calque du mini-jeu : posé ici, déplacé dans <body> par borne.ts au
+      boot (il doit être frère du reste pour pouvoir le rendre inert). */}
+  <Borne />
 
   <!-- ===== CHAPITRE 1 : les trois cases ===== -->
   <section class="section section--trame feuille chap">
@@ -86,6 +90,13 @@ const caseFandom = illu('coin-gaming');
       <div class="actions actions--center"><a class="btn" href="/a-propos/">Lire l'histoire</a></div>
     </div>
   </section>
+
+  <script>
+    /* Le jeu : le bouton START du générique et le calque ne s'activent qu'ici,
+       jamais sur les autres pages. Sans JS, START reste `hidden`. */
+    import { initBorne } from '../lib/jeu/borne';
+    initBorne();
+  </script>
 </Base>
 
 <style>

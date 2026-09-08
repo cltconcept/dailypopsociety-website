@@ -120,6 +120,12 @@ for (const p of PAGES) {
 ok(existsSync(join(DIST, 'sitemap-index.xml')), 'sitemap-index.xml absent');
 ok(existsSync(join(DIST, 'robots.txt')), 'robots.txt absent');
 
+// Le jeu : sprites, borne et bouton START dans l'accueil, aucune route /api dans le sitemap
+for (const s of ['avatar', 'tonneau', 'boulet', 'burger', 'bubble-tea', 'cocktail']) ok(existsSync(join(DIST, 'media', 'jeu', `${s}.webp`)), `sprite manquant : ${s}.webp`);
+const accueil = readFileSync(join(DIST, 'index.html'), 'utf8');
+ok(accueil.includes('id="borne"') && accueil.includes('id="gen-start"'), 'accueil : borne ou bouton START absent');
+if (existsSync(join(DIST, 'sitemap-0.xml'))) ok(!readFileSync(join(DIST, 'sitemap-0.xml'), 'utf8').includes('/api/'), 'sitemap : une route /api/ y figure');
+
 // Aucun fichier > 600 Ko dans dist/media (les WebP doivent rester légers)
 const marcher = (d) => readdirSync(d).flatMap((n) => { const f = join(d, n); return statSync(f).isDirectory() ? marcher(f) : [f]; });
 if (existsSync(join(DIST, 'media'))) for (const f of marcher(join(DIST, 'media'))) ok(statSync(f).size < 600 * 1024, `média trop lourd (> 600 Ko) : ${f}`);

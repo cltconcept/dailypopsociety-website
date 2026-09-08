@@ -1,0 +1,104 @@
+---
+/* La borne : calque plein écran ouvert par le bouton START du générique.
+   Déplacée dans <body> au boot (borne.ts) pour pouvoir rendre le reste inert. */
+---
+<div class="borne" id="borne" hidden role="dialog" aria-modal="true" aria-labelledby="borne-titre">
+  <div class="borne__cadre">
+    <header class="borne__tete">
+      <div>
+        <span class="kicker">Nakama Run</span>
+        <h2 id="borne-titre" class="titre titre--sm">Saute, attrape, <em>marque</em></h2>
+      </div>
+      <p class="borne__aide">Espace, flèche haut ou tap pour sauter.</p>
+      <button type="button" class="borne__fermer" id="borne-fermer" aria-label="Fermer le jeu">✕</button>
+    </header>
+    <div class="borne__corps">
+      <section class="borne__jeu" aria-label="Zone de jeu">
+        <div class="borne__hud" aria-hidden="true">
+          <span>Score <b id="borne-score">0</b></span>
+          <span>Temps <b id="borne-temps">0</b> s</span>
+          <span>Record perso <b id="borne-record">0</b></span>
+        </div>
+        <div class="borne__ecran">
+          <canvas id="borne-canvas" width="960" height="540" tabindex="0" role="img" aria-label="Nakama Run : l'avatar du bar court sur le pont d'un navire et saute les tonneaux"></canvas>
+          <p class="borne__message" id="borne-message">Appuie sur espace ou tape l'écran pour commencer.</p>
+          <form class="borne__fin" id="borne-fin" hidden>
+            <p class="borne__fin-score">Score : <b id="borne-fin-score">0</b></p>
+            <label for="borne-pseudo">Ton pseudo</label>
+            <input id="borne-pseudo" name="pseudo" minlength="2" maxlength="12" required autocomplete="nickname" />
+            <div class="actions">
+              <button type="submit" class="btn">Envoyer mon score</button>
+              <button type="button" class="btn btn--ghost" id="borne-rejouer">Rejouer</button>
+            </div>
+            <p class="borne__erreur" id="borne-erreur" role="alert"></p>
+          </form>
+        </div>
+        <p class="sr-only" aria-live="polite" id="borne-live"></p>
+      </section>
+      <aside class="borne__classement" aria-labelledby="borne-top-titre">
+        <h3 id="borne-top-titre" class="kicker">Top 10 du mois</h3>
+        <ol id="borne-top" role="list" class="borne__liste"></ol>
+        <p class="borne__rang" id="borne-rang" hidden></p>
+        <p class="borne__note">Un nouveau classement démarre chaque mois.</p>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<style>
+  .borne { position: fixed; inset: 0; z-index: 200; overflow: auto; color: var(--txt);
+    background: radial-gradient(ellipse at 50% 60%, #9A2334 0%, var(--bdx) 45%, var(--bdx-deep) 100%); }
+  .borne__cadre { max-width: 1180px; margin: 0 auto; padding: clamp(16px, 3vw, 32px) var(--gutter); min-height: 100%; display: flex; flex-direction: column; gap: 18px; }
+  .borne__tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  /* Le kicker porte 18px de marge basse pour espacer un titre de section : dans
+     l'en-tête serrée de la borne il décollait « Nakama Run » de son propre h2. */
+  .borne__tete .kicker { margin-bottom: 6px; }
+  .borne__aide { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+  .borne__fermer { width: 44px; height: 44px; border: 2px solid var(--blanc); font-size: 1.2rem; line-height: 1; background: rgba(0, 0, 0, 0.25); }
+  .borne__fermer:hover { background: var(--blanc); color: var(--noir); }
+  /* margin-block: auto et non justify-content: center sur le cadre — une boîte
+     flex centrée dont le contenu déborde rend son haut INATTEIGNABLE au scroll ;
+     les marges automatiques, elles, se rétractent. Sur un écran haut, la borne
+     se pose donc au milieu ; sur un écran court, elle défile normalement. */
+  .borne__corps { display: grid; grid-template-columns: 1.7fr 1fr; gap: clamp(18px, 3vw, 36px); align-items: start; margin-block: auto; }
+  .borne__hud { display: flex; gap: 22px; font-family: var(--font-title); font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .borne__hud b { color: var(--accent); }
+  .borne__ecran { position: relative; border: var(--bord); box-shadow: var(--ombre-btn) 8px 8px 0; background: var(--noir); }
+  .borne__ecran canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; cursor: pointer; touch-action: none; }
+  .borne__ecran canvas:focus-visible { outline-offset: -4px; }
+  .borne__message { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-family: var(--font-title); font-size: clamp(0.9rem, 1.6vw, 1.2rem); letter-spacing: 0.1em; text-transform: uppercase; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); pointer-events: none; }
+  .borne__fin { position: absolute; inset: 0; display: grid; place-content: center; gap: 12px; padding: 24px; background: rgba(14, 14, 14, 0.88); text-align: center; }
+  .borne__fin[hidden] { display: none; }
+  .borne__fin-score { font-family: var(--font-title); font-size: clamp(1.6rem, 4vw, 2.8rem); text-transform: uppercase; }
+  .borne__fin-score b { color: var(--accent); }
+  .borne__fin label { font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; }
+  .borne__fin input { padding: 12px 14px; font: inherit; font-size: 1.1rem; text-align: center; border: var(--bord); background: var(--blanc); color: var(--noir); width: min(100%, 320px); justify-self: center; }
+  .borne__fin .actions { margin-top: 6px; justify-content: center; }
+  .borne__erreur { min-height: 1.2em; color: var(--accent); font-weight: 600; }
+  .borne__classement { border: 2px solid rgba(255, 255, 255, 0.35); padding: 20px; background: rgba(0, 0, 0, 0.22); }
+  /* ⚠️ Les lignes du classement sont CRÉÉES EN JS : elles ne portent pas
+     l'attribut de scope qu'Astro pose au build, et une règle scopée ne les
+     atteindrait jamais (le pseudo et le score se collaient, sans numéro de
+     rang). D'où `:global()` sur tout ce qui naît à l'exécution — la liste
+     elle-même, présente dans le markup, garde sa portée. */
+  .borne__liste { display: grid; gap: 6px; counter-reset: rang; }
+  .borne__liste :global(li) { display: flex; gap: 12px; align-items: baseline; font-size: 1rem; }
+  .borne__liste :global(li)::before { counter-increment: rang; content: counter(rang) '.'; font-family: var(--font-title); width: 2ch; color: var(--accent); }
+  .borne__liste :global(.pseudo) { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .borne__liste :global(.score) { font-family: var(--font-title); letter-spacing: 0.06em; }
+  .borne__liste :global(li.moi) { color: var(--accent); }
+  /* La liste vide n'est pas un rang : elle ne doit pas afficher « 1. ». */
+  .borne__liste :global(li.borne__vide) { opacity: 0.75; font-size: 0.92rem; }
+  .borne__liste :global(li.borne__vide)::before { content: none; }
+  .borne__rang { margin-top: 12px; font-family: var(--font-title); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .borne__note { margin-top: 12px; font-size: 0.82rem; opacity: 0.75; }
+  @media (max-width: 960px) {
+    .borne__corps { grid-template-columns: 1fr; }
+    .borne__hud { font-size: 0.95rem; gap: 14px; }
+    /* Le rappel des touches prend toute la largeur et passe SOUS le titre :
+       sans lui sur la première ligne, la croix de fermeture reste là où on la
+       cherche — en haut à droite — au lieu de tomber sur une troisième ligne. */
+    .borne__tete { align-items: center; }
+    .borne__aide { order: 1; flex: 1 0 100%; }
+  }
+</style>

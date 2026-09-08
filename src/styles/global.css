@@ -127,10 +127,11 @@ main:focus { outline: none; }
    .skip-link en fait partie : il est noir, quel que soit le fond de la page.
    .gen aussi : le hero du générique est un champ bordeaux, ses jetons doivent
    y basculer comme partout ailleurs (sinon le focus y reste rouge sur rouge).
+   .borne (le calque du jeu) est le même champ bordeaux, posé par-dessus la page.
    ⚠️ `.evc.evc--sombre` est doublée VOLONTAIREMENT : `.evc` figure dans le bloc
    clair ci-dessous, qui vient après — à spécificité égale il gagnerait, et la
    carte d'event sombre se retrouverait avec du texte noir sur fond noir. */
-.tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir, .gen,
+.tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir, .gen, .borne,
 .footer, .nav__capsule, .nav__menu, .skip-link, .ancres, .evc.evc--sombre {
   --txt: var(--blanc);
   --txt-doux: rgba(255, 255, 255, .78);
