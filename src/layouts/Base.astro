@@ -16,7 +16,7 @@ interface Props {
   noindex?: boolean;
   /** Image de partage, chemin absolu depuis la racine du site. */
   image?: string;
-  /** Schémas JSON-LD de la page. Par défaut : l'établissement seul. */
+  /** Schémas JSON-LD ajoutés APRÈS le schéma de l'établissement, toujours présent. */
   schemas?: object[];
 }
 const { title, description, noindex = false, image = '/media/og.png', schemas } = Astro.props;

@@ -7,10 +7,13 @@
 
    SURFACES PAR JETONS — règle centrale de ce fichier :
    un composant ne connaît JAMAIS la couleur du fond sur lequel il tombe.
-   Il lit --txt / --txt-doux / --accent / --voix / --focus. Chaque champ de
-   couleur (title card sombre, section noire) redéfinit ces cinq jetons ; les
-   composants n'ont donc aucune règle « .section--noir .machin ».
+   Il lit --txt / --txt-doux / --accent / --voix / --focus / --ombre-btn. Chaque
+   champ de couleur (title card sombre, section noire) redéfinit ces six jetons ;
+   les composants n'ont donc aucune règle « .section--noir .machin ».
    Poser un nouveau fond sombre = ajouter sa classe au bloc « surfaces sombres ».
+   Règle symétrique : poser un nouveau fond CLAIR dans une surface sombre (une
+   case blanche dans une section noire) = ajouter sa classe au bloc « surfaces
+   claires », sinon elle hérite des jetons du sombre et son texte disparaît.
    ============================================================ */
 :root {
   --noir: #0E0E0E;
@@ -30,6 +33,8 @@
   /* --accent = la ponctuation (em, kicker, tag) ; --voix = l'écriture manuscrite et les prix */
   --voix: var(--bdx);
   --focus: var(--rouge);
+  /* --ombre-btn = l'ombre portée des boutons : noire sur fond clair, rose sur fond sombre */
+  --ombre-btn: var(--noir);
 
   --font-title: 'Anton', Impact, 'Arial Narrow', sans-serif;
   --font-body: 'Inter Variable', system-ui, sans-serif;
@@ -107,14 +112,16 @@ main:focus { outline: none; }
   background-size: 7px 7px;
 }
 
-/* ===== Surfaces sombres : elles ne changent QUE les quatre jetons ===== */
+/* ===== Surfaces sombres : elles ne changent QUE les six jetons =====
+   .skip-link en fait partie : il est noir, quel que soit le fond de la page. */
 .tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir,
-.footer, .nav__capsule, .nav__menu {
+.footer, .nav__capsule, .nav__menu, .skip-link {
   --txt: var(--blanc);
   --txt-doux: rgba(255, 255, 255, .78);
   --accent: var(--rose);
   --voix: var(--rose);
   --focus: var(--rose);
+  --ombre-btn: var(--rose);
 }
 /* ===== Surfaces claires posées sur fond sombre (une case blanche dans une
    section noire) : elles retrouvent leurs jetons clairs. ===== */
@@ -124,6 +131,7 @@ main:focus { outline: none; }
   --accent: var(--rouge);
   --voix: var(--bdx);
   --focus: var(--rouge);
+  --ombre-btn: var(--noir);
 }
 
 /* ===== Typographie ===== */
@@ -167,11 +175,11 @@ main:focus { outline: none; }
   background: var(--rouge); color: var(--blanc);
   font-family: var(--font-title); font-size: 1.05rem; letter-spacing: 0.12em; text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 4px 4px 0 var(--noir);
+  box-shadow: 4px 4px 0 var(--ombre-btn);
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
-.btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--noir); }
-.btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--noir); }
+.btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ombre-btn); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ombre-btn); }
 .btn--blanc { background: var(--blanc); color: var(--noir); }
 .btn--ghost { background: transparent; color: inherit; border-color: currentColor; box-shadow: none; }
 .btn--ghost:hover { box-shadow: none; transform: none; text-decoration: underline; text-underline-offset: 6px; }
@@ -212,7 +220,7 @@ main:focus { outline: none; }
 .case {
   position: relative;
   display: flex; flex-direction: column;
-  background: var(--blanc); color: var(--noir);
+  background: var(--blanc); color: var(--txt);
   border: var(--bord);
   box-shadow: var(--ombre-case);
   text-decoration: none;
@@ -223,8 +231,8 @@ a.case:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--bdx
 .case__media img { width: 100%; height: 100%; object-fit: cover; }
 .case__body { flex: 1; padding: 18px 20px 22px; }
 .case__titre { font-family: var(--font-title); font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1; }
-.case__texte { margin-top: 8px; font-size: 0.95rem; color: var(--gris); line-height: 1.5; }
-.case__tag { display: inline-block; margin-bottom: 8px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rouge); }
+.case__texte { margin-top: 8px; font-size: 0.95rem; color: var(--txt-doux); line-height: 1.5; }
+.case__tag { display: inline-block; margin-bottom: 8px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
 .sfx {
   position: absolute; right: -8px; top: 12px; z-index: 2;
   padding: 4px 14px;

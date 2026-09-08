@@ -1,7 +1,12 @@
 ---
 import '@fontsource/bangers';
 /* Case de comics : bord noir, ombre bordeaux, image 4:3, onomatopée optionnelle.
-   Avec href → <a> cliquable entière ; sans → <article>. */
+   Avec href → <a> cliquable entière ; sans → <article>.
+   Quand la case est un lien, l'image est DÉCORATIVE (alt vide) : le nom
+   accessible du lien est déjà tag + titre + texte, un alt en plus le doublerait.
+   `niveau` suit la hiérarchie de la page qui pose la case (h3 par défaut) ;
+   `prioritaire` réserve le chargement immédiat à la case au-dessus de la ligne
+   de flottaison — toutes les autres restent en lazy. */
 interface Props {
   titre: string;
   texte?: string;
@@ -11,20 +16,46 @@ interface Props {
   tag?: string;
   href?: string;
   largeurs?: string; // srcset optionnel
+  sizes?: string;
+  niveau?: 2 | 3 | 4;
+  prioritaire?: boolean;
 }
-const { titre, texte, img, alt = '', sfx, tag, href, largeurs } = Astro.props;
+const {
+  titre,
+  texte,
+  img,
+  alt = '',
+  sfx,
+  tag,
+  href,
+  largeurs,
+  sizes = '(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380px',
+  niveau = 3,
+  prioritaire = false,
+} = Astro.props;
 const Tag = href ? 'a' : 'article';
+const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
 ---
-<Tag class="case" href={href}>
+<Tag class="case" href={href || undefined}>
   {sfx && <span class="sfx" aria-hidden="true">{sfx}</span>}
   {img && (
     <div class="case__media">
-      <img src={img} srcset={largeurs} sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380px" alt={alt} width="960" height="720" loading="lazy" decoding="async" />
+      <img
+        src={img}
+        srcset={largeurs}
+        sizes={sizes}
+        alt={href ? '' : alt}
+        width="960"
+        height="720"
+        loading={prioritaire ? 'eager' : 'lazy'}
+        fetchpriority={prioritaire ? 'high' : undefined}
+        decoding="async"
+      />
     </div>
   )}
   <div class="case__body">
     {tag && <span class="case__tag">{tag}</span>}
-    <h3 class="case__titre">{titre}</h3>
+    <H class="case__titre">{titre}</H>
     {texte && <p class="case__texte">{texte}</p>}
     <slot />
   </div>

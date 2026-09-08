@@ -3,25 +3,32 @@ import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
 import { IDENTITE } from '../data/site';
 ---
-<Base title="Mentions légales — Daily Pop Society" description="Mentions légales du site dailypopsociety.be : éditeur, coordonnées, numéro de TVA, hébergement, crédits et vie privée. Aucun cookie, aucune donnée collectée.">
+<Base title="Mentions légales — Daily Pop Society" description="Mentions légales du site dailypopsociety.be : éditeur, numéro d'entreprise, hébergement, vie privée et propriété intellectuelle. Aucun cookie, aucun formulaire.">
   <TitleCard kicker="Le générique de fin" variante="noir" letterbox>Mentions <em>légales</em></TitleCard>
   <section class="section">
-    <div class="container container--narrow ml">
+    <div class="container ml">
       <h2 class="titre titre--sm">Éditeur</h2>
-      <p>{IDENTITE.nom} — {IDENTITE.rue}, {IDENTITE.codePostal} {IDENTITE.ville}, Belgique.<br />TVA {IDENTITE.tva} · <a href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a> · <a href={`mailto:${IDENTITE.email}`}>{IDENTITE.email}</a></p>
-      <p class="ml__note">Raison sociale et forme juridique à confirmer par la gérante avant mise en ligne.</p>
+      <p>
+        {IDENTITE.nom} — {IDENTITE.rue}, {IDENTITE.codePostal} {IDENTITE.ville}, Belgique.<br />
+        Numéro d'entreprise (BCE) et TVA : {IDENTITE.tva}<br />
+        <a href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a> · <a href={`mailto:${IDENTITE.email}`}>{IDENTITE.email}</a>
+      </p>
       <h2 class="titre titre--sm">Hébergement</h2>
-      <p>Site statique hébergé en Europe. Aucun compte utilisateur, aucune base de données.</p>
+      <p>Site statique hébergé sur un serveur situé dans l'Union européenne. Le nom et l'adresse de l'hébergeur sont indiqués à la mise en ligne du domaine définitif.</p>
       <h2 class="titre titre--sm">Vie privée</h2>
-      <p>Ce site ne pose aucun cookie et ne collecte aucune donnée personnelle. Les liens vers Instagram, Facebook et Google Maps mènent vers des services tiers soumis à leurs propres règles.</p>
-      <h2 class="titre titre--sm">Crédits</h2>
-      <p>Logo et logos mensuels : Daily Pop Society. Illustrations de la carte et de la galerie : créations pour le site, à titre d'illustration. Les licences citées (films, séries, mangas, jeux) appartiennent à leurs ayants droit et sont mentionnées à titre de thème d'événement.</p>
+      <p>Ce site ne pose aucun cookie et ne contient aucun formulaire. Deux traitements existent malgré tout : les journaux techniques du serveur (adresse IP, page consultée, horodatage), conservés par l'hébergeur le temps nécessaire à la sécurité du service ; et les e-mails que tu nous envoies, utilisés uniquement pour te répondre et conservés le temps de l'échange. Pour toute question sur tes données, écris-nous à l'adresse ci-dessus. Les liens vers Instagram, Facebook et Google Maps mènent vers des services tiers soumis à leurs propres règles.</p>
+      <h2 class="titre titre--sm">Propriété intellectuelle</h2>
+      <p>Le site, ses textes et ses illustrations sont la propriété de {IDENTITE.nom}. Le logo et les logos mensuels lui appartiennent également ; les illustrations de la carte et de la galerie sont des créations pour le site, à titre d'illustration. Les licences citées (films, séries, mangas, jeux) appartiennent à leurs ayants droit et ne sont mentionnées qu'à titre de thème d'événement.</p>
     </div>
   </section>
 </Base>
 <style>
+  /* Corps aligné sur la title card : la div garde le conteneur du site
+     (--container), donc le MÊME bord gauche que le titre ; c'est le CONTENU qui
+     est borné à une largeur de lecture. Poser le max-width sur `.ml` lui-même
+     le recentrerait — c'était précisément le défaut de `container--narrow`. */
+  .ml > * { max-width: 760px; }
   .ml h2 { margin-top: 40px; }
   .ml h2:first-child { margin-top: 0; }
-  .ml p { margin-top: 12px; color: var(--gris); line-height: 1.65; }
-  .ml__note { font-family: var(--font-hand); font-size: 1.25rem; color: var(--bdx); }
+  .ml p { margin-top: 12px; color: var(--txt-doux); line-height: 1.65; }
 </style>

@@ -19,8 +19,11 @@ for (const p of PAGES) {
   ok(/<title>[^<]{10,}<\/title>/.test(head), `${p} : <title> absent ou trop court`);
   // Sur head, pas sur html : une description ne compte que dans l'en-tête.
   ok(/<meta name="description" content="[^"]{40,}"/.test(head), `${p} : description absente ou < 40 caractères`);
-  ok(/<h1[\s>]/.test(html), `${p} : pas de <h1>`);
-  ok(!/TODO|Lorem ipsum|__[A-Z]+__/.test(html), `${p} : placeholder trouvé (TODO / Lorem / __X__)`);
+  // Un seul <h1> par page : deux titres de premier niveau, c'est deux pages
+  // qui se disputent le même document (lecteur d'écran comme moteur).
+  const n = (html.match(/<h1[\s>]/g) || []).length;
+  ok(n === 1, `${p} : ${n} <h1> (1 attendu)`);
+  ok(!/TODO|Lorem ipsum|__[A-Z]+__|à confirmer|à compléter/i.test(html), `${p} : placeholder trouvé (TODO / Lorem / __X__ / à confirmer / à compléter)`);
   for (const m of html.matchAll(/<img\b[^>]*>/g)) ok(/(^|\s)alt=/.test(m[0]), `${p} : <img> sans alt : ${m[0].slice(0, 80)}`);
 
   // Médias référencés : seules les URL de NOTRE origine se ramènent à un chemin
@@ -61,12 +64,23 @@ for (const p of PAGES) {
       ok(bar.address?.postalCode === '6000', `${p} : JSON-LD code postal inattendu (${bar.address?.postalCode})`);
       const creneaux = bar.openingHoursSpecification || [];
       const JOURS_VALIDES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      // 25:00 et 09:70 passaient \d{2}:\d{2} : on borne les deux champs.
+      const HEURE = /^([01]\d|2[0-3]):[0-5]\d$/;
       ok(creneaux.length >= 1, `${p} : JSON-LD aucun créneau d'ouverture`);
+      const jours = new Set();
       for (const c of creneaux) {
-        ok(JOURS_VALIDES.includes(c.dayOfWeek), `${p} : JSON-LD dayOfWeek inattendu : ${JSON.stringify(c.dayOfWeek)}`);
-        ok(/^\d{2}:\d{2}$/.test(c.opens), `${p} : JSON-LD opens mal formé : ${JSON.stringify(c.opens)}`);
-        ok(/^\d{2}:\d{2}$/.test(c.closes), `${p} : JSON-LD closes mal formé : ${JSON.stringify(c.closes)}`);
+        ok(c['@type'] === 'OpeningHoursSpecification', `${p} : JSON-LD créneau @type inattendu : ${JSON.stringify(c['@type'])}`);
+        // dayOfWeek est licite en chaîne comme en tableau (schema.org).
+        const dows = [].concat(c.dayOfWeek);
+        ok(dows.every((j) => JOURS_VALIDES.includes(j)), `${p} : JSON-LD dayOfWeek inattendu : ${JSON.stringify(c.dayOfWeek)}`);
+        for (const j of dows) if (JOURS_VALIDES.includes(j)) jours.add(j);
+        ok(HEURE.test(c.opens), `${p} : JSON-LD opens mal formé : ${JSON.stringify(c.opens)}`);
+        ok(HEURE.test(c.closes), `${p} : JSON-LD closes mal formé : ${JSON.stringify(c.closes)}`);
+        // Comparaison de chaînes : au format HH:MM elle vaut la comparaison d'heures.
+        ok(!(HEURE.test(c.opens) && HEURE.test(c.closes)) || c.opens < c.closes, `${p} : JSON-LD créneau à l'envers : ${c.opens} → ${c.closes}`);
       }
+      // Un horaire qui perdrait la moitié de la semaine en silence se voit ici.
+      ok(jours.size >= 5, `${p} : JSON-LD ${jours.size} jours d'ouverture distincts (5 attendus au minimum)`);
     }
   }
 }

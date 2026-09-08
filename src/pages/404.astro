@@ -3,5 +3,9 @@ import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
 ---
 <Base title="Page introuvable — Daily Pop Society" description="Cette page n'existe pas dans ce multivers. Retourne à l'accueil ou va voir la carte, les events et la galerie de Daily Pop Society à Charleroi." noindex>
-  <TitleCard kicker="Erreur 404" variante="noir" letterbox>Cette page n'existe pas<br /><em>dans ce multivers.</em><Fragment slot="copy">Mauvaise dimension, mauvaise URL. Repars de l'accueil, ou va voir ce qu'il se passe ce mois-ci.</Fragment><Fragment slot="actions"><a class="btn" href="/">Retour à l'accueil</a><a class="btn btn--ghost" href="/events/">Les events</a></Fragment></TitleCard>
+  <TitleCard kicker="Erreur 404" variante="noir" letterbox>
+    Cette page n'existe pas<br /><em>dans ce multivers.</em>
+    <Fragment slot="copy">Mauvaise dimension, mauvaise URL. Repars de l'accueil, ou va voir ce qu'il se passe ce mois-ci.</Fragment>
+    <Fragment slot="actions"><a class="btn" href="/">Retour à l'accueil</a><a class="btn btn--ghost" href="/events/">Les events</a></Fragment>
+  </TitleCard>
 </Base>
