@@ -7,3 +7,6 @@ dist
 docs
 brief
 scripts
+data
+server/node_modules
+server/.env.dev

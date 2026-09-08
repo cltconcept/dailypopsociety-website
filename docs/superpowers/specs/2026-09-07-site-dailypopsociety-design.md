@@ -28,7 +28,7 @@ Site actuel : `daily-pop-society.netlify.app`, page unique de 1,3 Mo sur Firebas
 
 Inclus : 6 pages (accueil, la carte, events, galerie, à propos, contact) + mentions légales + 404, le générique animé, les illustrations de démo, SEO complet, déploiement de la maquette, PROJET.md / PROJET.html.
 
-Exclus : comptes clients, points, quiz, espace admin, jeu en ligne, livre d'or, formulaire de contact, réservation en ligne, multilingue, vidéo, blog, intégration Instagram en direct (liens uniquement), reprise des données Firebase.
+Exclus : comptes clients, points, quiz, espace admin, livre d'or, formulaire de contact, réservation en ligne, multilingue, vidéo, blog, intégration Instagram en direct (liens uniquement), reprise des données Firebase. Le mini-jeu Nakama Run est spécifié à part (`2026-09-08-jeu-nakama-run-design.md`).
 
 ## 4. Arborescence et contenu
 

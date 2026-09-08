@@ -64,7 +64,7 @@ footer.bas{padding:24px 44px;color:var(--muted);font-size:.82rem;border-top:1px 
   <div class="badges">
     <span class="badge b-stack">Astro 5</span>
     <span class="badge b-stack">GSAP 3</span>
-    <span class="badge b-stack">nginx</span>
+    <span class="badge b-stack">Hono</span>
     <span class="badge b-stack">Kie.ai</span>
     <span class="badge b-stack">Coolify</span>
   </div>
@@ -95,19 +95,22 @@ footer.bas{padding:24px 44px;color:var(--muted);font-size:.82rem;border-top:1px 
         <tr><td>Images</td><td>Illustrations : WebP 3 tailles (480/960/1440, sharp) · Logos mensuels : WebP 160/256&nbsp;px + montage en 2 résolutions, réduite au mobile et HD au-delà de 1024&nbsp;px (Pillow)</td></tr>
         <tr><td>Illustrations</td><td>Kie.ai <code>nano-banana-pro</code>, style cel-shadé sticker (démo, à remplacer par des photos)</td></tr>
         <tr><td>SEO</td><td><code>@astrojs/sitemap</code>, JSON-LD <code>BarOrPub</code> + <code>Event</code>, Open Graph, canonical</td></tr>
-        <tr><td>Serveur</td><td>nginx alpine (Docker 2 étages, aucune variable d'env au run), Coolify maquettes (<code>*.chris-ia.com</code>)</td></tr>
-        <tr><td>Tests</td><td><code>pnpm test</code> = <code>astro check</code> && <code>astro build</code> && <code>node scripts/verifier.mjs</code> sur <code>dist/</code></td></tr>
+        <tr><td>Serveur</td><td>Hono 4 + <code>@hono/node-server</code> (<code>server/index.mjs</code>, Node 22) — sert <code>dist/</code> avec les en-têtes de l'ancien <code>nginx.conf</code> (retiré) et l'API du jeu <code>GET/POST /api/scores</code> ; Docker 2 étages, image finale Node ; Coolify maquettes (<code>*.chris-ia.com</code>)</td></tr>
+        <tr><td>Mini-jeu</td><td>Nakama Run — moteur canvas 2D sans dépendance (<code>src/lib/jeu/moteur.ts</code>), borne en calque (<code>Borne.astro</code> + <code>borne.ts</code>), classement mensuel stocké en JSON (<code>server/scores.mjs</code>, aucune base de données)</td></tr>
+        <tr><td>Tests</td><td><code>pnpm test</code> = <code>astro check</code> && <code>astro build</code> && <code>node scripts/verifier.mjs</code> sur <code>dist/</code> && <code>node --test</code> (serveur, dans <code>server/</code>)</td></tr>
       </table></div>
     </section>
 
     <section id="demarrage">
       <h2>🚀 Démarrage rapide</h2>
       <pre><code>pnpm install
-pnpm dev          # http://localhost:4332
+pnpm dev          # http://localhost:4332 (site Astro)
+pnpm dev:api      # http://localhost:4340 (serveur Hono — API du jeu ; le proxy Vite envoie /api dessus)
 pnpm build        # dist/
-pnpm test         # check + build + contrôle de dist/
+pnpm test         # check + build + contrôle de dist/ + tests du serveur (node --test)
 python scripts/logos.py            # regénère les logos + src/data/logos.ts (planches dans brief/, gitignoré)
 KIE_API_KEY=... bash scripts/illustrations.sh && node scripts/webp.mjs   # illustrations manquantes (payant : ~0,04 $/image)
+KIE_API_KEY=... bash scripts/sprites.sh && python3 scripts/chromakey.py  # sprites du jeu (payant : ~0,04 $/sprite)
 PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO` vaut true dans src/data/carte.ts)</code></pre>
     </section>
 
@@ -115,16 +118,16 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
       <h2>🗂 Architecture</h2>
       <ul class="puces">
         <li><code>src/data/</code> — la seule source de contenu : <code>site.ts</code> (identité, nav, licence du mois), <code>horaires.ts</code> (créneaux + conversion JSON-LD), <code>carte.ts</code> (la carte <strong>reprise de l'ancien site</strong> le 2026-09-08, drapeau <code>DEMO</code> désormais <code>false</code>), <code>events.ts</code> (une seule liste d'événements datée, jamais trois listes séparées), <code>galerie.ts</code> (thèmes), <code>logos.ts</code> (<strong>généré</strong>, ne pas éditer à la main), <code>histoire.ts</code> (les trois étapes + le sens du nom)</li>
-        <li><code>src/lib/</code> — <code>illu.ts</code> (résolution des illustrations et des logos en visuels : src/srcset/alt, une seule implémentation), <code>jsonld.ts</code> (schéma <code>BarOrPub</code>), <code>motion.ts</code> (socle GSAP partagé aux sites vitrines : garde <code>prefers-reduced-motion</code>, seuil desktop 1024, chargement différé), <code>dates.ts</code> (<code>moisLisible</code>, une seule implémentation pour la frise et la galerie)</li>
-        <li><code>src/components/</code> — <code>Generique</code> (hero signature : épinglé et scrubé au scroll sur desktop, intro courte sur mobile, statique sans JS/reduced-motion), <code>TitleCard</code> (ouverture de page), <code>Case</code> (case de comics), <code>EventCard</code>, <code>FriseLogos</code> (frise horizontale des logos par année, scroll natif), <code>Horaires</code>, <code>Header</code>, <code>Footer</code>, <code>LienExterne</code> (lien externe accessible : <code>noopener noreferrer</code> + mention lecteur d'écran)</li>
+        <li><code>src/lib/</code> — <code>illu.ts</code> (résolution des illustrations et des logos en visuels : src/srcset/alt, une seule implémentation), <code>jsonld.ts</code> (schéma <code>BarOrPub</code>), <code>motion.ts</code> (socle GSAP partagé aux sites vitrines : garde <code>prefers-reduced-motion</code>, seuil desktop 1024, chargement différé), <code>dates.ts</code> (<code>moisLisible</code>, une seule implémentation pour la frise et la galerie), <code>jeu/</code> (mini-jeu Nakama Run : <code>moteur.ts</code> — moteur canvas 2D sans dépendance, <code>borne.ts</code> — ouverture/fermeture de la borne, HUD, envoi du score, classement)</li>
+        <li><code>src/components/</code> — <code>Generique</code> (hero signature : épinglé et scrubé au scroll sur desktop, intro courte sur mobile, statique sans JS/reduced-motion ; + bouton START et ligne « Top du mois »), <code>Borne.astro</code> (calque plein écran du jeu, déplacé dans <code>&lt;body&gt;</code> au boot pour rendre le reste <code>inert</code>), <code>TitleCard</code> (ouverture de page), <code>Case</code> (case de comics), <code>EventCard</code>, <code>FriseLogos</code> (frise horizontale des logos par année, scroll natif), <code>Horaires</code>, <code>Header</code>, <code>Footer</code>, <code>LienExterne</code> (lien externe accessible : <code>noopener noreferrer</code> + mention lecteur d'écran)</li>
         <li><code>src/layouts/Base.astro</code> — SEO, Open Graph, JSON-LD, boot des reveals</li>
         <li><code>src/pages/</code> — <code>index</code>, <code>la-carte</code>, <code>events</code>, <code>galerie</code>, <code>a-propos</code>, <code>contact</code>, <code>mentions-legales</code>, <code>404</code> (8 pages, cf. <code>PAGES</code> de <code>scripts/verifier.mjs</code>)</li>
-        <li><code>scripts/</code> — <code>verifier.mjs</code> (contrôle <code>dist/</code> après build), <code>logos.py</code> (découpe les planches de la cliente en vignettes WebP 160/256&nbsp;px + montage, écrit <code>src/data/logos.ts</code>), <code>illustrations.sh</code> + <code>illustrations.txt</code> (génération Kie), <code>webp.mjs</code> (PNG Kie → WebP 3 tailles)</li>
-        <li><code>public/</code> — <code>favicon.svg</code>, <code>media/og.png</code>, <code>media/logos/</code>, <code>media/illu/</code>, <code>robots.txt</code></li>
-        <li><code>nginx.conf</code> — un seul <code>Cache-Control</code> par réponse, <code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML (<code>location ~ \.html$</code>), en-têtes de sécurité (<code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, <code>X-Frame-Options</code>, <code>Permissions-Policy</code>), <code>X-Robots-Tag: noindex</code> <strong>tant que le site est une maquette</strong>, 404 réelle sans fallback SPA</li>
-        <li><code>docs/superpowers/</code> — spec de design et plan d'implémentation (17 tâches) qui ont guidé cette session</li>
-        <li><code>brief/</code> (gitignoré) — moodboard, <code>info.txt</code>, planches de logos, PNG sources des illustrations</li>
-        <li>Flux : données TS → pages Astro → HTML statique → nginx.</li>
+        <li><code>scripts/</code> — <code>verifier.mjs</code> (contrôle <code>dist/</code> après build), <code>logos.py</code> (découpe les planches de la cliente en vignettes WebP 160/256&nbsp;px + montage, écrit <code>src/data/logos.ts</code>), <code>illustrations.sh</code> + <code>illustrations.txt</code> (génération Kie), <code>webp.mjs</code> (PNG Kie → WebP 3 tailles), <code>sprites.sh</code> + <code>sprites.txt</code> (génération Kie des 6 sprites du jeu sur fond magenta), <code>chromakey.py</code> (détourage HSV des sprites → <code>public/media/jeu/*.webp</code> RGBA)</li>
+        <li><code>public/</code> — <code>favicon.svg</code>, <code>media/og.png</code>, <code>media/logos/</code>, <code>media/illu/</code>, <code>media/jeu/</code> (sprites du jeu), <code>robots.txt</code></li>
+        <li><code>server/</code> — serveur unique qui remplace nginx : <code>index.mjs</code> (Hono, sert <code>dist/</code> avec les en-têtes ex-<code>nginx.conf</code> + monte l'API), <code>scores.mjs</code> (validation <code>validerEnvoi</code>, <code>moisCourant</code>, classe <code>Stockage</code> — un fichier JSON par mois, écriture atomique, top 100 — et <code>LimiteurDebit</code>), <code>scores.test.mjs</code> (<code>node --test</code>), <code>package.json</code>/<code>package-lock.json</code> (dépendances du serveur seul), <code>.env.dev</code> (committé, sans secret : <code>PORT=4340</code>, <code>DATA_DIR=./data</code>, <code>DIST_DIR=./dist</code>)</li>
+        <li><code>docs/superpowers/</code> — specs et plans d'implémentation qui ont guidé cette session : le site (17 tâches) et le mini-jeu Nakama Run (5 tâches)</li>
+        <li><code>brief/</code> (gitignoré) — moodboard, <code>info.txt</code>, planches de logos, PNG sources des illustrations et des sprites (<code>sprites-src/</code>)</li>
+        <li>Flux : données TS → pages Astro → HTML statique → serveur Hono (<code>server/</code>), qui sert <code>dist/</code> ET l'API <code>/api/scores</code> du jeu (fichier JSON sur le volume <code>/data</code>).</li>
       </ul>
       <h3>Procédure mensuelle</h3>
       <ol class="puces">
@@ -140,7 +143,11 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
       <h2>🔐 Variables d'environnement</h2>
       <div class="tbl-wrap"><table>
         <tr><th>Variable</th><th>Description</th><th>Requis</th></tr>
-        <tr><td><code>KIE_API_KEY</code></td><td>Génération des illustrations (<code>scripts/illustrations.sh</code> uniquement, jamais au build ni au run)</td><td>❌</td></tr>
+        <tr><td><code>KIE_API_KEY</code></td><td>Génération des illustrations et des sprites (<code>scripts/illustrations.sh</code>, <code>scripts/sprites.sh</code> uniquement, jamais au build ni au run)</td><td>❌</td></tr>
+        <tr><td><code>PORT</code></td><td>Port d'écoute du serveur <code>server/index.mjs</code> (80 dans l'image Docker, 4340 en dev via <code>server/.env.dev</code>)</td><td>❌ (défaut 80)</td></tr>
+        <tr><td><code>DATA_DIR</code></td><td>Dossier des fichiers <code>scores-AAAA-MM.json</code> du jeu (<code>/data</code> en prod, volume Coolify ; <code>./data</code> en dev, gitignoré)</td><td>❌ (défaut <code>./data</code>)</td></tr>
+        <tr><td><code>DIST_DIR</code></td><td>Dossier du site compilé servi par le serveur (<code>/app/dist</code> dans l'image)</td><td>❌ (défaut <code>./dist</code>)</td></tr>
+        <tr><td><code>MAQUETTE</code></td><td><code>1</code> ajoute l'en-tête <code>X-Robots-Tag: noindex</code> (site non indexable) — <strong>à retirer à la mise en production</strong></td><td>❌</td></tr>
       </table></div>
     </section>
 
@@ -156,9 +163,10 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
         <tr><td>Illustrations cel-shadées (11 sujets, Kie)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>Pages carte, events, galerie, à propos, contact</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>SEO, Open Graph, JSON-LD, passe Lighthouse</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
-        <tr><td>Image Docker nginx testée en local</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Image Docker Node (Hono) avec volume de persistance, testée en local</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>Maquette en ligne (dailypopsociety.chris-ia.com)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>Vraie carte (reprise de l'ancien site, à relire par Rachel)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Mini-jeu Nakama Run + classement du mois</td><td><span class="badge b-prog">In Progress</span></td><td>—</td></tr>
         <tr><td>Photos, logos HD (cliente)</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
         <tr><td>Mise en production dailypopsociety.be + coupure Netlify/Firebase</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
       </table></div>
@@ -170,6 +178,9 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
         <article class="entree">
           <h3>2026-09-08</h3>
           <ul>
+            <li>♻️ Refactor : image Docker Node (<code>node:22-alpine</code>, 2 étages) à la place de nginx — le serveur Hono sert <code>dist/</code> avec les en-têtes de l'ancien <code>nginx.conf</code> (supprimé) et porte l'API du jeu ; volume <code>/data</code> pour la persistance des scores ; testée en local : tous les codes HTTP attendus, en-têtes corrects, un score écrit survit à un redémarrage du conteneur sur le même volume</li>
+            <li>✨ Ajout : serveur Hono (<code>server/</code>) — sert le site statique + expose <code>GET/POST /api/scores</code> (fichier JSON par mois, écriture atomique, top 100, limiteur de débit) ; 7 tests unitaires <code>node --test</code></li>
+            <li>📝 Doc : mentions légales complétées pour le mini-jeu (pseudo, score, date, remise à zéro mensuelle) ; spec du site (§3) renvoie vers la spec du jeu pour le mini-jeu (sorti des exclusions)</li>
             <li>✨ Ajout : vraie carte transcrite depuis l'ancien site, <code>DEMO</code> désactivé — 8 catégories, 70 items, tous les prix repris de <code>brief/site-actuel/</code> (cocktails signature, cocktails sans alcool, bubble tea &amp; softs, bières, boissons chaudes, starters, burgers, desserts) ; <code>desc</code> devenu facultatif (l'ancien site ne décrit ni le Seven Up ni le thé) ; image Open Graph regénérée sans la capsule du header</li>
             <li>🐛 Fix : dernière passe — <code>sizes</code> des bandes du générique aligné sur son <code>clamp</code> (la 256 ne part plus sur mobile), montage HD servi au desktop dense (deux fichiers, un seul téléchargé), events passés sans faux visuels (cartes de texte seul), garde de cohérence sur la licence du mois, JSON-LD <code>Event</code> en deux périodes réelles, image Open Graph intemporelle, maquette <code>noindex</code> côté nginx, alignements et titres de section</li>
             <li>✨ Ajout : contrôle du <code>canonical</code> et des liens internes dans <code>scripts/verifier.mjs</code></li>
@@ -213,6 +224,8 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
     <section id="problemes">
       <h2>⚠️ Problèmes connus</h2>
       <ul class="puces">
+        <li>Mini-jeu Nakama Run — anti-triche limité aux garde-fous côté serveur (bornes pseudo/score/durée, plafond de score plausible, un envoi/20&nbsp;s) : un runner exécuté côté client ne peut pas être fiable à 100&nbsp;%, jugé suffisant pour un bar (hors périmètre de la spec du jeu).</li>
+        <li>Mini-jeu Nakama Run — modération des pseudos : aucune interface d'admin ; pour retirer un pseudo, éditer à la main le fichier <code>scores-AAAA-MM.json</code> du mois sur le volume <code>/data</code> du serveur.</li>
         <li>Carte transcrite depuis l'ancien site (<code>src/data/carte.ts</code>, 2026-09-08) : prix et libellés à faire relire par Rachel. Deux points appellent sa réponse — le « Custom ton burger » n'a <strong>aucun prix de base</strong> sur l'ancien site (affiché « à composer »), et la carte éphémère du mois y est absente (les trois créations affichées restent les nôtres, marquées « À CONFIRMER CLIENTE » dans le code).</li>
         <li>Logos mensuels découpés des planches en 160/256&nbsp;px : suffisants en mouvement (générique, frise), à remplacer par les fichiers HD de la cliente si un usage plus grand est envisagé.</li>
         <li>Photos manquantes (events passés, le lieu) : remplacées par des illustrations et des logos en attendant.</li>
@@ -236,7 +249,8 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
         <li>🟢 <strong>Maquette en ligne depuis le 2026-09-08 : <a href="https://dailypopsociety.chris-ia.com">https://dailypopsociety.chris-ia.com</a></strong> — vérifié : 8 pages, <code>/sitemap-index.xml</code>, <code>/robots.txt</code>, <code>/media/og.png</code> en 200 ; <code>/nimportequoi</code> en 404 réelle.</li>
         <li>Coolify maquettes <code>http://46.224.83.139:8000</code> (⚠️ pas l'instance de production Noveo) : projet <code>dailypopsociety</code> (uuid <code>sx4bmqtu54ejgpf4p2mpxdwg</code>), application uuid <code>o129qzwy4inm5tsgfrmqrtw7</code>, serveur <code>zw8ck4ckcw08gg00g8wwkkso</code>, build pack <code>dockerfile</code>, branche <code>main</code>, port 80, domaine <code>https://dailypopsociety.chris-ia.com</code> (wildcard <code>*.chris-ia.com</code>, HTTPS automatique).</li>
         <li>Redéploiement après un push : <code>git push origin HEAD</code> puis <code>curl -s -H "Authorization: Bearer $TOK" "http://46.224.83.139:8000/api/v1/deploy?uuid=o129qzwy4inm5tsgfrmqrtw7"</code> (GET) — le jeton vit dans <code>~/.claude.json</code> → <code>mcpServers.coolify.env.COOLIFY_ACCESS_TOKEN</code>, ne jamais l'écrire ici. Suivi : <code>GET /api/v1/applications/o129qzwy4inm5tsgfrmqrtw7</code> jusqu'à <code>status: running…</code> (le build passe par <code>exited:unhealthy</code> pendant ~1&nbsp;min, c'est normal).</li>
-        <li>Image Docker nginx (2 étages : build Node 22 + service nginx alpine) testée en local : 404 réelle, caches (<code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML), en-têtes de sécurité de base.</li>
+        <li>Image Docker Node (2 étages : build <code>node:22-alpine</code> + service <code>node:22-alpine</code> qui lance <code>server/index.mjs</code>) testée en local : 404 réelle, caches (<code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML), en-têtes de sécurité de base, <code>MAQUETTE=1</code> → <code>X-Robots-Tag: noindex</code>.</li>
+        <li>⚠️ <strong>Volume <code>/data</code> à déclarer sur l'app Coolify</strong> (stockage persistant, sinon les scores du jeu disparaissent à chaque redéploiement) et <strong>variable d'environnement <code>MAQUETTE=1</code></strong> (à retirer à la mise en production) — cf. Task 5 du plan du jeu pour la procédure par l'API Coolify.</li>
         <li>Dépôt : GitHub public, <code>cltconcept/dailypopsociety-website</code> (même convention que <code>dentalexpert-website</code> et <code>xenia-website</code>) ; <code>brief/</code> (moodboard, images du site actuel, PNG sources) gitignoré et exclu de l'image.</li>
       </ul>
       <h3>Checklist de mise en production</h3>
@@ -244,7 +258,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
         <li>Réserver <code>dailypopsociety.be</code> et configurer le DNS.</li>
         <li>Nommer l'hébergeur dans les mentions légales (<code>src/pages/mentions-legales.astro</code>).</li>
         <li>✅ Fait le 2026-09-08 : <code>DEMO = false</code> dans <code>src/data/carte.ts</code>, la vraie carte est en place — reste à la faire relire par Rachel avant la mise en ligne.</li>
-        <li>⚠️ <strong>Retirer les <code>add_header X-Robots-Tag "noindex" always;</code> de <code>nginx.conf</code></strong> (le bloc <code>server</code> + les trois <code>location</code>) : ils empêchent l'indexation de la MAQUETTE, ils interdiraient celle du vrai site. Chaque ligne porte le commentaire « MAQUETTE : à retirer en production ».</li>
+        <li>⚠️ <strong>Retirer la variable d'environnement <code>MAQUETTE=1</code></strong> sur l'app Coolify (elle ajoute <code>X-Robots-Tag: noindex</code>, qui empêche l'indexation de la MAQUETTE mais interdirait celle du vrai site).</li>
         <li><code>PROD=1 pnpm verifier</code>, puis déployer.</li>
         <li>Couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).</li>
       </ol>
