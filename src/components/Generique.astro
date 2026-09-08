@@ -223,6 +223,17 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
         };
 
         if (isDesktop()) {
+          /* Le navigateur restaure la position de scroll AVANT que le pin
+             n'existe : rechargée à mi-page, la page se retrouvait rendue à un
+             endroit qui n'était plus le même une fois les 250 % de hauteur du
+             pin insérés — le lecteur reprenait ailleurs qu'où il était. On
+             reprend la main : la page rouvre en haut, le générique rejoue. */
+          if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+          /* …et il faut le dire à ScrollTrigger, sinon il le défait : il a
+             mémorisé la valeur au registerPlugin (« auto ») et la REPOSE à
+             chaque refresh (ScrollTrigger.js, _clearScrollMemory). L'assignation
+             seule tenait 200 ms. clearScrollMemory fait les deux d'un coup. */
+          ScrollTrigger.clearScrollMemory('manual');
           /* Desktop : scène épinglée, scrubée. end = 250 % de hauteur de viewport. */
           const tl = gsap.timeline({
             defaults: { ease: 'power2.out' },

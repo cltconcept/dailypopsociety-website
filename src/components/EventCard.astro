@@ -1,10 +1,17 @@
 ---
 import type { Evenement } from '../data/events';
+import { illu } from '../lib/illu';
 interface Props { ev: Evenement; sombre?: boolean; passe?: boolean }
 const { ev, sombre = false, passe = false } = Astro.props;
+/* Les illustrations d'ambiance existent en trois largeurs, les logos mensuels
+   non (une seule image). On ne pose donc un srcset que si le visuel vient bien
+   de /media/illu/ — le déduire de l'URL évite de doubler chaque entrée de
+   events.ts d'un champ que la donnée porte déjà. */
+const id = ev.visuel.match(/^\/media\/illu\/(.+)-960\.webp$/)?.[1];
+const srcset = id ? illu(id).srcset : undefined;
 ---
 <article class:list={['evc', { 'evc--sombre': sombre, 'evc--passe': passe }]}>
-  <div class="evc__media"><img src={ev.visuel} alt={ev.alt} width="960" height="720" loading="lazy" decoding="async" /></div>
+  <div class="evc__media"><img src={ev.visuel} srcset={srcset} sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380px" alt={ev.alt} width="960" height="720" loading="lazy" decoding="async" /></div>
   <div class="evc__body">
     <p class="evc__quand">{ev.quand}{ev.aPlanifier && ' · à planifier'}</p>
     <h3 class="evc__titre">{ev.titre}</h3>

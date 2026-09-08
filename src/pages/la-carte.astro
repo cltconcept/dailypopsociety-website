@@ -1,17 +1,21 @@
 ---
 import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
-import { EPHEMERE, CATEGORIES } from '../data/carte';
-const illu = (id: string) => `/media/illu/${id}-960.webp`;
-const visuels: Record<string, { src: string; alt: string }> = {
-  cocktails: { src: illu('cocktail-zoro'), alt: 'Illustration : cocktail vert aux trois lames de citron vert' },
-  mocktails: { src: illu('mocktail-fraise'), alt: 'Illustration : mocktail fraise basilic' },
-  'bubble-teas': { src: illu('bubble-tea'), alt: 'Illustration : bubble tea mangue aux perles de tapioca' },
-  cafes: { src: illu('cafe-latte'), alt: 'Illustration : latte avec un latte art en étoile' },
-  starters: { src: illu('starters'), alt: 'Illustration : planche de nachos et bouchées à partager' },
-  burgers: { src: illu('burger-hokage'), alt: 'Illustration : burger signature au cheddar fondant' },
-  patisseries: { src: illu('patisserie'), alt: 'Illustration : part de cheesecake au coulis de fruits rouges' },
-};
+import { EPHEMERE, CATEGORIES, DEMO } from '../data/carte';
+import { illu } from '../lib/illu';
+
+/* Chaque catégorie devient une ancre #slug. Deux catégories qui partagent un
+   slug se voleraient leur ancre ; un slug qui existe déjà ailleurs dans le
+   document (l'éphémère, la cible du skip-link, le header, le générique) volerait
+   la sienne au vrai élément — et le lien de la barre d'ancres emmènerait le
+   visiteur au mauvais endroit, sans que rien ne le signale. On casse le build. */
+const RESERVES = new Set(['ephemere', 'contenu', 'site-nav', 'generique']);
+const vus = new Set<string>();
+for (const c of CATEGORIES) {
+  if (RESERVES.has(c.slug)) throw new Error(`la-carte : slug réservé « ${c.slug} » — il désigne déjà un autre élément de la page`);
+  if (vus.has(c.slug)) throw new Error(`la-carte : slug en double « ${c.slug} » — deux catégories ne peuvent pas partager une ancre`);
+  vus.add(c.slug);
+}
 ---
 <Base title="La carte — Daily Pop Society, bar pop culture à Charleroi" description="Cocktails à personnages, mocktails, bubble teas, cafés, starters, burgers signature et pâtisseries maison. Chaque mois, une carte éphémère inspirée de la licence à l'honneur.">
   <TitleCard kicker="Chapitre 1 · La carte" variante="creme">Food. <em>Drinks.</em><br />Et une sauce qui a un nom.<Fragment slot="copy">Chaque boisson est créée d'après un personnage. Chaque mois, une licence prend le pouvoir sur la carte. Et oui, il y a des burgers.</Fragment></TitleCard>
@@ -23,12 +27,19 @@ const visuels: Record<string, { src: string; alt: string }> = {
     </div>
   </nav>
 
+  {/* L'avertissement se lit AVANT les prix, pas après trois écrans de carte. */}
+  {DEMO && (
+    <div class="container">
+      <p class="hand demo">Carte de démonstration : les vrais noms et les vrais prix arrivent avec la carte du shop.</p>
+    </div>
+  )}
+
   <section class="section section--noir letterbox" id="ephemere">
     <div class="container">
       <span class="kicker">Carte éphémère · {EPHEMERE.licence}</span>
       <h2 class="titre titre--md">Ce mois-ci, <em>en édition limitée</em></h2>
       <p class="copy">{EPHEMERE.intro}</p>
-      <ul class="eph" data-reveal data-reveal-stagger>
+      <ul class="eph" role="list" data-reveal data-reveal-stagger>
         {EPHEMERE.items.map((it) => (
           <li class="eph__item">
             <p class="eph__nom">{it.nom}</p>
@@ -44,18 +55,30 @@ const visuels: Record<string, { src: string; alt: string }> = {
     <section class:list={['section', 'cat', { 'section--creme': i % 2 === 1 }]} id={c.slug}>
       <div class="container cat__grid">
         <div class="cat__visuel" data-reveal>
-          <img src={visuels[c.slug].src} alt={visuels[c.slug].alt} width="960" height="720" loading="lazy" decoding="async" />
+          <img
+            src={illu(c.visuel.id).src}
+            srcset={illu(c.visuel.id).srcset}
+            sizes="(max-width: 960px) 92vw, 420px"
+            alt={c.visuel.alt}
+            width="960"
+            height="720"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
-        <div>
+        <div class="cat__texte">
           <span class="kicker">{String(i + 1).padStart(2, '0')}</span>
           <h2 class="titre titre--md">{c.nom}</h2>
           <p class="copy">{c.intro}</p>
-          <ul class="cat__items">
+          <ul class="cat__items" role="list">
             {c.items.map((it) => (
-              <li class="ligne">
-                <span class="ligne__nom">{it.nom}{it.tags?.map((t) => <span class="tag">{t}</span>)}<small>{it.desc}</small></span>
-                <span class="ligne__points" aria-hidden="true"></span>
-                <span class="ligne__prix">{it.prix}</span>
+              <li>
+                <p class="ligne">
+                  <span class="ligne__nom">{it.nom}{it.tags?.map((t) => <span class="tag">{t}</span>)}</span>
+                  <span class="ligne__points" aria-hidden="true"></span>
+                  <span class="ligne__prix">{it.prix}</span>
+                </p>
+                <p class="ligne__desc">{it.desc}</p>
               </li>
             ))}
           </ul>
@@ -66,7 +89,6 @@ const visuels: Record<string, { src: string; alt: string }> = {
 
   <section class="section center">
     <div class="container container--narrow">
-      <p class="hand" style="font-size: 1.6rem">Carte de démonstration : les vrais noms et les vrais prix arrivent avec la carte du shop.</p>
       <p class="copy copy--center">Allergènes et options sur demande au comptoir. Les extras (mangas, jeux, coin gaming) sont offerts à qui consomme.</p>
     </div>
   </section>
@@ -75,20 +97,40 @@ const visuels: Record<string, { src: string; alt: string }> = {
 <style>
   /* top: var(--nav-h) (et non 0) : la capsule du header est fixe à 14px du
      haut avec z-index 60, au-dessus de cette barre (z-index 30) — un top: 0
-     la ferait chevaucher et cacher les premières ancres. */
-  .ancres { position: sticky; top: var(--nav-h); z-index: 30; background: var(--noir); color: var(--blanc); border-bottom: 2px solid var(--bdx); }
-  .ancres__liste { display: flex; gap: 22px; overflow-x: auto; padding-block: 12px; scrollbar-width: none; }
+     la ferait chevaucher et cacher les premières ancres.
+     .ancres est déclarée « surface sombre » dans global.css : ses jetons
+     (--accent, --focus) y basculent, elle n'a aucune couleur en dur. */
+  .ancres { position: sticky; top: var(--nav-h); z-index: 30; background: var(--noir); color: var(--txt); border-bottom: 2px solid var(--bdx); }
+  /* Le dégradé de masque dit que la liste continue à droite : sans lui, une
+     barre qui déborde a l'air d'une barre qui s'arrête. */
+  .ancres__liste {
+    display: flex; gap: 22px; overflow-x: auto; padding-block: 12px; scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 85%, transparent);
+  }
   .ancres__liste a { white-space: nowrap; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; opacity: 0.8; }
-  .ancres__liste a:hover { opacity: 1; color: var(--rose); }
-  .eph { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .ancres__liste a:hover { opacity: 1; color: var(--accent); }
+  .demo { padding: 14px 0; text-align: center; font-size: 1.35rem; }
+  /* auto-fit et non un nombre de colonnes figé : 3 items tiennent en 3 colonnes,
+     4 se répartissent seuls, et la descente en 1 colonne se fait à la largeur
+     réelle du contenu — plus besoin d'une règle mobile pour la forcer. */
+  .eph { margin-top: 36px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
   .eph__item { border: 2px solid rgba(255, 255, 255, 0.35); padding: 22px; background: rgba(255, 255, 255, 0.04); }
   .eph__nom { font-family: var(--font-title); font-size: 1.5rem; text-transform: uppercase; letter-spacing: 0.04em; }
   .eph__desc { margin-top: 6px; color: var(--txt-doux); }
   .eph__prix { margin-top: 12px; font-family: var(--font-title); color: var(--accent); font-size: 1.3rem; }
+  /* Le header ET la barre d'ancres sont collants : une ancre doit dégager les
+     deux, sinon le titre de la catégorie atterrit dessous. */
+  .cat, #ephemere { scroll-margin-top: calc(var(--nav-h) + var(--ancres-h) + 24px); }
   .cat__grid { display: grid; grid-template-columns: 0.9fr 1.3fr; gap: clamp(28px, 5vw, 70px); align-items: start; }
-  .cat__visuel { border: var(--bord); box-shadow: var(--ombre-case); background: var(--blanc); position: sticky; top: 90px; }
+  .cat__visuel { border: var(--bord); box-shadow: var(--ombre-case); background: var(--blanc); position: sticky; top: calc(var(--nav-h) + var(--ancres-h) + 18px); }
   .cat__items { margin-top: 28px; display: grid; gap: 14px; }
-  .ligne__nom small { display: block; font-weight: 400; color: var(--txt-doux); font-size: 0.9rem; }
-  .tag { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1.5px solid var(--voix); color: var(--voix); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; vertical-align: middle; }
-  @media (max-width: 960px) { .cat__grid { grid-template-columns: 1fr; } .cat__visuel { position: static; max-width: 420px; } .eph { grid-template-columns: 1fr; } }
+  .tag { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1.5px solid var(--voix); color: var(--voix); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; vertical-align: middle; }
+  @media (max-width: 960px) {
+    .cat__grid { grid-template-columns: 1fr; }
+    .cat__visuel { position: static; max-width: 420px; }
+    /* En une colonne, on lit le nom de la catégorie avant son illustration.
+       Aucun des deux blocs ne contient d'élément focusable : l'ordre visuel
+       peut donc diverger de l'ordre du DOM sans piéger le clavier. */
+    .cat__texte { order: -1; }
+  }
 </style>

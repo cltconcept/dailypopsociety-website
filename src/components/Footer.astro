@@ -1,6 +1,7 @@
 ---
 import { IDENTITE, NAV } from '../data/site';
 import { JOURS } from '../data/horaires';
+import LienExterne from './LienExterne.astro';
 const year = new Date().getFullYear();
 ---
 <footer class="footer">
@@ -10,8 +11,8 @@ const year = new Date().getFullYear();
       <p class="footer__tag">{IDENTITE.slogan}</p>
       <p class="footer__txt">Le bar où la pop culture rassemble toutes les générations. Cosplay bienvenu, tout le temps.</p>
       <p class="footer__social">
-        <a href={IDENTITE.instagram} rel="noopener noreferrer" target="_blank">Instagram<span class="sr-only"> (nouvel onglet)</span></a>
-        <a href={IDENTITE.facebook} rel="noopener noreferrer" target="_blank">Facebook<span class="sr-only"> (nouvel onglet)</span></a>
+        <LienExterne href={IDENTITE.instagram}>Instagram</LienExterne>
+        <LienExterne href={IDENTITE.facebook}>Facebook</LienExterne>
       </p>
     </div>
     <nav aria-label="Pages">
@@ -45,8 +46,12 @@ const year = new Date().getFullYear();
   .footer__tag { font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--rose); margin-top: 6px; }
   .footer__txt { margin-top: 14px; font-size: 0.92rem; line-height: 1.6; }
   .footer__social { margin-top: 14px; display: flex; gap: 18px; }
-  .footer__social a, .footer nav a, .footer div > a { display: block; color: var(--blanc); text-decoration: none; font-size: 0.92rem; line-height: 2; }
-  .footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  /* :global(a) et non a — les deux liens sociaux sont rendus par <LienExterne>,
+     et Astro ne pose PAS le scope du parent sur la racine d'un composant
+     enfant : un `a` scopé ne les atteindrait pas (ils repartiraient en bleu
+     souligné). Le :global reste enfermé sous .footer, il ne fuit nulle part. */
+  .footer__social :global(a), .footer nav a, .footer div > a { display: block; color: var(--blanc); text-decoration: none; font-size: 0.92rem; line-height: 2; }
+  .footer :global(a):hover { text-decoration: underline; text-underline-offset: 4px; }
   .footer__head { font-family: var(--font-title); font-size: 0.95rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rose); margin-bottom: 10px; }
   .footer__jour { display: flex; gap: 10px; font-size: 0.86rem; line-height: 1.9; }
   .footer__jour span { width: 36px; color: var(--blanc); font-weight: 700; }

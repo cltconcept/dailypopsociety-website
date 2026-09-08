@@ -1,9 +1,12 @@
 ---
 import '@fontsource/bangers';
+import { SIZES_CASE } from '../lib/illu';
 /* Case de comics : bord noir, ombre bordeaux, image 4:3, onomatopée optionnelle.
    Avec href → <a> cliquable entière ; sans → <article>.
    Quand la case est un lien, l'image est DÉCORATIVE (alt vide) : le nom
    accessible du lien est déjà tag + titre + texte, un alt en plus le doublerait.
+   ⚠️ `alt` est donc IGNORÉ dès que `href` est posé — ne pas en passer un, il
+   ne sortirait nulle part et laisserait croire que l'image est décrite.
    `niveau` suit la hiérarchie de la page qui pose la case (h3 par défaut) ;
    `prioritaire` réserve le chargement immédiat à la case au-dessus de la ligne
    de flottaison — toutes les autres restent en lazy. */
@@ -29,7 +32,7 @@ const {
   tag,
   href,
   largeurs,
-  sizes = '(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380px',
+  sizes = SIZES_CASE,
   niveau = 3,
   prioritaire = false,
 } = Astro.props;

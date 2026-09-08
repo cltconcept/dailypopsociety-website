@@ -26,7 +26,9 @@ for (const p of PAGES) {
   ok(!/TODO|Lorem ipsum|__[A-Z]+__|à confirmer|à compléter/i.test(html), `${p} : placeholder trouvé (TODO / Lorem / __X__ / à confirmer / à compléter)`);
   // alt="" décoratif : Astro sérialise une valeur vide en attribut nu (`alt`
   // sans `=`), HTML valide et équivalent à alt="" — la regex accepte les deux.
-  for (const m of html.matchAll(/<img\b[^>]*>/g)) ok(/(^|\s)alt(=|[\s>])/.test(m[0]), `${p} : <img> sans alt : ${m[0].slice(0, 80)}`);
+  // Le lookahead couvre aussi la balise auto-fermante `<img … alt/>`, et le
+  // \s en tête interdit de prendre le `alt` d'un `data-alt` pour le bon.
+  for (const m of html.matchAll(/<img\b[^>]*>/g)) ok(/\salt(?=[\s=>\/])/.test(m[0]), `${p} : <img> sans alt : ${m[0].slice(0, 80)}`);
 
   // Médias référencés : seules les URL de NOTRE origine se ramènent à un chemin
   // de dist/. Une URL externe (réseaux, maps) n'a rien à exister sur le disque.
@@ -100,6 +102,12 @@ ok(existsSync(join(DIST, 'robots.txt')), 'robots.txt absent');
 // Aucun fichier > 600 Ko dans dist/media (les WebP doivent rester légers)
 const marcher = (d) => readdirSync(d).flatMap((n) => { const f = join(d, n); return statSync(f).isDirectory() ? marcher(f) : [f]; });
 if (existsSync(join(DIST, 'media'))) for (const f of marcher(join(DIST, 'media'))) ok(statSync(f).size < 600 * 1024, `média trop lourd (> 600 Ko) : ${f}`);
+
+// Garde de mise en production : la carte de démonstration porte des noms et des
+// prix INVENTÉS. Tant que DEMO vaut true, elle ne doit pas partir chez le
+// public. PROD=1 est le geste de mise en ligne ; il échoue tant que la vraie
+// carte n'est pas en place. En dev (sans PROD), le contrôle reste muet.
+if (process.env.PROD === '1') ok(!/export const DEMO = true/.test(readFileSync('src/data/carte.ts', 'utf8')), 'carte de démonstration encore active (DEMO = true) : mise en production refusée');
 
 if (erreurs.length) { console.error('✗ verifier :\n - ' + erreurs.join('\n - ')); process.exit(1); }
 console.log(`✓ verifier : ${PAGES.length} pages contrôlées, aucun écart`);

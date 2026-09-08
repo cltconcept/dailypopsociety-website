@@ -14,6 +14,14 @@
    Règle symétrique : poser un nouveau fond CLAIR dans une surface sombre (une
    case blanche dans une section noire) = ajouter sa classe au bloc « surfaces
    claires », sinon elle hérite des jetons du sombre et son texte disparaît.
+
+   DEUX RÈGLES DE POSE, valables dans toutes les pages :
+   1. `data-reveal` se pose sur les grilles et listes de cartes, jamais sur une
+      section entière (une section masquée jusqu'au scroll emporte son titre et
+      son texte : le contenu doit rester lisible, seule l'apparition est un bonus).
+   2. h2 de section = `.titre--md` ; `.titre` seul est réservé au h1 et à
+      l'accent de la licence sur l'accueil (deux tailles de h1 dans une page
+      cassent la hiérarchie visuelle).
    ============================================================ */
 :root {
   --noir: #0E0E0E;
@@ -46,6 +54,9 @@
   --gutter: clamp(20px, 4vw, 32px);
   --section-pad: clamp(72px, 10vw, 130px);
   --nav-h: 72px;
+  /* Hauteur de la barre d'ancres collante (la carte) : elle se pose SOUS le
+     header, les scroll-margin et les visuels collants s'additionnent aux deux. */
+  --ancres-h: 44px;
   --bord: 3px solid var(--noir);
   --ombre-case: 6px 6px 0 var(--bdx);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -117,7 +128,7 @@ main:focus { outline: none; }
    .gen aussi : le hero du générique est un champ bordeaux, ses jetons doivent
    y basculer comme partout ailleurs (sinon le focus y reste rouge sur rouge). */
 .tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir, .gen,
-.footer, .nav__capsule, .nav__menu, .skip-link {
+.footer, .nav__capsule, .nav__menu, .skip-link, .ancres {
   --txt: var(--blanc);
   --txt-doux: rgba(255, 255, 255, .78);
   --accent: var(--rose);
@@ -127,7 +138,7 @@ main:focus { outline: none; }
 }
 /* ===== Surfaces claires posées sur fond sombre (une case blanche dans une
    section noire) : elles retrouvent leurs jetons clairs. ===== */
-.case, .section--creme, .tc--creme, .tc--blanc {
+.case, .section--creme, .tc--creme, .tc--blanc, .bloc-creme {
   --txt: var(--noir);
   --txt-doux: var(--gris);
   --accent: var(--rouge);
@@ -135,6 +146,10 @@ main:focus { outline: none; }
   --focus: var(--rouge);
   --ombre-btn: var(--noir);
 }
+
+/* Encart crème bordé — l'adresse de l'accueil, et tout bloc de la même famille
+   que la case de comics sans en être une (pas de média, pas d'onomatopée). */
+.bloc-creme { padding: 28px; border: var(--bord); box-shadow: var(--ombre-case); background: var(--creme); }
 
 /* ===== Typographie ===== */
 .titre {
@@ -216,7 +231,10 @@ main:focus { outline: none; }
 }
 .letterbox::before { top: 0; }
 .letterbox::after { bottom: 0; }
-.tc--noir.letterbox::before, .tc--noir.letterbox::after { background: var(--bdx); }
+/* Sur un fond NOIR, des bandes noires ne se voient pas : le letterbox y passe
+   en bordeaux — c'est le seul cas où la bande change de couleur. */
+.tc--noir.letterbox::before, .tc--noir.letterbox::after,
+.section--noir.letterbox::before, .section--noir.letterbox::after { background: var(--bdx); }
 
 /* ===== Case de comics ===== */
 .case {
@@ -248,9 +266,12 @@ a.case:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--bdx
 @media (max-width: 960px) { .grille--3 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .grille--3, .grille--2 { grid-template-columns: 1fr; } }
 
-/* ===== Points de conduite (carte) ===== */
+/* ===== Points de conduite (carte) =====
+   La description vit HORS de la ligne flex : dedans, elle poussait le nom sur
+   toute la largeur et les points de conduite se réduisaient à leur min-width. */
 .ligne { display: flex; align-items: baseline; gap: 10px; }
 .ligne__nom { font-weight: 700; }
+.ligne__desc { margin-top: 2px; font-size: 0.9rem; color: var(--txt-doux); }
 .ligne__points { flex: 1; border-bottom: 2px dotted var(--gris-ligne); transform: translateY(-5px); min-width: 24px; }
 .ligne__prix { font-family: var(--font-title); font-size: 1.15rem; color: var(--voix); letter-spacing: 0.04em; white-space: nowrap; }
 

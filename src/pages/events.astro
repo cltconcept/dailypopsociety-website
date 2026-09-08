@@ -2,11 +2,12 @@
 import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
 import EventCard from '../components/EventCard.astro';
+import LienExterne from '../components/LienExterne.astro';
 import { A_VENIR, SOIREES, PASSES } from '../data/events';
 import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
 ---
 <Base title="Events et soirées — Daily Pop Society, Charleroi" description="Une licence à l'honneur chaque mois, blind tests pop culture deux fois par mois, soirées JDR sur réservation, animations le week-end. Le programme du bar pop culture de Charleroi.">
-  <TitleCard kicker="Chapitre 2 · Les events" variante="noir" letterbox>Ce mois-ci :<br /><em>{LICENCE_DU_MOIS.nom}</em><Fragment slot="copy">{LICENCE_DU_MOIS.accroche} {LICENCE_DU_MOIS.dates}. Une licence par mois, une carte éphémère, et des soirées toutes les semaines.</Fragment><Fragment slot="actions"><a class="btn" href={IDENTITE.instagram} target="_blank" rel="noopener">Le programme sur Instagram</a></Fragment></TitleCard>
+  <TitleCard kicker="Chapitre 2 · Les events" variante="noir" letterbox>Ce mois-ci :<br /><em>{LICENCE_DU_MOIS.nom}</em><Fragment slot="copy">{LICENCE_DU_MOIS.accroche} {LICENCE_DU_MOIS.dates}. Une licence par mois, une carte éphémère, et des soirées toutes les semaines.</Fragment><Fragment slot="actions"><LienExterne href={IDENTITE.instagram} class="btn">Le programme sur Instagram</LienExterne></Fragment></TitleCard>
 
   <section class="section">
     <div class="container">

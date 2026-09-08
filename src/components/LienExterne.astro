@@ -1,0 +1,15 @@
+---
+/* Lien qui QUITTE le site (réseaux sociaux, itinéraire Maps).
+   Il porte toujours les trois mêmes choses, et c'est justement pour qu'on ne
+   puisse plus en oublier une qu'il est un composant :
+   - target="_blank" + rel="noopener noreferrer" (le noreferrer manquait par
+     endroits : sans lui, la page ouverte lit d'où vient le visiteur) ;
+   - une mention « (nouvel onglet) » réservée aux lecteurs d'écran — un lien qui
+     change de fenêtre sans prévenir est un piège pour qui ne voit pas l'onglet. */
+interface Props {
+  href: string;
+  class?: string;
+}
+const { href, class: className } = Astro.props;
+---
+<a href={href} class={className} target="_blank" rel="noopener noreferrer"><slot /><span class="sr-only"> (nouvel onglet)</span></a>
