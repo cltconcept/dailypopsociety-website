@@ -61,7 +61,10 @@ const enJson = (x: object) => JSON.stringify(x).replace(/</g, '\\u003c');
     <script>
       import { REDUCED, loadGsap, onFirstIdle, bootReveals } from '../lib/motion';
       if (!REDUCED && document.querySelector('[data-reveal]')) {
-        onFirstIdle(() => { loadGsap().then(bootReveals); });
+        /* .catch : GSAP peut ne jamais arriver (réseau, bloqueur). Les reveals
+           sont un bonus — le contenu est déjà à l'écran — mais un rejet non
+           géré remonterait en erreur de console sur toutes les pages. */
+        onFirstIdle(() => { loadGsap().then(bootReveals).catch(() => {}); });
       }
     </script>
   </body>

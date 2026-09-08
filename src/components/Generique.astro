@@ -196,8 +196,11 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
         /* Largeur RÉELLE d'une tuile du montage : background-size: auto 100% met
            l'image à la hauteur de la couche, sa largeur suit donc le ratio. Le
            -1600px en dur d'avant ne parcourait pas le même nombre de tuiles
-           selon la taille du titre (clamp de 4,4rem à 15rem). */
-        const tuile = fill ? fill.offsetHeight * (Number(fill.dataset.montageRatio) || 1) : 0;
+           selon la taille du titre (clamp de 4,4rem à 15rem).
+           Fonction et non constante, comme course() : la hauteur du titre suit
+           le viewport, la course doit donc être RELUE à chaque refresh. */
+        const ratio = fill ? Number(fill.dataset.montageRatio) || 1 : 1;
+        const remplissage = () => `-${2 * (fill ? fill.offsetHeight : 0) * ratio}px`;
 
         /* Les trois temps du générique, en fractions de la timeline (0 → 1) :
            1. 0 → 0.40  les bandes défilent, de plus en plus vite
@@ -208,7 +211,7 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
           tl.to(pistes, { x: course, duration: d, ease: mobile ? 'power2.inOut' : 'power1.in' }, 0)
             .to(presente, { opacity: 0, y: -20, duration: 0.1 * d }, 0.25 * d)
             .fromTo(fill, { opacity: 0 }, { opacity: 1, duration: 0.12 * d }, 0.28 * d)
-            .fromTo(fill, { backgroundPositionX: '0px' }, { backgroundPositionX: `-${2 * tuile}px`, duration: 0.5 * d, ease: 'none' }, 0.28 * d)
+            .fromTo(fill, { backgroundPositionX: '0px' }, { backgroundPositionX: remplissage, duration: 0.5 * d, ease: 'none' }, 0.28 * d)
             .fromTo(blanc, { opacity: 0 }, { opacity: 1, duration: 0.1 * d }, 0.64 * d)
             .to(fill, { opacity: 0, duration: 0.08 * d }, 0.68 * d)
             .fromTo(society, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.72 * d)
@@ -223,7 +226,12 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
           /* Desktop : scène épinglée, scrubée. end = 250 % de hauteur de viewport. */
           const tl = gsap.timeline({
             defaults: { ease: 'power2.out' },
-            scrollTrigger: { trigger: gen, start: 'top top', end: '+=250%', scrub: 0.6, pin: true },
+            /* invalidateOnRefresh : les valeurs fonctionnelles (course des bandes,
+               course du remplissage) ne sont résolues qu'UNE fois à la création.
+               Sans ça, un passage de 1280 à 1920 px garde l'ancienne course et
+               rouvre une bande nue à droite — le défaut même qu'on vient de
+               fermer. Le refresh de ScrollTrigger les fait recalculer. */
+            scrollTrigger: { trigger: gen, start: 'top top', end: '+=250%', scrub: 0.6, pin: true, invalidateOnRefresh: true },
           });
           composer(tl, false);
           /* L'invite « scroll pour lancer le générique » ne se montre que là où
