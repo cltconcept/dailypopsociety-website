@@ -1,0 +1,230 @@
+<!doctype html><html lang="fr" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily Pop Society — PROJET</title>
+<style>
+:root{--bg:#0f0f10;--panel:#18181b;--panel2:#1f1f23;--txt:#e8e8ea;--muted:#9a9aa3;--acc:#B4162F;--acc2:#e0435c;--line:#2a2a2f;--code:#e3c6ca}
+:root[data-theme="light"]{--bg:#f7f7f8;--panel:#ffffff;--panel2:#f0f0f2;--txt:#151517;--muted:#5d5d66;--line:#e2e2e6;--code:#7a1626}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6;font-size:15px}
+a{color:var(--acc2)}
+header.top{padding:36px 40px 28px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--bg))}
+header.top h1{margin:0 0 6px;font-size:1.9rem;letter-spacing:-0.01em}
+header.top p{margin:0 0 14px;color:var(--muted);max-width:720px}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{display:inline-block;padding:3px 11px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.02em}
+.b-stack{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+.b-done{background:#1f6f3f;color:#fff}
+.b-prog{background:#b3641a;color:#fff}
+.b-plan{background:#1f4f8f;color:#fff}
+.wrap{display:grid;grid-template-columns:230px 1fr}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:26px 18px;border-right:1px solid var(--line)}
+nav.side .grp{margin-bottom:4px}
+nav.side a{display:block;color:var(--muted);text-decoration:none;padding:7px 10px;border-radius:6px;font-size:.88rem}
+nav.side a:hover{color:var(--txt);background:var(--panel2)}
+main{padding:36px 44px 80px;max-width:1000px}
+section{margin-bottom:52px;scroll-margin-top:16px}
+h2{border-left:4px solid var(--acc);padding-left:12px;font-size:1.35rem;margin:0 0 18px}
+h3{font-size:1.05rem;margin:22px 0 8px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;background:var(--panel);min-width:480px}
+th,td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:.92rem}
+th{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:.72rem;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+code{background:var(--panel2);color:var(--code);padding:1px 6px;border-radius:4px;font-size:.88em;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:var(--panel);padding:16px 18px;overflow:auto;border:1px solid var(--line);border-radius:10px;font-size:.86rem;line-height:1.55}
+pre code{background:none;padding:0;color:var(--txt)}
+ul.puces{padding-left:20px;margin:0}
+ul.puces li{margin-bottom:10px}
+ul.puces li::marker{color:var(--acc2)}
+.tl{border-left:2px solid var(--acc);padding-left:22px;margin-left:4px}
+.tl .entree{position:relative;margin-bottom:30px}
+.tl .entree::before{content:'';position:absolute;left:-28px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px var(--bg)}
+.tl .entree h3{margin-top:0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--acc2)}
+.tl .entree ul{padding-left:18px;margin:8px 0 0}
+.tl .entree li{margin-bottom:6px;font-size:.93rem}
+.note{border-left:3px solid var(--acc2);background:var(--panel2);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:.92rem}
+button.toggle{position:fixed;right:16px;top:16px;padding:8px 13px;border:1px solid var(--line);background:var(--panel);color:var(--txt);cursor:pointer;border-radius:8px;font-size:.85rem;z-index:10}
+button.toggle:hover{background:var(--panel2)}
+footer.bas{padding:24px 44px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line)}
+@media(max-width:820px){
+  .wrap{grid-template-columns:1fr}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px 18px}
+  nav.side .links{display:flex;flex-wrap:wrap;gap:4px}
+  nav.side a{padding:6px 10px}
+  main{padding:26px 20px 60px}
+  header.top{padding:26px 20px 22px}
+}
+</style></head><body>
+<button class="toggle" onclick="const r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('dps-theme',r.dataset.theme)}catch(e){}">☀︎ / ☾</button>
+<script>try{const t=localStorage.getItem('dps-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+
+<header class="top">
+  <h1>Daily Pop Society — site vitrine</h1>
+  <p>Site statique du bar pop culture de Charleroi : générique façon Marvel Studios formé par les vrais logos mensuels, carte, events, galerie, histoire du nom, contact.</p>
+  <div class="badges">
+    <span class="badge b-stack">Astro 5</span>
+    <span class="badge b-stack">GSAP 3</span>
+    <span class="badge b-stack">nginx</span>
+    <span class="badge b-stack">Kie.ai</span>
+    <span class="badge b-stack">Coolify</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="side">
+    <div class="links">
+      <a href="#stack">🧱 Stack</a>
+      <a href="#demarrage">🚀 Démarrage</a>
+      <a href="#architecture">🗂 Architecture</a>
+      <a href="#env">🔐 Variables</a>
+      <a href="#roadmap">🗺 Roadmap</a>
+      <a href="#journal">📜 Journal</a>
+      <a href="#problemes">⚠️ Problèmes connus</a>
+      <a href="#deploiement">☁️ Déploiement</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="stack">
+      <h2>🧱 Stack technique</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Catégorie</th><th>Technologie</th></tr>
+        <tr><td>Framework</td><td>Astro 5 (sortie 100&nbsp;% statique, <code>site: https://dailypopsociety.be</code>)</td></tr>
+        <tr><td>Animation</td><td>GSAP 3 + ScrollTrigger, import différé (idle/scroll), scrub réservé au desktop (≥&nbsp;1024&nbsp;px)</td></tr>
+        <tr><td>Fontes</td><td>Anton, Inter Variable, Caveat, Bangers (<code>@fontsource</code>, auto-hébergées, <code>font-display: swap</code>)</td></tr>
+        <tr><td>Images</td><td>Illustrations : WebP 3 tailles (480/960/1440, sharp) · Logos mensuels : WebP 160/256&nbsp;px + montage (Pillow)</td></tr>
+        <tr><td>Illustrations</td><td>Kie.ai <code>nano-banana-pro</code>, style cel-shadé sticker (démo, à remplacer par des photos)</td></tr>
+        <tr><td>SEO</td><td><code>@astrojs/sitemap</code>, JSON-LD <code>BarOrPub</code> + <code>Event</code>, Open Graph, canonical</td></tr>
+        <tr><td>Serveur</td><td>nginx alpine (Docker 2 étages, aucune variable d'env au run), Coolify maquettes (<code>*.chris-ia.com</code>)</td></tr>
+        <tr><td>Tests</td><td><code>pnpm test</code> = <code>astro check</code> && <code>astro build</code> && <code>node scripts/verifier.mjs</code> sur <code>dist/</code></td></tr>
+      </table></div>
+    </section>
+
+    <section id="demarrage">
+      <h2>🚀 Démarrage rapide</h2>
+      <pre><code>pnpm install
+pnpm dev          # http://localhost:4332
+pnpm build        # dist/
+pnpm test         # check + build + contrôle de dist/
+python scripts/logos.py            # regénère les logos + src/data/logos.ts (planches dans brief/, gitignoré)
+KIE_API_KEY=... bash scripts/illustrations.sh && node scripts/webp.mjs   # illustrations manquantes (payant : ~0,04 $/image)
+PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la carte de démo est active)</code></pre>
+    </section>
+
+    <section id="architecture">
+      <h2>🗂 Architecture</h2>
+      <ul class="puces">
+        <li><code>src/data/</code> — la seule source de contenu : <code>site.ts</code> (identité, nav, licence du mois), <code>horaires.ts</code> (créneaux + conversion JSON-LD), <code>carte.ts</code> (carte <strong>DE DÉMONSTRATION</strong>, drapeau <code>DEMO</code>), <code>events.ts</code> (une seule liste d'événements datée, jamais trois listes séparées), <code>galerie.ts</code> (thèmes), <code>logos.ts</code> (<strong>généré</strong>, ne pas éditer à la main), <code>histoire.ts</code> (les trois étapes + le sens du nom)</li>
+        <li><code>src/lib/</code> — <code>illu.ts</code> (résolution des illustrations et des logos en visuels : src/srcset/alt, une seule implémentation), <code>jsonld.ts</code> (schéma <code>BarOrPub</code>), <code>motion.ts</code> (socle GSAP partagé aux sites vitrines : garde <code>prefers-reduced-motion</code>, seuil desktop 1024, chargement différé), <code>dates.ts</code> (<code>moisLisible</code>, une seule implémentation pour la frise et la galerie)</li>
+        <li><code>src/components/</code> — <code>Generique</code> (hero signature : épinglé et scrubé au scroll sur desktop, intro courte sur mobile, statique sans JS/reduced-motion), <code>TitleCard</code> (ouverture de page), <code>Case</code> (case de comics), <code>EventCard</code>, <code>FriseLogos</code> (frise horizontale des logos par année, scroll natif), <code>Horaires</code>, <code>Header</code>, <code>Footer</code>, <code>LienExterne</code> (lien externe accessible : <code>noopener noreferrer</code> + mention lecteur d'écran)</li>
+        <li><code>src/layouts/Base.astro</code> — SEO, Open Graph, JSON-LD, boot des reveals</li>
+        <li><code>src/pages/</code> — <code>index</code>, <code>la-carte</code>, <code>events</code>, <code>galerie</code>, <code>a-propos</code>, <code>contact</code>, <code>mentions-legales</code>, <code>404</code> (8 pages, cf. <code>PAGES</code> de <code>scripts/verifier.mjs</code>)</li>
+        <li><code>scripts/</code> — <code>verifier.mjs</code> (contrôle <code>dist/</code> après build), <code>logos.py</code> (découpe les planches de la cliente en vignettes WebP 160/256&nbsp;px + montage, écrit <code>src/data/logos.ts</code>), <code>illustrations.sh</code> + <code>illustrations.txt</code> (génération Kie), <code>webp.mjs</code> (PNG Kie → WebP 3 tailles)</li>
+        <li><code>public/</code> — <code>favicon.svg</code>, <code>media/og.png</code>, <code>media/logos/</code>, <code>media/illu/</code>, <code>robots.txt</code></li>
+        <li><code>nginx.conf</code> — un seul <code>Cache-Control</code> par réponse, <code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML (<code>location ~ \.html$</code>), en-têtes de sécurité (<code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, <code>X-Frame-Options</code>, <code>Permissions-Policy</code>), 404 réelle sans fallback SPA</li>
+        <li><code>docs/superpowers/</code> — spec de design et plan d'implémentation (17 tâches) qui ont guidé cette session</li>
+        <li><code>brief/</code> (gitignoré) — moodboard, <code>info.txt</code>, planches de logos, PNG sources des illustrations</li>
+        <li>Flux : données TS → pages Astro → HTML statique → nginx. Mise à jour mensuelle = éditer <code>site.ts</code> (licence du mois), <code>events.ts</code>, <code>carte.ts</code>.</li>
+      </ul>
+    </section>
+
+    <section id="env">
+      <h2>🔐 Variables d'environnement</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Variable</th><th>Description</th><th>Requis</th></tr>
+        <tr><td><code>KIE_API_KEY</code></td><td>Génération des illustrations (<code>scripts/illustrations.sh</code> uniquement, jamais au build ni au run)</td><td>❌</td></tr>
+      </table></div>
+    </section>
+
+    <section id="roadmap">
+      <h2>🗺 Roadmap & Features</h2>
+      <div class="tbl-wrap"><table>
+        <tr><th>Feature</th><th>Statut</th><th>Date</th></tr>
+        <tr><td>Spec et plan validés</td><td><span class="badge b-done">Done</span></td><td>2026-09-07</td></tr>
+        <tr><td>Projet Astro scaffoldé (port 4332, sitemap, contrôleur initial)</td><td><span class="badge b-done">Done</span></td><td>2026-09-07</td></tr>
+        <tr><td>Socle visuel, header, footer, 404, mentions légales</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Logos mensuels (découpe des planches, frise, srcset 256&nbsp;px)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Le générique (scrub desktop, intro mobile, statique)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Illustrations cel-shadées (11 sujets, Kie)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Pages carte, events, galerie, à propos, contact</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>SEO, Open Graph, JSON-LD, passe Lighthouse</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Image Docker nginx testée en local</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Maquette en ligne (dailypopsociety.chris-ia.com)</td><td><span class="badge b-prog">In Progress</span></td><td>—</td></tr>
+        <tr><td>Vraie carte, photos, logos HD (cliente)</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
+        <tr><td>Mise en production dailypopsociety.be + coupure Netlify/Firebase</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
+      </table></div>
+    </section>
+
+    <section id="journal">
+      <h2>📜 Journal des changements</h2>
+      <div class="tl">
+        <article class="entree">
+          <h3>2026-09-08</h3>
+          <ul>
+            <li>✨ Ajout : socle visuel (tokens, layout SEO/JSON-LD, header capsule, footer, horaires, page 404)</li>
+            <li>🐛 Fix : menu mobile refermable, horaires robustes, focus et contrastes, JSON-LD extrait dans <code>lib/jsonld.ts</code>, contrôleur renforcé</li>
+            <li>✨ Ajout : 28 logos mensuels découpés des planches de la cliente (<code>scripts/logos.py</code>, Pillow) en WebP 160&nbsp;px + montage pour le remplissage des lettres du générique ; <code>src/data/logos.ts</code> généré</li>
+            <li>✨ Ajout : composants <code>TitleCard</code> et <code>Case</code>, page mentions légales</li>
+            <li>✨ Ajout : le générique — hero épinglé scrubé au scroll (desktop), intro courte (mobile), état final statique (reduced-motion / sans JS)</li>
+            <li>🐛 Fix : skip-link sur surfaces sombres, mentions légales complétées, <code>Case</code> accessible et paramétrable, contrôleur h1 et créneaux JSON-LD</li>
+            <li>✨ Ajout : 11 illustrations cel-shadées (Kie.ai <code>nano-banana-pro</code>) en WebP 3 tailles ; coût ≈ 0,52&nbsp;$ (13 générations à 0,04&nbsp;$, dont 2 régénérations)</li>
+            <li>🐛 Fix : cocktail Zoro (vert) et bubble tea mangue régénérés (la couleur du sujet ne correspondait pas au prompt)</li>
+            <li>🐛 Fix : générique — carte non focusable avant apparition, bandes pleines sur écran large, garde-fou GSAP, masque des logos, surfaces sombres</li>
+            <li>🐛 Fix : générique — course des bandes et du remplissage recalculées au redimensionnement</li>
+            <li>✨ Ajout : page accueil (trois cases, licence du mois, horaires et adresse, scène post-générique)</li>
+            <li>✨ Ajout : page la carte (données de démo, carte éphémère du mois, sept catégories)</li>
+            <li>✨ Ajout : page events (licences à venir, soirées récurrentes, précédemment dans Daily Pop)</li>
+            <li>✨ Ajout : page galerie par thèmes avec filtre progressif</li>
+            <li>🐛 Fix : polissage accueil et carte (letterbox, liens externes, illustration partagée, carte autosuffisante avec garde <code>DEMO</code>, points de conduite mobile)</li>
+            <li>🐛 Fix : events ramenés sur une seule liste datée avec JSON-LD <code>Event</code> ; cartes d'event et galerie corrigées (visuels, srcset, alt partagés, logos dérivés)</li>
+            <li>✨ Ajout : page à propos (histoire en trois temps, pourquoi le nom, frise des logos, l'Hokage)</li>
+            <li>♻️ Refactor : image Docker nginx statique avec 404 réelle</li>
+            <li>✨ Ajout : page contact (adresse, horaires, coordonnées, réservation JDR)</li>
+            <li>🐛 Fix : nginx — un seul <code>Cache-Control</code> par réponse, <code>no-cache</code> sur tout le HTML, en-têtes de sécurité ajoutés</li>
+            <li>✨ Ajout : logos servis en 256&nbsp;px par srcset (écrans à forte densité), image Open Graph, position de lecture du générique conservée au retour sur la page</li>
+            <li>♻️ Refactor : passe Lighthouse — montage des logos réduit (133&nbsp;Ko → 47&nbsp;Ko), LCP 4,0&nbsp;s → 2,6&nbsp;s</li>
+            <li>📝 Décision : Lighthouse mobile mesuré le 2026-09-08 — accueil perf 95 / a11y 100 / bonnes pratiques 100 / SEO 100 ; la carte 98/100/100/100</li>
+          </ul>
+        </article>
+        <article class="entree">
+          <h3>2026-09-07</h3>
+          <ul>
+            <li>📝 Décisions : site 100&nbsp;% statique (pas de quiz/points/admin), français seul, pas de vidéo, direction visuelle « le générique » façon Marvel Studios (intensité I), illustrations générées (pas de fausses photos), stack Astro 5 + GSAP + nginx (gabarit dentalexpert/xenia), port dev 4332, dépôt GitHub public</li>
+            <li>✨ Ajout : spec de design (<code>docs/superpowers/specs/</code>) et plan d'implémentation en 17 tâches (<code>docs/superpowers/plans/</code>)</li>
+            <li>✨ Ajout : projet Astro 5 scaffoldé (port 4332, sitemap, dev toolbar désactivée), première version du contrôleur <code>scripts/verifier.mjs</code></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="problemes">
+      <h2>⚠️ Problèmes connus</h2>
+      <ul class="puces">
+        <li>Carte de démonstration (<code>DEMO = true</code> dans <code>src/data/carte.ts</code>) : noms, descriptions et prix fictifs. Le garde <code>PROD=1</code> de <code>scripts/verifier.mjs</code> refuse la mise en production tant qu'elle reste active.</li>
+        <li>Logos mensuels découpés des planches en 160/256&nbsp;px : suffisants en mouvement (générique, frise), à remplacer par les fichiers HD de la cliente si un usage plus grand est envisagé.</li>
+        <li>Photos manquantes (events passés, le lieu) : remplacées par des illustrations et des logos en attendant.</li>
+        <li>E-mail public à confirmer : le site affiche <code>contact@dailypopsociety.be</code> (adresse du domaine), le brief donne une adresse Hotmail.</li>
+        <li>Formulation du sens du nom (<code>POURQUOI_LE_NOM</code>, <code>src/data/histoire.ts</code>) à valider par la cliente (Rachel) : absente du brief, marquée « À CONFIRMER CLIENTE » dans le code.</li>
+        <li>Hébergeur à nommer dans les mentions légales (mention d'attente affichée actuellement).</li>
+        <li>Coordonnées GPS et lien Messenger absents de la page contact (Messenger n'est mentionné qu'en texte, sans lien cliquable).</li>
+        <li>Réservation du domaine <code>dailypopsociety.be</code> à faire côté cliente.</li>
+        <li>Dates des soirées d'octobre à décembre à confirmer (Tim Burton, Noël : <code>aPlanifier: true</code> dans <code>src/data/events.ts</code>).</li>
+        <li>⚠️ À vérifier avant livraison définitive : certaines figurines visibles dans l'illustration générée « comptoir » pourraient rappeler des personnages sous droits — à signaler à la cliente et à repasser en revue.</li>
+      </ul>
+      <div class="note">⚠️ <strong>Sécurité de l'ancien site</strong> : la base Firebase Realtime Database du site Netlify actuel est lisible et modifiable sans authentification depuis le navigateur (noms, e-mails, points et drapeau admin des clients). Le nouveau site ne stocke aucune donnée client, mais l'ancien doit être coupé et le projet Firebase supprimé ou verrouillé à la mise en production.</div>
+    </section>
+
+    <section id="deploiement">
+      <h2>☁️ Déploiement</h2>
+      <ul class="puces">
+        <li>Maquette : en cours, à déployer sur <code>dailypopsociety.chris-ia.com</code> (Coolify maquettes, via <code>/deploy-maquette</code>). URL et identifiants de redéploiement à ajouter ici une fois la mise en ligne faite.</li>
+        <li>Image Docker nginx (2 étages : build Node 22 + service nginx alpine) testée en local : 404 réelle, caches (<code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML), en-têtes de sécurité de base.</li>
+        <li>Dépôt : GitHub public, <code>cltconcept/dailypopsociety-website</code> (même convention que <code>dentalexpert-website</code> et <code>xenia-website</code>).</li>
+        <li>Production (plus tard) : réserver <code>dailypopsociety.be</code>, configurer le DNS, puis couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).</li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<footer class="bas">Daily Pop Society — documentation générée le 2026-09-08.</footer>
+</body></html>
