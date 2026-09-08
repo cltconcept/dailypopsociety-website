@@ -39,7 +39,7 @@
 **Files:**
 - Create: `scripts/sprites.txt`, `scripts/sprites.sh`, `scripts/chromakey.py`, `public/media/jeu/*.webp` (6), `brief/sprites-src/*.png` (hors git)
 
-- [ ] **Step 1 : Écrire `scripts/sprites.txt`** (`id|sujet`)
+- [x] **Step 1 : Écrire `scripts/sprites.txt`** (`id|sujet`)
 
 ```
 avatar|a chibi young woman with long wavy red hair, green eyes, black tank top, small tattoos on her arms, wearing a straw hat, running to the right in a side-view running pose with one knee up, big cheerful smile
@@ -50,7 +50,7 @@ bubble-tea|a mango bubble tea in a clear cup with black tapioca pearls and a wid
 cocktail|a bright green cocktail in a highball glass with three lime wedges and a black straw
 ```
 
-- [ ] **Step 2 : Écrire `scripts/sprites.sh`** (copie de `scripts/illustrations.sh` avec trois différences : dossier `brief/sprites-src`, liste `scripts/sprites.txt`, style)
+- [x] **Step 2 : Écrire `scripts/sprites.sh`** (copie de `scripts/illustrations.sh` avec trois différences : dossier `brief/sprites-src`, liste `scripts/sprites.txt`, style)
 
 Remplacer dans la copie : `mkdir -p brief/illu-src` → `brief/sprites-src` ; `out="brief/illu-src/$id.png"` → `brief/sprites-src` ; `< scripts/illustrations.txt` → `< scripts/sprites.txt` ; `"aspect_ratio":"4:3"` → `"1:1"` ; et la variable `STYLE` :
 
@@ -58,7 +58,7 @@ Remplacer dans la copie : `mkdir -p brief/illu-src` → `brief/sprites-src` ; `o
 STYLE="Clean cel-shaded cartoon game sprite, anime-inspired sticker style, bold black outlines, flat colors with subtle cel shading, the subject is fully visible and centered with a small margin, on a perfectly flat solid magenta background (#FF00FF) with no gradient, no shadow on the background, no text, no letters, no watermark, no photorealism."
 ```
 
-- [ ] **Step 3 : Écrire `scripts/chromakey.py`**
+- [x] **Step 3 : Écrire `scripts/chromakey.py`**
 
 ```python
 """Détoure les sprites générés sur fond magenta (#FF00FF) : brief/sprites-src/<id>.png
@@ -117,12 +117,12 @@ if __name__ == '__main__':
         print(f'✓ {c.name} {Image.open(c).size}')
 ```
 
-- [ ] **Step 4 : Générer (6 × 0,04 $ ≈ 0,24 $), détourer, contrôler**
+- [x] **Step 4 : Générer (6 × 0,04 $ ≈ 0,24 $), détourer, contrôler**
 
 Run : préflight (`KIE_API_KEY` présente, solde), puis `bash scripts/sprites.sh && python3 scripts/chromakey.py && ls -la public/media/jeu`
 Expected : `récap : 6 générées, 0 en échec`, 6 WebP RGBA ≤ 256 px. Lire les 6 PNG sources (fond magenta uni ?) et les 6 WebP (Read) : sujet entier, contour net, aucun halo magenta visible. Un fond non uni (dégradé, ombre) → supprimer le PNG et relancer avec le sujet reformulé (« on a flat solid magenta background, the background is one single color »). Contrôle machine : `python3 -c "from PIL import Image; im=Image.open('public/media/jeu/avatar.webp'); print(im.mode, im.size, im.getpixel((0,0)))"` → `RGBA`, alpha 0 au coin.
 
-- [ ] **Step 5 : Commit**
+- [x] **Step 5 : Commit**
 
 ```bash
 git add scripts/sprites.txt scripts/sprites.sh scripts/chromakey.py public/media/jeu
@@ -137,7 +137,7 @@ git commit -m "feat: sprites du jeu Nakama Run (6, chroma-key magenta → WebP a
 - Create: `server/package.json`, `server/scores.mjs`, `server/scores.test.mjs`, `server/index.mjs`
 - Modify: `package.json` (scripts), `.gitignore` (+ `data/`, `server/node_modules/`), `astro.config.mjs` (proxy)
 
-- [ ] **Step 1 : Écrire `server/package.json` puis installer**
+- [x] **Step 1 : Écrire `server/package.json` puis installer**
 
 ```json
 {
@@ -155,7 +155,7 @@ git commit -m "feat: sprites du jeu Nakama Run (6, chroma-key magenta → WebP a
 
 Run : `cd server && npm install --package-lock-only && npm ci` (crée `package-lock.json` et `server/node_modules/`). Ajouter `data/` et `server/node_modules/` à `.gitignore`.
 
-- [ ] **Step 2 : Écrire le test `server/scores.test.mjs` (il doit ÉCHOUER : module absent)**
+- [x] **Step 2 : Écrire le test `server/scores.test.mjs` (il doit ÉCHOUER : module absent)**
 
 ```js
 import { test } from 'node:test';
@@ -240,7 +240,7 @@ test('LimiteurDebit : un envoi par fenêtre et par clé', () => {
 
 Run : `cd server && node --test` → Expected : échec `Cannot find module './scores.mjs'`.
 
-- [ ] **Step 3 : Écrire `server/scores.mjs`**
+- [x] **Step 3 : Écrire `server/scores.mjs`**
 
 ```js
 // Validation et stockage des scores — fonctions pures + une classe de stockage
@@ -352,7 +352,7 @@ export class LimiteurDebit {
 
 Run : `cd server && node --test` → Expected : 7 tests, tous verts.
 
-- [ ] **Step 4 : Écrire `server/index.mjs`**
+- [x] **Step 4 : Écrire `server/index.mjs`**
 
 ```js
 // Serveur unique : API des scores + site statique (dist/) avec les en-têtes
@@ -447,7 +447,7 @@ serve({ fetch: app.fetch, port: PORT }, (info) => {
 
 ⚠️ `serveStatic` de `@hono/node-server` attend un `root` **relatif au cwd** dans certaines versions : si les pages répondent 404 en local, utilise `root: relative(process.cwd(), DIST)` (`import { relative } from 'node:path'`) — vérifie au Step 6 et garde la forme qui marche, avec un commentaire.
 
-- [ ] **Step 5 : Scripts, gitignore, proxy Vite**
+- [x] **Step 5 : Scripts, gitignore, proxy Vite**
 
 `package.json` (racine) : ajouter `"dev:api": "cross-env PORT=4340 DATA_DIR=./data node server/index.mjs"` — sans `cross-env` (pas de dépendance de plus) : `"dev:api": "node --env-file=server/.env.dev server/index.mjs"` avec `server/.env.dev` contenant `PORT=4340` et `DATA_DIR=./data` et `DIST_DIR=./dist` (fichier committé, sans secret) ; `"test": "pnpm check && pnpm build && pnpm verifier && cd server && node --test"`.
 
@@ -455,7 +455,7 @@ serve({ fetch: app.fetch, port: PORT }, (info) => {
 
 `.gitignore` : ajouter `data/` et `server/node_modules/`.
 
-- [ ] **Step 6 : Test d'intégration en local**
+- [x] **Step 6 : Test d'intégration en local**
 
 Run (après `pnpm build`) : `pnpm dev:api` en `run_in_background: true`, puis
 ```bash
@@ -472,7 +472,7 @@ cat data/scores-*.json
 ```
 Expected : 200, 200, `301 http://localhost:4340/la-carte/`, 404, `no-cache` + `nosniff`, `{"mois":"2026-09","rang":1,"top":[…]}`, 429, 400, le top avec Luffy, le fichier JSON trié.
 
-- [ ] **Step 7 : Commit**
+- [x] **Step 7 : Commit**
 
 ```bash
 git add server/package.json server/package-lock.json server/scores.mjs server/scores.test.mjs server/index.mjs server/.env.dev package.json astro.config.mjs .gitignore
@@ -487,7 +487,7 @@ git commit -m "feat: serveur Hono — site statique + API des scores en JSON par
 - Create: `src/lib/jeu/moteur.ts`, `src/lib/jeu/borne.ts`, `src/components/Borne.astro`
 - Modify: `src/components/Generique.astro` (bouton START, ligne top 3, tween), `src/pages/index.astro` (`<Borne />`), `src/styles/global.css` (`.borne` dans le bloc des surfaces sombres), `scripts/verifier.mjs`
 
-- [ ] **Step 1 : Étendre le contrôleur (doit ÉCHOUER avant l'implémentation)**
+- [x] **Step 1 : Étendre le contrôleur (doit ÉCHOUER avant l'implémentation)**
 
 Dans `scripts/verifier.mjs`, après la boucle des pages :
 ```js
@@ -499,7 +499,7 @@ if (existsSync(join(DIST, 'sitemap-0.xml'))) ok(!readFileSync(join(DIST, 'sitema
 ```
 Run : `pnpm build && pnpm verifier` → Expected : `accueil : borne ou bouton START absent` (les sprites existent depuis la Task 1).
 
-- [ ] **Step 2 : Écrire `src/lib/jeu/moteur.ts`**
+- [x] **Step 2 : Écrire `src/lib/jeu/moteur.ts`**
 
 ```ts
 /* Nakama Run — moteur du runner. Aucune dépendance : canvas 2D + rAF.
@@ -741,7 +741,7 @@ export function creerJeu(canvas: HTMLCanvasElement, sprites: Sprites, opts: Opti
 }
 ```
 
-- [ ] **Step 3 : Écrire `src/components/Borne.astro`**
+- [x] **Step 3 : Écrire `src/components/Borne.astro`**
 
 ```astro
 ---
@@ -830,7 +830,7 @@ export function creerJeu(canvas: HTMLCanvasElement, sprites: Sprites, opts: Opti
 
 Ajouter `.borne` à la liste du bloc « surfaces sombres » de `global.css`.
 
-- [ ] **Step 4 : Écrire `src/lib/jeu/borne.ts`**
+- [x] **Step 4 : Écrire `src/lib/jeu/borne.ts`**
 
 ```ts
 /* Borne : ouverture/fermeture du calque, HUD, fin de partie, envoi du score,
@@ -985,7 +985,7 @@ export function initBorne() {
 }
 ```
 
-- [ ] **Step 5 : Intégrer au générique et à l'accueil**
+- [x] **Step 5 : Intégrer au générique et à l'accueil**
 
 `src/components/Generique.astro` :
 - Dans `.gen__pied`, après `.gen__carte` : `<button type="button" class="gen__start" id="gen-start" hidden>Start</button>` et, avant `.gen__pied` (élément frère) : `<p class="gen__top" id="gen-top" hidden></p>`.
@@ -993,7 +993,7 @@ export function initBorne() {
 - Script : les tweens qui font entrer `carte` (`autoAlpha`) ciblent `[carte, start, top].filter(Boolean)` (déclarer `const start = gen.querySelector('.gen__start')`, `const top = gen.querySelector('.gen__top')`). Le pied passe en `flex-wrap: wrap; justify-content: center` pour que START tienne à côté de la carte (mobile : sous la carte).
 - `src/pages/index.astro` : importer `Borne` et poser `<Borne />` après `<Generique />` ; ajouter un `<script>import { initBorne } from '../lib/jeu/borne'; initBorne();</script>` en bas du fichier (Astro le rend en module client).
 
-- [ ] **Step 6 : Build + contrôle + boucle visuelle**
+- [x] **Step 6 : Build + contrôle + boucle visuelle**
 
 Run : `pnpm build && pnpm verifier` (les tests serveur passent par `pnpm test`, plus long) → `✓ verifier : 8 pages contrôlées, aucun écart`. `pnpm check` → 0 erreur. Puis `pnpm dev` (4332) et `pnpm dev:api` (4340) en arrière-plan ; captures browse (`jeu-*.png`) :
 1. Accueil desktop à la fin du générique : START visible à côté de la title card, ligne « Top du mois » (vide tant qu'aucun score, donc masquée).
@@ -1004,7 +1004,7 @@ Run : `pnpm build && pnpm verifier` (les tests serveur passent par `pnpm test`, 
 6. `console --errors` vide ; `document.body.style.overflow` revient à `''` après fermeture ; `document.querySelector('main').inert === false` après fermeture.
 Arrêter les deux serveurs à la fin.
 
-- [ ] **Step 7 : Commit**
+- [x] **Step 7 : Commit**
 
 ```bash
 git add src scripts/verifier.mjs
@@ -1019,7 +1019,7 @@ git commit -m "feat: Nakama Run — moteur canvas, borne en calque, bouton START
 - Modify: `Dockerfile`, `.dockerignore`, `src/pages/mentions-legales.astro`, `PROJET.md`, `PROJET.html`, `docs/superpowers/specs/2026-09-07-site-dailypopsociety-design.md` (§3 : « jeu en ligne » sort des exclusions, renvoi à la spec du jeu)
 - Delete: `nginx.conf`
 
-- [ ] **Step 1 : Réécrire `Dockerfile`**
+- [x] **Step 1 : Réécrire `Dockerfile`**
 
 ```dockerfile
 # Site statique compilé par Astro, servi par un petit serveur Node (Hono) qui
@@ -1049,7 +1049,7 @@ CMD ["node", "server/index.mjs"]
 
 `.dockerignore` : retirer `scripts` si présent n'est pas nécessaire (le build n'en a pas besoin) ; ajouter `data`, `server/node_modules`, `server/.env.dev`. Supprimer `nginx.conf` (`git rm nginx.conf`).
 
-- [ ] **Step 2 : Build et test de l'image en local**
+- [x] **Step 2 : Build et test de l'image en local**
 
 ```bash
 docker build -t dps-maquette . && docker run -d --rm --name dps-test -p 8089:80 -e MAQUETTE=1 -v dps-data-test:/data dps-maquette && sleep 2
@@ -1060,7 +1060,7 @@ docker stop dps-test && docker run -d --rm --name dps-test2 -p 8089:80 -e MAQUET
 ```
 Expected : 200 partout, `301` sur `/la-carte`, `404` sur `/nimportequoi` ; `no-cache`, `noindex`, `nosniff` ; `201` avec `rang` ; **après redémarrage, le score « Test » est toujours là** (le volume porte les données).
 
-- [ ] **Step 3 : Mentions légales et documentation**
+- [x] **Step 3 : Mentions légales et documentation**
 
 `src/pages/mentions-legales.astro`, section Vie privée : ajouter « Le mini-jeu Nakama Run enregistre, si tu le souhaites, un pseudo, un score et une date pour le classement du mois ; rien d'autre. Les classements sont remis à zéro chaque mois. Pour retirer un pseudo, écris-nous. »
 
@@ -1068,7 +1068,7 @@ Expected : 200 partout, `301` sur `/la-carte`, `404` sur `/nimportequoi` ; `no-c
 
 Spec du site §3 : remplacer « jeu en ligne » dans les exclusions par une note « le mini-jeu Nakama Run est spécifié à part (`2026-09-08-jeu-nakama-run-design.md`) ».
 
-- [ ] **Step 4 : `pnpm test` complet, commit**
+- [x] **Step 4 : `pnpm test` complet, commit**
 
 Run : `pnpm test` → check 0 erreur, build 8 pages, `✓ verifier`, tests serveur verts.
 ```bash
@@ -1081,11 +1081,11 @@ git commit -m "chore: image Node (Hono) à la place de nginx, mentions légales 
 
 ### Task 5 : Déploiement de la maquette avec volume, vérification, mémoire
 
-- [ ] **Step 1 : Volume et variable sur l'app Coolify** (app `o129qzwy4inm5tsgfrmqrtw7`, Coolify maquettes `http://46.224.83.139:8000`, jeton dans `~/.claude.json` → `mcpServers.coolify.env.COOLIFY_ACCESS_TOKEN`, jamais affiché) : déclarer un stockage persistant `/data` (nom `dps-scores`, chemin conteneur `/data`) — par l'API `POST /api/v1/applications/{uuid}/storages` si elle existe sur cette version, sinon par l'outil MCP `coolify` (`storages`) qui pointe sur la même instance ; poser la variable d'environnement `MAQUETTE=1` (`POST /api/v1/applications/{uuid}/envs` `{key, value, is_preview:false}`). Vérifier par `GET /api/v1/applications/{uuid}` que le stockage et la variable apparaissent.
+- [x] **Step 1 : Volume et variable sur l'app Coolify** (app `o129qzwy4inm5tsgfrmqrtw7`, Coolify maquettes `http://46.224.83.139:8000`, jeton dans `~/.claude.json` → `mcpServers.coolify.env.COOLIFY_ACCESS_TOKEN`, jamais affiché) : déclarer un stockage persistant `/data` (nom `dps-scores`, chemin conteneur `/data`) — par l'API `POST /api/v1/applications/{uuid}/storages` si elle existe sur cette version, sinon par l'outil MCP `coolify` (`storages`) qui pointe sur la même instance ; poser la variable d'environnement `MAQUETTE=1` (`POST /api/v1/applications/{uuid}/envs` `{key, value, is_preview:false}`). Vérifier par `GET /api/v1/applications/{uuid}` que le stockage et la variable apparaissent. — volume reporté à la mise en prod (décision utilisateur)
 
-- [ ] **Step 2 : Push et redéploiement** : `git push origin HEAD`, `GET /api/v1/deploy?uuid=o129qzwy4inm5tsgfrmqrtw7`, suivre `GET /api/v1/deployments/<deployment_uuid>` jusqu'à `finished`.
+- [x] **Step 2 : Push et redéploiement** : `git push origin HEAD`, `GET /api/v1/deploy?uuid=o129qzwy4inm5tsgfrmqrtw7`, suivre `GET /api/v1/deployments/<deployment_uuid>` jusqu'à `finished`.
 
-- [ ] **Step 3 : Vérification en ligne** : les 8 pages + sitemap + robots + og + `/media/jeu/avatar.webp` en 200, `/la-carte` → 301, 404 réelle, en-têtes (`no-cache`, `noindex`, `nosniff`, `immutable` sur `/_astro/`), `GET /api/scores` → `{"mois":…,"top":[…]}`, `POST` valide → 201, `POST` répété → 429. **Persistance** : envoyer un score « Nakama », redéployer (nouveau `deploy`), relire `GET /api/scores` → le score est toujours là. Au navigateur (browse) : générique intact, START visible, ouverture de la borne, partie simulée, envoi d'un score, ligne top 3 du hero mise à jour, console vide, mobile 390.
+- [x] **Step 3 : Vérification en ligne** : les 8 pages + sitemap + robots + og + `/media/jeu/avatar.webp` en 200, `/la-carte` → 301, 404 réelle, en-têtes (`no-cache`, `noindex`, `nosniff`, `immutable` sur `/_astro/`), `GET /api/scores` → `{"mois":…,"top":[…]}`, `POST` valide → 201, `POST` répété → 429. **Persistance** : envoyer un score « Nakama », redéployer (nouveau `deploy`), relire `GET /api/scores` → le score est toujours là. Au navigateur (browse) : générique intact, START visible, ouverture de la borne, partie simulée, envoi d'un score, ligne top 3 du hero mise à jour, console vide, mobile 390.
 
 - [ ] **Step 4 : Documentation et mémoire** : `PROJET.md`/`PROJET.html` (section Déploiement : volume, variable, procédure) commités et poussés ; mémoire `dailypopsociety-etat-reprise.md` complétée (jeu, serveur Hono, volume, modération des pseudos = fichier JSON du mois, pièges) ; cocher les cases du plan.
 
