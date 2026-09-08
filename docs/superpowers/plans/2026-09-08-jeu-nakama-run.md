@@ -1087,7 +1087,7 @@ git commit -m "chore: image Node (Hono) à la place de nginx, mentions légales 
 
 - [x] **Step 3 : Vérification en ligne** : les 8 pages + sitemap + robots + og + `/media/jeu/avatar.webp` en 200, `/la-carte` → 301, 404 réelle, en-têtes (`no-cache`, `noindex`, `nosniff`, `immutable` sur `/_astro/`), `GET /api/scores` → `{"mois":…,"top":[…]}`, `POST` valide → 201, `POST` répété → 429. **Persistance** : envoyer un score « Nakama », redéployer (nouveau `deploy`), relire `GET /api/scores` → le score est toujours là. Au navigateur (browse) : générique intact, START visible, ouverture de la borne, partie simulée, envoi d'un score, ligne top 3 du hero mise à jour, console vide, mobile 390.
 
-- [ ] **Step 4 : Documentation et mémoire** : `PROJET.md`/`PROJET.html` (section Déploiement : volume, variable, procédure) commités et poussés ; mémoire `dailypopsociety-etat-reprise.md` complétée (jeu, serveur Hono, volume, modération des pseudos = fichier JSON du mois, pièges) ; cocher les cases du plan.
+- [x] **Step 4 : Documentation et mémoire** : `PROJET.md`/`PROJET.html` (section Déploiement : volume, variable, procédure) commités et poussés ; mémoire `dailypopsociety-etat-reprise.md` complétée (jeu, serveur Hono, volume, modération des pseudos = fichier JSON du mois, pièges) ; cocher les cases du plan.
 
 ---
 
