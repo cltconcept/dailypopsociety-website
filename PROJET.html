@@ -108,13 +108,13 @@ pnpm build        # dist/
 pnpm test         # check + build + contrôle de dist/
 python scripts/logos.py            # regénère les logos + src/data/logos.ts (planches dans brief/, gitignoré)
 KIE_API_KEY=... bash scripts/illustrations.sh && node scripts/webp.mjs   # illustrations manquantes (payant : ~0,04 $/image)
-PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la carte de démo est active)</code></pre>
+PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO` vaut true dans src/data/carte.ts)</code></pre>
     </section>
 
     <section id="architecture">
       <h2>🗂 Architecture</h2>
       <ul class="puces">
-        <li><code>src/data/</code> — la seule source de contenu : <code>site.ts</code> (identité, nav, licence du mois), <code>horaires.ts</code> (créneaux + conversion JSON-LD), <code>carte.ts</code> (carte <strong>DE DÉMONSTRATION</strong>, drapeau <code>DEMO</code>), <code>events.ts</code> (une seule liste d'événements datée, jamais trois listes séparées), <code>galerie.ts</code> (thèmes), <code>logos.ts</code> (<strong>généré</strong>, ne pas éditer à la main), <code>histoire.ts</code> (les trois étapes + le sens du nom)</li>
+        <li><code>src/data/</code> — la seule source de contenu : <code>site.ts</code> (identité, nav, licence du mois), <code>horaires.ts</code> (créneaux + conversion JSON-LD), <code>carte.ts</code> (la carte <strong>reprise de l'ancien site</strong> le 2026-09-08, drapeau <code>DEMO</code> désormais <code>false</code>), <code>events.ts</code> (une seule liste d'événements datée, jamais trois listes séparées), <code>galerie.ts</code> (thèmes), <code>logos.ts</code> (<strong>généré</strong>, ne pas éditer à la main), <code>histoire.ts</code> (les trois étapes + le sens du nom)</li>
         <li><code>src/lib/</code> — <code>illu.ts</code> (résolution des illustrations et des logos en visuels : src/srcset/alt, une seule implémentation), <code>jsonld.ts</code> (schéma <code>BarOrPub</code>), <code>motion.ts</code> (socle GSAP partagé aux sites vitrines : garde <code>prefers-reduced-motion</code>, seuil desktop 1024, chargement différé), <code>dates.ts</code> (<code>moisLisible</code>, une seule implémentation pour la frise et la galerie)</li>
         <li><code>src/components/</code> — <code>Generique</code> (hero signature : épinglé et scrubé au scroll sur desktop, intro courte sur mobile, statique sans JS/reduced-motion), <code>TitleCard</code> (ouverture de page), <code>Case</code> (case de comics), <code>EventCard</code>, <code>FriseLogos</code> (frise horizontale des logos par année, scroll natif), <code>Horaires</code>, <code>Header</code>, <code>Footer</code>, <code>LienExterne</code> (lien externe accessible : <code>noopener noreferrer</code> + mention lecteur d'écran)</li>
         <li><code>src/layouts/Base.astro</code> — SEO, Open Graph, JSON-LD, boot des reveals</li>
@@ -158,7 +158,8 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
         <tr><td>SEO, Open Graph, JSON-LD, passe Lighthouse</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>Image Docker nginx testée en local</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>Maquette en ligne (dailypopsociety.chris-ia.com)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
-        <tr><td>Vraie carte, photos, logos HD (cliente)</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
+        <tr><td>Vraie carte (reprise de l'ancien site, à relire par Rachel)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
+        <tr><td>Photos, logos HD (cliente)</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
         <tr><td>Mise en production dailypopsociety.be + coupure Netlify/Firebase</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
       </table></div>
     </section>
@@ -169,6 +170,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
         <article class="entree">
           <h3>2026-09-08</h3>
           <ul>
+            <li>✨ Ajout : vraie carte transcrite depuis l'ancien site, <code>DEMO</code> désactivé — 8 catégories, 70 items, tous les prix repris de <code>brief/site-actuel/</code> (cocktails signature, cocktails sans alcool, bubble tea &amp; softs, bières, boissons chaudes, starters, burgers, desserts) ; <code>desc</code> devenu facultatif (l'ancien site ne décrit ni le Seven Up ni le thé) ; image Open Graph regénérée sans la capsule du header</li>
             <li>🐛 Fix : dernière passe — <code>sizes</code> des bandes du générique aligné sur son <code>clamp</code> (la 256 ne part plus sur mobile), montage HD servi au desktop dense (deux fichiers, un seul téléchargé), events passés sans faux visuels (cartes de texte seul), garde de cohérence sur la licence du mois, JSON-LD <code>Event</code> en deux périodes réelles, image Open Graph intemporelle, maquette <code>noindex</code> côté nginx, alignements et titres de section</li>
             <li>✨ Ajout : contrôle du <code>canonical</code> et des liens internes dans <code>scripts/verifier.mjs</code></li>
             <li>✨ Ajout : socle visuel (tokens, layout SEO/JSON-LD, header capsule, footer, horaires, page 404)</li>
@@ -211,7 +213,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
     <section id="problemes">
       <h2>⚠️ Problèmes connus</h2>
       <ul class="puces">
-        <li>Carte de démonstration (<code>DEMO = true</code> dans <code>src/data/carte.ts</code>) : noms, descriptions et prix fictifs. Le garde <code>PROD=1</code> de <code>scripts/verifier.mjs</code> refuse la mise en production tant qu'elle reste active.</li>
+        <li>Carte transcrite depuis l'ancien site (<code>src/data/carte.ts</code>, 2026-09-08) : prix et libellés à faire relire par Rachel. Deux points appellent sa réponse — le « Custom ton burger » n'a <strong>aucun prix de base</strong> sur l'ancien site (affiché « à composer »), et la carte éphémère du mois y est absente (les trois créations affichées restent les nôtres, marquées « À CONFIRMER CLIENTE » dans le code).</li>
         <li>Logos mensuels découpés des planches en 160/256&nbsp;px : suffisants en mouvement (générique, frise), à remplacer par les fichiers HD de la cliente si un usage plus grand est envisagé.</li>
         <li>Photos manquantes (events passés, le lieu) : remplacées par des illustrations et des logos en attendant.</li>
         <li>E-mail public à confirmer : le site affiche <code>contact@dailypopsociety.be</code> (adresse du domaine), le brief donne une adresse Hotmail.</li>
@@ -241,7 +243,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
       <ol class="puces">
         <li>Réserver <code>dailypopsociety.be</code> et configurer le DNS.</li>
         <li>Nommer l'hébergeur dans les mentions légales (<code>src/pages/mentions-legales.astro</code>).</li>
-        <li>Passer <code>DEMO = false</code> dans <code>src/data/carte.ts</code> avec la vraie carte — le contrôleur refuse la mise en production sinon (<code>PROD=1 pnpm verifier</code>).</li>
+        <li>✅ Fait le 2026-09-08 : <code>DEMO = false</code> dans <code>src/data/carte.ts</code>, la vraie carte est en place — reste à la faire relire par Rachel avant la mise en ligne.</li>
         <li>⚠️ <strong>Retirer les <code>add_header X-Robots-Tag "noindex" always;</code> de <code>nginx.conf</code></strong> (le bloc <code>server</code> + les trois <code>location</code>) : ils empêchent l'indexation de la MAQUETTE, ils interdiraient celle du vrai site. Chaque ligne porte le commentaire « MAQUETTE : à retirer en production ».</li>
         <li><code>PROD=1 pnpm verifier</code>, puis déployer.</li>
         <li>Couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).</li>

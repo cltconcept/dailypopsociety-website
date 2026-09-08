@@ -21,11 +21,11 @@ pnpm build        # dist/
 pnpm test         # check + build + contrôle de dist/
 python scripts/logos.py            # regénère les logos + src/data/logos.ts (planches dans brief/, gitignoré)
 KIE_API_KEY=... bash scripts/illustrations.sh && node scripts/webp.mjs   # illustrations manquantes (payant : ~0,04 $/image)
-PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la carte de démo est active)
+PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO` vaut true dans src/data/carte.ts)
 ```
 
 ## Architecture
-- `src/data/` — la seule source de contenu : `site.ts` (identité, nav, licence du mois), `horaires.ts` (créneaux + conversion JSON-LD), `carte.ts` (carte **DE DÉMONSTRATION**, drapeau `DEMO`), `events.ts` (une seule liste d'événements datée, jamais trois listes séparées), `galerie.ts` (thèmes), `logos.ts` (**généré**, ne pas éditer à la main), `histoire.ts` (les trois étapes + le sens du nom)
+- `src/data/` — la seule source de contenu : `site.ts` (identité, nav, licence du mois), `horaires.ts` (créneaux + conversion JSON-LD), `carte.ts` (la carte **reprise de l'ancien site** le 2026-09-08, drapeau `DEMO` désormais `false`), `events.ts` (une seule liste d'événements datée, jamais trois listes séparées), `galerie.ts` (thèmes), `logos.ts` (**généré**, ne pas éditer à la main), `histoire.ts` (les trois étapes + le sens du nom)
 - `src/lib/` — `illu.ts` (résolution des illustrations et des logos en visuels : src/srcset/alt, une seule implémentation), `jsonld.ts` (schéma `BarOrPub`), `motion.ts` (socle GSAP partagé aux sites vitrines : garde `prefers-reduced-motion`, seuil desktop 1024, chargement différé), `dates.ts` (`moisLisible`, une seule implémentation pour la frise et la galerie)
 - `src/components/` — `Generique` (hero signature : épinglé et scrubé au scroll sur desktop, intro courte sur mobile, statique sans JS/reduced-motion), `TitleCard` (ouverture de page), `Case` (case de comics), `EventCard`, `FriseLogos` (frise horizontale des logos par année, scroll natif), `Horaires`, `Header`, `Footer`, `LienExterne` (lien externe accessible : `noopener noreferrer` + mention lecteur d'écran)
 - `src/layouts/Base.astro` — SEO, Open Graph, JSON-LD, boot des reveals
@@ -62,11 +62,13 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 | SEO, Open Graph, JSON-LD, passe Lighthouse | ✅ Done | 2026-09-08 |
 | Image Docker nginx testée en local | ✅ Done | 2026-09-08 |
 | Maquette en ligne (dailypopsociety.chris-ia.com) | ✅ Done | 2026-09-08 |
-| Vraie carte, photos, logos HD (cliente) | 📋 Planned | — |
+| Vraie carte (reprise de l'ancien site, à relire par Rachel) | ✅ Done | 2026-09-08 |
+| Photos, logos HD (cliente) | 📋 Planned | — |
 | Mise en production dailypopsociety.be + coupure Netlify/Firebase | 📋 Planned | — |
 
 ## Journal des changements
 ### 2026-09-08
+- ✨ Ajout : vraie carte transcrite depuis l'ancien site, `DEMO` désactivé — 8 catégories, 70 items, tous les prix repris de `brief/site-actuel/` (cocktails signature, cocktails sans alcool, bubble tea & softs, bières, boissons chaudes, starters, burgers, desserts) ; `desc` devenu facultatif (l'ancien site ne décrit ni le Seven Up ni le thé) ; image Open Graph regénérée sans la capsule du header
 - 🐛 Fix : dernière passe — `sizes` des bandes du générique aligné sur son `clamp` (la 256 ne part plus sur mobile), montage HD servi au desktop dense (deux fichiers, un seul téléchargé), events passés sans faux visuels (cartes de texte seul), garde de cohérence sur la licence du mois, JSON-LD `Event` en deux périodes réelles, image Open Graph intemporelle, maquette `noindex` côté nginx, alignements et titres de section
 - ✨ Ajout : contrôle du `canonical` et des liens internes dans `scripts/verifier.mjs`
 - ✨ Ajout : socle visuel (tokens, layout SEO/JSON-LD, header capsule, footer, horaires, page 404)
@@ -100,7 +102,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 - ✨ Ajout : projet Astro 5 scaffoldé (port 4332, sitemap, dev toolbar désactivée), première version du contrôleur `scripts/verifier.mjs`
 
 ## Problèmes connus
-- Carte de démonstration (`DEMO = true` dans `src/data/carte.ts`) : noms, descriptions et prix fictifs. Le garde `PROD=1` de `scripts/verifier.mjs` refuse la mise en production tant qu'elle reste active.
+- Carte transcrite depuis l'ancien site (`src/data/carte.ts`, 2026-09-08) : prix et libellés à faire relire par Rachel. Deux points appellent sa réponse — le « Custom ton burger » n'a **aucun prix de base** sur l'ancien site (affiché « à composer »), et la carte éphémère du mois y est absente (les trois créations affichées restent les nôtres, marquées « À CONFIRMER CLIENTE » dans le code).
 - Logos mensuels découpés des planches en 160/256 px : suffisants en mouvement (générique, frise), à remplacer par les fichiers HD de la cliente si un usage plus grand est envisagé.
 - Photos manquantes (events passés, le lieu) : remplacées par des illustrations et des logos en attendant.
 - E-mail public à confirmer : le site affiche `contact@dailypopsociety.be` (adresse du domaine), le brief donne une adresse Hotmail.
@@ -124,7 +126,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 - **Checklist de mise en production** (dans l'ordre) :
   1. Réserver `dailypopsociety.be` et configurer le DNS.
   2. Nommer l'hébergeur dans les mentions légales (`src/pages/mentions-legales.astro`).
-  3. Passer `DEMO = false` dans `src/data/carte.ts` avec la vraie carte — le contrôleur refuse la mise en production sinon (`PROD=1 pnpm verifier`).
+  3. ✅ Fait le 2026-09-08 : `DEMO = false` dans `src/data/carte.ts`, la vraie carte est en place — reste à la faire relire par Rachel avant la mise en ligne.
   4. ⚠️ **Retirer les `add_header X-Robots-Tag "noindex" always;` de `nginx.conf`** (le bloc `server` + les trois `location`) : ils empêchent l'indexation de la MAQUETTE, ils interdiraient celle du vrai site. Chaque ligne porte le commentaire « MAQUETTE : à retirer en production ».
   5. `PROD=1 pnpm verifier`, puis déployer.
   6. Couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).

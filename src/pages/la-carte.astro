@@ -20,8 +20,11 @@ for (const c of CATEGORIES) {
   vus.add(c.slug);
 }
 ---
-<Base title="La carte — Daily Pop Society, bar pop culture à Charleroi" description="Cocktails à personnages, mocktails, bubble teas, cafés, starters, burgers signature et pâtisseries maison. Chaque mois, une carte éphémère inspirée de la licence à l'honneur.">
-  <TitleCard kicker="Chapitre 1 · La carte" variante="creme">Food. <em>Drinks.</em><br />Et une sauce qui a un nom.<Fragment slot="copy">Chaque boisson est créée d'après un personnage. Chaque mois, une licence prend le pouvoir sur la carte. Et oui, il y a des burgers.</Fragment></TitleCard>
+<Base title="La carte — Daily Pop Society, bar pop culture à Charleroi" description="Cocktails signature, cocktails sans alcool, bubble tea, bières, cafés, starters à partager, burgers et desserts maison. Chaque mois, une carte éphémère inspirée de la licence à l'honneur.">
+  {/* « Chaque boisson est créée d'après un personnage » a sauté avec l'arrivée
+      de la vraie carte : elle porte des Pepsi, des Spa et neuf bières belges.
+      La phrase ne vaut que pour les cocktails — c'est ce qu'elle dit désormais. */}
+  <TitleCard kicker="Chapitre 1 · La carte" variante="creme">Food. <em>Drinks.</em><br />Et une sauce qui a un nom.<Fragment slot="copy">Les cocktails sont créés d'après des personnages. Chaque mois, une licence prend le pouvoir sur la carte. Et oui, il y a des burgers.</Fragment></TitleCard>
 
   <nav class="ancres" aria-label="Catégories de la carte">
     <div class="container ancres__liste">
@@ -46,7 +49,7 @@ for (const c of CATEGORIES) {
         {EPHEMERE.items.map((it) => (
           <li class="eph__item">
             <p class="eph__nom">{it.nom}</p>
-            <p class="eph__desc">{it.desc}</p>
+            {it.desc && <p class="eph__desc">{it.desc}</p>}
             <p class="eph__prix">{it.prix}</p>
           </li>
         ))}
@@ -86,7 +89,9 @@ for (const c of CATEGORIES) {
                   <span class="ligne__points" aria-hidden="true"></span>
                   <span class="ligne__prix">{it.prix}</span>
                 </p>
-                <p class="ligne__desc">{it.desc}</p>
+                {/* Un Seven Up n'a pas de description sur l'ancien site, et un
+                    <p> vide creuse un blanc de 1,4 ligne que rien n'explique. */}
+                {it.desc && <p class="ligne__desc">{it.desc}</p>}
               </li>
             ))}
           </ul>
