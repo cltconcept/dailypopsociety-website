@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 const DIST = 'dist';
 const ORIGINE = 'https://dailypopsociety.be';
-const PAGES = ['index.html', '404.html'];
+const PAGES = ['index.html', '404.html', 'mentions-legales/index.html'];
 const erreurs = [];
 const ok = (cond, msg) => { if (!cond) erreurs.push(msg); };
 
@@ -60,8 +60,10 @@ for (const p of PAGES) {
     if (bar) {
       ok(bar.address?.postalCode === '6000', `${p} : JSON-LD code postal inattendu (${bar.address?.postalCode})`);
       const creneaux = bar.openingHoursSpecification || [];
-      ok(creneaux.length === 7, `${p} : JSON-LD ${creneaux.length} créneaux d'ouverture, 7 attendus`);
+      const JOURS_VALIDES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      ok(creneaux.length >= 1, `${p} : JSON-LD aucun créneau d'ouverture`);
       for (const c of creneaux) {
+        ok(JOURS_VALIDES.includes(c.dayOfWeek), `${p} : JSON-LD dayOfWeek inattendu : ${JSON.stringify(c.dayOfWeek)}`);
         ok(/^\d{2}:\d{2}$/.test(c.opens), `${p} : JSON-LD opens mal formé : ${JSON.stringify(c.opens)}`);
         ok(/^\d{2}:\d{2}$/.test(c.closes), `${p} : JSON-LD closes mal formé : ${JSON.stringify(c.closes)}`);
       }

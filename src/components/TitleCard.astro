@@ -1,0 +1,20 @@
+---
+/* Ouverture de page : un champ de couleur, un kicker, un titre condensé.
+   variante : bordeaux | bordeaux-sombre | noir | creme | blanc
+   letterbox : bandes noires cinéma (haut/bas) */
+interface Props {
+  kicker: string;
+  variante?: 'bordeaux' | 'bordeaux-sombre' | 'noir' | 'creme' | 'blanc';
+  letterbox?: boolean;
+  id?: string;
+}
+const { kicker, variante = 'bordeaux', letterbox = false, id } = Astro.props;
+---
+<section class:list={['tc', `tc--${variante}`, { letterbox }]} id={id}>
+  <div class="container">
+    <span class="kicker">{kicker}</span>
+    <h1 class="titre"><slot /></h1>
+    {Astro.slots.has('copy') && <p class="copy"><slot name="copy" /></p>}
+    {Astro.slots.has('actions') && <div class="actions"><slot name="actions" /></div>}
+  </div>
+</section>

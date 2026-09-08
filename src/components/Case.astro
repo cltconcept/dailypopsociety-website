@@ -1,0 +1,31 @@
+---
+import '@fontsource/bangers';
+/* Case de comics : bord noir, ombre bordeaux, image 4:3, onomatopée optionnelle.
+   Avec href → <a> cliquable entière ; sans → <article>. */
+interface Props {
+  titre: string;
+  texte?: string;
+  img?: string;
+  alt?: string;
+  sfx?: string;
+  tag?: string;
+  href?: string;
+  largeurs?: string; // srcset optionnel
+}
+const { titre, texte, img, alt = '', sfx, tag, href, largeurs } = Astro.props;
+const Tag = href ? 'a' : 'article';
+---
+<Tag class="case" href={href}>
+  {sfx && <span class="sfx" aria-hidden="true">{sfx}</span>}
+  {img && (
+    <div class="case__media">
+      <img src={img} srcset={largeurs} sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380px" alt={alt} width="960" height="720" loading="lazy" decoding="async" />
+    </div>
+  )}
+  <div class="case__body">
+    {tag && <span class="case__tag">{tag}</span>}
+    <h3 class="case__titre">{titre}</h3>
+    {texte && <p class="case__texte">{texte}</p>}
+    <slot />
+  </div>
+</Tag>

@@ -25,7 +25,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const og = new URL(image, Astro.site);
 /* Une page non indexée ne publie pas de données structurées : elles ne
    serviraient qu'à contredire le noindex. */
-const listeSchemas = noindex ? [] : (schemas ?? [schemaBar(og.toString())]);
+const listeSchemas = noindex ? [] : [schemaBar(og.toString()), ...(schemas ?? [])];
 /* `<` échappé : une chaîne de données ne doit jamais pouvoir fermer le <script>. */
 const enJson = (x: object) => JSON.stringify(x).replace(/</g, '\\u003c');
 ---

@@ -7,8 +7,8 @@
 
    SURFACES PAR JETONS — règle centrale de ce fichier :
    un composant ne connaît JAMAIS la couleur du fond sur lequel il tombe.
-   Il lit --txt / --txt-doux / --accent / --focus. Chaque champ de couleur
-   (title card sombre, section noire) redéfinit ces quatre jetons ; les
+   Il lit --txt / --txt-doux / --accent / --voix / --focus. Chaque champ de
+   couleur (title card sombre, section noire) redéfinit ces cinq jetons ; les
    composants n'ont donc aucune règle « .section--noir .machin ».
    Poser un nouveau fond sombre = ajouter sa classe au bloc « surfaces sombres ».
    ============================================================ */
@@ -27,6 +27,8 @@
   --txt: var(--noir);
   --txt-doux: var(--gris);
   --accent: var(--rouge);
+  /* --accent = la ponctuation (em, kicker, tag) ; --voix = l'écriture manuscrite et les prix */
+  --voix: var(--bdx);
   --focus: var(--rouge);
 
   --font-title: 'Anton', Impact, 'Arial Narrow', sans-serif;
@@ -64,7 +66,7 @@ html {
 body {
   margin: 0;
   font-family: var(--font-body);
-  color: var(--noir);
+  color: var(--txt);
   background: var(--blanc);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -76,6 +78,9 @@ ul, ol { padding: 0; list-style: none; }
 a { color: inherit; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+/* Le tabindex="-1" du <main> (cible du skip-link) ne doit pas dessiner un
+   contour autour de toute la page à chaque navigation. */
+main:focus { outline: none; }
 
 /* Réservé aux lecteurs d'écran (jamais display:none : il faut rester annoncé) */
 .sr-only {
@@ -88,14 +93,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   padding: 10px 16px; background: var(--noir); color: var(--blanc);
   font-weight: 700; text-decoration: none;
 }
-.skip-link:focus { top: 12px; }
+.skip-link:focus { top: calc(var(--nav-h) + 8px); }
 
 /* ===== Conteneurs ===== */
 .container { max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
 .container--narrow { max-width: var(--container-narrow); }
 .section { padding-block: var(--section-pad); }
 .section--creme { background: var(--creme); }
-.section--noir { background: var(--noir); color: var(--blanc); }
+.section--noir { background: var(--noir); color: var(--txt); }
 .section--trame {
   background-color: var(--creme);
   background-image: radial-gradient(rgba(14, 14, 14, 0.55) 0.8px, transparent 1px);
@@ -103,11 +108,22 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 /* ===== Surfaces sombres : elles ne changent QUE les quatre jetons ===== */
-.tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir {
+.tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir,
+.footer, .nav__capsule, .nav__menu {
   --txt: var(--blanc);
   --txt-doux: rgba(255, 255, 255, .78);
   --accent: var(--rose);
+  --voix: var(--rose);
   --focus: var(--rose);
+}
+/* ===== Surfaces claires posées sur fond sombre (une case blanche dans une
+   section noire) : elles retrouvent leurs jetons clairs. ===== */
+.case, .section--creme, .tc--creme, .tc--blanc {
+  --txt: var(--noir);
+  --txt-doux: var(--gris);
+  --accent: var(--rouge);
+  --voix: var(--bdx);
+  --focus: var(--rouge);
 }
 
 /* ===== Typographie ===== */
@@ -138,7 +154,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .copy strong { color: inherit; font-weight: 700; }
 .copy--center { margin-inline: auto; text-align: center; }
-.hand { font-family: var(--font-hand); font-size: 1.5em; color: var(--accent); line-height: 1.1; }
+.hand { font-family: var(--font-hand); font-size: 1.5em; color: var(--voix); line-height: 1.1; }
 .center { text-align: center; }
 
 /* ===== Boutons ===== */
@@ -173,9 +189,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 /* Centre du dégradé assombri (#9A2334 → #7F1F2D) pour que le rose des kickers
    et des accents reste au-dessus de 4,5:1 au point le plus clair du champ. */
-.tc--bordeaux { background: radial-gradient(ellipse at 50% 70%, #7F1F2D 0%, var(--bdx) 45%, var(--bdx-deep) 100%); color: var(--blanc); }
-.tc--bordeaux-sombre { background: linear-gradient(180deg, var(--bdx-deep), #2A0810); color: var(--blanc); }
-.tc--noir { background: var(--noir); color: var(--blanc); }
+.tc--bordeaux { background: radial-gradient(ellipse at 50% 70%, #7F1F2D 0%, var(--bdx) 45%, var(--bdx-deep) 100%); color: var(--txt); }
+.tc--bordeaux-sombre { background: linear-gradient(180deg, var(--bdx-deep), #2A0810); color: var(--txt); }
+.tc--noir { background: var(--noir); color: var(--txt); }
 .tc--creme {
   background-color: var(--creme);
   background-image: radial-gradient(rgba(14, 14, 14, 0.5) 0.8px, transparent 1px);
@@ -226,7 +242,7 @@ a.case:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--bdx
 .ligne { display: flex; align-items: baseline; gap: 10px; }
 .ligne__nom { font-weight: 700; }
 .ligne__points { flex: 1; border-bottom: 2px dotted var(--gris-ligne); transform: translateY(-5px); min-width: 24px; }
-.ligne__prix { font-family: var(--font-title); font-size: 1.15rem; color: var(--accent); letter-spacing: 0.04em; white-space: nowrap; }
+.ligne__prix { font-family: var(--font-title); font-size: 1.15rem; color: var(--voix); letter-spacing: 0.04em; white-space: nowrap; }
 
 /* ===== Transition douce entre sections (feuille arrondie) ===== */
 .feuille { position: relative; margin-top: -28px; border-radius: 28px 28px 0 0; z-index: 1; overflow: hidden; }

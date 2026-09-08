@@ -1,20 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import TitleCard from '../components/TitleCard.astro';
 ---
 <Base title="Page introuvable — Daily Pop Society" description="Cette page n'existe pas dans ce multivers. Retourne à l'accueil ou va voir la carte, les events et la galerie de Daily Pop Society à Charleroi." noindex>
-  <section class="tc tc--noir letterbox nf">
-    <div class="container">
-      <span class="kicker">Erreur 404</span>
-      <h1 class="titre">Cette page n'existe pas<br /><em>dans ce multivers.</em></h1>
-      <p class="copy">Mauvaise dimension, mauvaise URL. Repars de l'accueil, ou va directement voir ce qu'il se passe ce mois-ci.</p>
-      <div class="actions">
-        <a class="btn" href="/">Retour à l'accueil</a>
-        <a class="btn btn--ghost" href="/events/">Les events</a>
-      </div>
-    </div>
-  </section>
+  <TitleCard kicker="Erreur 404" variante="noir" letterbox>Cette page n'existe pas<br /><em>dans ce multivers.</em><Fragment slot="copy">Mauvaise dimension, mauvaise URL. Repars de l'accueil, ou va voir ce qu'il se passe ce mois-ci.</Fragment><Fragment slot="actions"><a class="btn" href="/">Retour à l'accueil</a><a class="btn btn--ghost" href="/events/">Les events</a></Fragment></TitleCard>
 </Base>
-<style>
-  /* Repli empilé : svh n'existe pas partout, vh reste le filet. */
-  .nf { min-height: 80vh; min-height: 80svh; display: flex; align-items: center; }
-</style>
