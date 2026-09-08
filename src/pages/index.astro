@@ -1,7 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import Generique from '../components/Generique.astro';
+import Case from '../components/Case.astro';
 import Horaires from '../components/Horaires.astro';
+import { IDENTITE, LICENCE_DU_MOIS } from '../data/site';
+
+const illu = (id: string) => ({
+  img: `/media/illu/${id}-960.webp`,
+  largeurs: `/media/illu/${id}-480.webp 480w, /media/illu/${id}-960.webp 960w, /media/illu/${id}-1440.webp 1440w`,
+});
 ---
 <Base title="Daily Pop Society — Bar pop culture à Charleroi" description="Food, drinks, fandom : cocktails à personnages, burgers, bubble teas, events mensuels, blind tests et JDR au cœur de Charleroi. Cosplay bienvenu, tout le temps.">
   <!-- Pré-paint : pose l'état « avant générique » AVANT le premier rendu (jamais de flash).
@@ -15,11 +22,72 @@ import Horaires from '../components/Horaires.astro';
     }
   </script>
   <Generique />
-  <section class="section feuille" style="background: var(--blanc)">
+
+  <!-- ===== CHAPITRE 1 : les trois cases ===== -->
+  <section class="section section--trame feuille chap">
     <div class="container">
-      <span class="kicker">Ouvertures</span>
-      <h2 class="titre titre--md">Quand passer <em>nous voir</em></h2>
-      <div style="margin-top: 28px"><Horaires /></div>
+      <span class="kicker">Chapitre 1</span>
+      <h2 class="titre titre--md">Food. Drinks. <em>Fandom.</em></h2>
+      <p class="copy">Ton repaire pop culture à Charleroi. On parle entre potes, on vient en costume quand on veut, et chaque mois une licence prend le pouvoir sur la carte.</p>
+      <div class="grille grille--3 chap__grille" data-reveal data-reveal-stagger>
+        <Case href="/la-carte/" tag="La carte" titre="Cocktails à personnages, burgers signature" texte="Bubble teas, mocktails, cafés, starters et pâtisseries : une carte qui change avec la licence du mois." sfx="Slurp !" alt="Illustration : un cocktail vert aux trois lames de citron vert" {...illu('cocktail-zoro')} />
+        <Case href="/events/" tag="Les events" titre="Une licence par mois, des soirées chaque semaine" texte="Blind test pop culture deux fois par mois, JDR sur réservation, animations le week-end." sfx="Pop !" alt="Illustration : un micro vintage sous un néon bordeaux" {...illu('blind-test')} />
+        <Case href="/a-propos/" tag="Le fandom" titre="Mangas, jeux, coin gaming, cosplay bienvenu" texte="Mangas, comics, jeux de société et coin gaming Switch / PS4 à dispo pour tous ceux qui consomment." sfx="Crunch !" alt="Illustration : deux manettes sur un canapé devant une étagère de mangas" {...illu('coin-gaming')} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LA LICENCE DU MOIS ===== -->
+  <section class="section section--noir letterbox mois">
+    <div class="container mois__grid">
+      <div>
+        <span class="kicker">Ce mois-ci</span>
+        <h2 class="titre">{LICENCE_DU_MOIS.nom}</h2>
+        <p class="copy">{LICENCE_DU_MOIS.accroche} Carte éphémère, déco, soirées : {LICENCE_DU_MOIS.dates}.</p>
+        <div class="actions"><a class="btn" href="/events/">Voir le programme</a></div>
+      </div>
+      <p class="mois__hand hand" aria-hidden="true">imaginé par Rachel, alias l'Hokage</p>
+    </div>
+  </section>
+
+  <!-- ===== HORAIRES + ADRESSE ===== -->
+  <section class="section ouv">
+    <div class="container ouv__grid">
+      <div>
+        <span class="kicker">Ouvertures</span>
+        <h2 class="titre titre--md">Quand passer <em>nous voir</em></h2>
+        <div style="margin-top: 28px"><Horaires /></div>
+      </div>
+      <div class="ouv__adresse">
+        <p class="ouv__rue">{IDENTITE.rue}<br />{IDENTITE.codePostal} {IDENTITE.ville}</p>
+        <p class="ouv__lieu">Au cœur de Charleroi, sur le quai. Terre-6000.</p>
+        <div class="actions">
+          <a class="btn btn--blanc" href={IDENTITE.itineraire} target="_blank" rel="noopener">Itinéraire</a>
+          <a class="link-arrow" href="/contact/">Nous contacter</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SCÈNE POST-GÉNÉRIQUE ===== -->
+  <section class="section section--noir post">
+    <div class="container container--narrow center">
+      <span class="kicker">Scène post-générique</span>
+      <h2 class="titre titre--md">Pourquoi Nakama's Coffee est devenu <em>Daily Pop Society</em></h2>
+      <p class="copy copy--center">Un café manga né en avril 2024, une communauté qui a grandi plus vite que les murs, et un nom qui devait s'ouvrir à toute la pop culture. L'histoire, en bas de la page, comme la scène cachée après le générique.</p>
+      <div class="actions actions--center"><a class="btn" href="/a-propos/">Lire l'histoire</a></div>
     </div>
   </section>
 </Base>
+
+<style>
+  .chap__grille { margin-top: 44px; }
+  .mois__grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; align-items: end; }
+  .mois__hand { justify-self: end; transform: rotate(-4deg); font-size: 1.9rem; }
+  .ouv__grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(32px, 6vw, 80px); align-items: start; }
+  .ouv__adresse { padding: 28px; border: var(--bord); box-shadow: var(--ombre-case); background: var(--creme); }
+  .ouv__rue { font-family: var(--font-title); font-size: 1.8rem; line-height: 1.05; text-transform: uppercase; }
+  .ouv__lieu { margin-top: 12px; color: var(--gris); }
+  .post .copy { margin-inline: auto; }
+  @media (max-width: 960px) { .mois__grid, .ouv__grid { grid-template-columns: 1fr; } .mois__hand { justify-self: start; } }
+</style>

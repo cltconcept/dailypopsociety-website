@@ -24,7 +24,9 @@ for (const p of PAGES) {
   const n = (html.match(/<h1[\s>]/g) || []).length;
   ok(n === 1, `${p} : ${n} <h1> (1 attendu)`);
   ok(!/TODO|Lorem ipsum|__[A-Z]+__|à confirmer|à compléter/i.test(html), `${p} : placeholder trouvé (TODO / Lorem / __X__ / à confirmer / à compléter)`);
-  for (const m of html.matchAll(/<img\b[^>]*>/g)) ok(/(^|\s)alt=/.test(m[0]), `${p} : <img> sans alt : ${m[0].slice(0, 80)}`);
+  // alt="" décoratif : Astro sérialise une valeur vide en attribut nu (`alt`
+  // sans `=`), HTML valide et équivalent à alt="" — la regex accepte les deux.
+  for (const m of html.matchAll(/<img\b[^>]*>/g)) ok(/(^|\s)alt(=|[\s>])/.test(m[0]), `${p} : <img> sans alt : ${m[0].slice(0, 80)}`);
 
   // Médias référencés : seules les URL de NOTRE origine se ramènent à un chemin
   // de dist/. Une URL externe (réseaux, maps) n'a rien à exister sur le disque.
