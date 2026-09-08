@@ -1,6 +1,21 @@
 ---
+import Base from '../layouts/Base.astro';
+import Horaires from '../components/Horaires.astro';
+import { IDENTITE } from '../data/site';
 ---
-<html lang="fr">
-  <head><meta charset="utf-8" /><title>Daily Pop Society</title><meta name="description" content="Bar pop culture à Charleroi." /></head>
-  <body><h1>Daily Pop Society</h1></body>
-</html>
+<Base title="Daily Pop Society — Bar pop culture à Charleroi" description="Food, drinks, fandom : cocktails à personnages, burgers, bubble teas, events mensuels, blind tests et JDR au cœur de Charleroi. Cosplay bienvenu, tout le temps.">
+  <section class="tc tc--bordeaux letterbox">
+    <div class="container">
+      <span class="kicker">{IDENTITE.accroche}</span>
+      <h1 class="titre">Daily Pop<br /><em>Society</em></h1>
+      <p class="copy">{IDENTITE.slogan}</p>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <span class="kicker">Ouvertures</span>
+      <h2 class="titre titre--md">Quand passer <em>nous voir</em></h2>
+      <div style="margin-top: 28px"><Horaires /></div>
+    </div>
+  </section>
+</Base>

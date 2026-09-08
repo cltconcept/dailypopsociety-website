@@ -1,0 +1,80 @@
+---
+import '@fontsource/anton';
+import '@fontsource-variable/inter';
+import '@fontsource/caveat/600.css';
+import '@fontsource/bangers';
+import '../styles/global.css';
+import antonWoff2 from '@fontsource/anton/files/anton-latin-400-normal.woff2?url';
+import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { IDENTITE } from '../data/site';
+import { HORAIRES_SCHEMA } from '../data/horaires';
+
+interface Props { title: string; description: string; noindex?: boolean }
+const { title, description, noindex = false } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = new URL('/media/og.png', Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BarOrPub',
+  '@id': `${IDENTITE.domaine}/#bar`,
+  name: IDENTITE.nom,
+  slogan: IDENTITE.slogan,
+  description: 'Bar food & drinks dédié à la pop culture à Charleroi : cocktails à personnages, burgers, bubble teas, events mensuels, blind tests, JDR, coin gaming. Cosplay friendly.',
+  url: IDENTITE.domaine,
+  image: og.toString(),
+  telephone: IDENTITE.telephoneIntl,
+  email: IDENTITE.email,
+  servesCuisine: ['Burgers', 'Cocktails', 'Bubble tea'],
+  priceRange: '€€',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: IDENTITE.rue,
+    postalCode: IDENTITE.codePostal,
+    addressLocality: IDENTITE.ville,
+    addressCountry: 'BE',
+  },
+  openingHoursSpecification: HORAIRES_SCHEMA,
+  sameAs: [IDENTITE.facebook, IDENTITE.instagram],
+};
+---
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#7B1E2B" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" as="font" type="font/woff2" href={antonWoff2} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={interWoff2} crossorigin />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta property="og:site_name" content={IDENTITE.nom} />
+    <meta property="og:locale" content="fr_BE" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <Header />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import { REDUCED, loadGsap, onFirstIdle, bootReveals } from '../lib/motion';
+      if (!REDUCED && document.querySelector('[data-reveal]')) {
+        onFirstIdle(() => { loadGsap().then(bootReveals); });
+      }
+    </script>
+  </body>
+</html>

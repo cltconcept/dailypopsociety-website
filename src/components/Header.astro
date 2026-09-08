@@ -1,0 +1,89 @@
+---
+import { NAV, IDENTITE } from '../data/site';
+const path = Astro.url.pathname;
+const isActive = (href: string) => path === href || path.startsWith(href);
+---
+<header class="nav" id="site-nav">
+  <div class="nav__capsule">
+    <a href="/" class="nav__brand" aria-label="Daily Pop Society — accueil">
+      <img src="/media/logo-64.webp" alt="" width="32" height="32" />
+      <span>Daily Pop <b>Society</b></span>
+    </a>
+    <nav class="nav__links" aria-label="Navigation principale">
+      {NAV.map((item) => <a href={item.href} class:list={{ 'is-active': isActive(item.href) }}>{item.label}</a>)}
+    </nav>
+    <a class="nav__cta" href="/contact/">Nous trouver</a>
+    <button class="nav__burger" id="nav-burger" aria-expanded="false" aria-controls="nav-menu" aria-label="Ouvrir le menu">
+      <span></span><span></span>
+    </button>
+  </div>
+  <div class="nav__menu" id="nav-menu" aria-hidden="true">
+    <nav aria-label="Menu mobile">
+      {NAV.map((item, i) => <a href={item.href} style={`--i: ${i}`}>{item.label}</a>)}
+    </nav>
+    <div class="nav__menu-foot">
+      <a class="btn btn--blanc" href="/contact/">Nous trouver</a>
+      <a class="nav__menu-tel" href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a>
+      <p>{IDENTITE.rue}, {IDENTITE.ville} · {IDENTITE.slogan}</p>
+    </div>
+  </div>
+</header>
+
+<script>
+  const nav = document.getElementById('site-nav');
+  const burger = document.getElementById('nav-burger');
+  const menu = document.getElementById('nav-menu');
+  const onScroll = () => nav?.classList.toggle('is-scrolled', window.scrollY > 30);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  const setMenu = (open: boolean) => {
+    menu?.classList.toggle('is-open', open);
+    burger?.classList.toggle('is-open', open);
+    burger?.setAttribute('aria-expanded', String(open));
+    burger?.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+    menu?.setAttribute('aria-hidden', String(!open));
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+  burger?.addEventListener('click', () => setMenu(!menu?.classList.contains('is-open')));
+  menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+</script>
+
+<style>
+  /* Capsule noire flottante — lisible sur les six title cards */
+  .nav { position: fixed; inset-inline: 0; top: 14px; z-index: 60; display: flex; justify-content: center; pointer-events: none; padding-inline: 12px; }
+  .nav__capsule {
+    pointer-events: auto;
+    display: flex; align-items: center; gap: clamp(14px, 2vw, 28px);
+    padding: 8px 8px 8px 16px;
+    background: rgba(14, 14, 14, 0.88); color: var(--blanc);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    transition: background 0.3s ease;
+  }
+  .nav.is-scrolled .nav__capsule { background: rgba(14, 14, 14, 0.96); }
+  .nav__brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--font-title); font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+  .nav__brand img { border-radius: 50%; border: 1.5px solid var(--blanc); }
+  .nav__brand b { color: var(--rose); font-weight: 400; }
+  .nav__links { display: flex; align-items: center; gap: clamp(12px, 1.6vw, 22px); }
+  .nav__links a { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; color: rgba(255, 255, 255, 0.78); padding: 6px 2px; transition: color 0.2s; }
+  .nav__links a:hover { color: var(--blanc); }
+  .nav__links a.is-active { color: var(--rose); }
+  .nav__cta { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; background: var(--rouge); color: var(--blanc); padding: 10px 16px; }
+  .nav__burger { display: none; width: 42px; height: 42px; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+  .nav__burger span { display: block; width: 22px; height: 2px; background: var(--blanc); transition: transform 0.3s var(--ease); }
+  .nav__burger.is-open span:first-child { transform: translateY(4px) rotate(45deg); }
+  .nav__burger.is-open span:last-child { transform: translateY(-4px) rotate(-45deg); }
+  .nav__menu { position: fixed; inset: 0; z-index: 50; background: var(--noir); color: var(--blanc); display: flex; flex-direction: column; justify-content: center; padding: 100px 32px 40px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s; pointer-events: auto; }
+  .nav__menu.is-open { opacity: 1; visibility: visible; }
+  .nav__menu nav a { display: block; font-family: var(--font-title); font-size: clamp(2.2rem, 9vw, 3.4rem); text-transform: uppercase; text-decoration: none; line-height: 1.1; transform: translateY(20px); opacity: 0; transition: transform 0.5s var(--ease) calc(var(--i) * 60ms), opacity 0.5s ease calc(var(--i) * 60ms); }
+  .nav__menu.is-open nav a { transform: none; opacity: 1; }
+  .nav__menu-foot { margin-top: 36px; display: grid; gap: 14px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); }
+  .nav__menu-tel { color: var(--blanc); font-weight: 700; text-decoration: none; }
+  @media (max-width: 960px) {
+    .nav__links, .nav__cta { display: none; }
+    .nav__burger { display: flex; }
+    .nav__capsule { width: 100%; justify-content: space-between; }
+  }
+</style>

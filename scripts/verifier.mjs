@@ -13,14 +13,20 @@ for (const p of PAGES) {
   const f = join(DIST, p);
   if (!existsSync(f)) { erreurs.push(`page absente : ${p}`); continue; }
   const html = readFileSync(f, 'utf8');
-  ok(/<title>[^<]{10,}<\/title>/.test(html), `${p} : <title> absent ou trop court`);
+  const head = (html.match(/<head>([\s\S]*?)<\/head>/) || ['', ''])[1];
+  ok(/<title>[^<]{10,}<\/title>/.test(head), `${p} : <title> absent ou trop court`);
   ok(/<meta name="description" content="[^"]{40,}"/.test(html), `${p} : description absente ou < 40 caractères`);
   ok(/<h1[\s>]/.test(html), `${p} : pas de <h1>`);
   ok(!/TODO|Lorem ipsum|__[A-Z]+__/.test(html), `${p} : placeholder trouvé (TODO / Lorem / __X__)`);
-  for (const m of html.matchAll(/<img\b[^>]*>/g)) ok(/\balt=/.test(m[0]), `${p} : <img> sans alt : ${m[0].slice(0, 80)}`);
-  for (const m of html.matchAll(/(?:src|href|content)="(\/media\/[^"]+)"/g)) {
-    ok(existsSync(join(DIST, m[1])), `${p} : média manquant ${m[1]}`);
+  for (const m of html.matchAll(/<img\b[^>]*>/g)) ok(/(^|\s)alt=/.test(m[0]), `${p} : <img> sans alt : ${m[0].slice(0, 80)}`);
+  const medias = new Set();
+  for (const m of html.matchAll(/(?:src|href|content)="([^"]+)"/g)) {
+    let v = m[1];
+    if (v.startsWith('http')) { try { v = new URL(v).pathname; } catch { v = ''; } }
+    if (v.startsWith('/media/')) medias.add(v);
   }
+  for (const m of html.matchAll(/srcset="([^"]+)"/g)) for (const part of m[1].split(',')) { const v = part.trim().split(/\s+/)[0]; if (v.startsWith('/media/')) medias.add(v); }
+  for (const v of medias) ok(existsSync(join(DIST, v)), `${p} : média manquant ${v}`);
   if (p !== '404.html') ok(html.includes('application/ld+json'), `${p} : JSON-LD absent`);
 }
 ok(existsSync(join(DIST, 'sitemap-index.xml')), 'sitemap-index.xml absent');

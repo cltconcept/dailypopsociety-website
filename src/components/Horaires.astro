@@ -1,0 +1,34 @@
+---
+import { JOURS, MENTION_HORAIRES } from '../data/horaires';
+---
+<div class="horaires" id="horaires">
+  <ul class="horaires__liste">
+    {JOURS.map((j) => (
+      <li class="horaires__jour" data-jour={j.index}>
+        <span class="horaires__nom">{j.jour}</span>
+        <span class="horaires__points" aria-hidden="true"></span>
+        <span class="horaires__creneaux">{j.creneaux ? j.creneaux.join(' · ') : 'Fermé'}</span>
+      </li>
+    ))}
+  </ul>
+  <p class="horaires__mention hand">{MENTION_HORAIRES}</p>
+</div>
+
+<script>
+  /* Surligne le jour courant — amélioration progressive, rien sans JS */
+  const today = new Date().getDay();
+  document.querySelectorAll<HTMLElement>('.horaires__jour').forEach((li) => {
+    li.classList.toggle('is-today', Number(li.dataset.jour) === today);
+  });
+</script>
+
+<style>
+  .horaires__liste { display: grid; gap: 6px; max-width: 520px; }
+  .horaires__jour { display: flex; align-items: baseline; gap: 10px; font-size: 1.02rem; padding: 4px 8px; }
+  .horaires__jour.is-today { background: var(--rouge); color: var(--blanc); }
+  .horaires__jour.is-today .horaires__points { border-color: rgba(255, 255, 255, 0.6); }
+  .horaires__nom { font-weight: 700; min-width: 5.5em; }
+  .horaires__points { flex: 1; border-bottom: 2px dotted currentColor; opacity: 0.35; transform: translateY(-5px); }
+  .horaires__creneaux { font-family: var(--font-title); letter-spacing: 0.05em; font-size: 1.05rem; }
+  .horaires__mention { margin-top: 18px; max-width: 520px; }
+</style>
