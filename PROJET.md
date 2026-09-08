@@ -54,7 +54,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 | Pages carte, events, galerie, à propos, contact | ✅ Done | 2026-09-08 |
 | SEO, Open Graph, JSON-LD, passe Lighthouse | ✅ Done | 2026-09-08 |
 | Image Docker nginx testée en local | ✅ Done | 2026-09-08 |
-| Maquette en ligne (dailypopsociety.chris-ia.com) | 🚧 In Progress | — |
+| Maquette en ligne (dailypopsociety.chris-ia.com) | ✅ Done | 2026-09-08 |
 | Vraie carte, photos, logos HD (cliente) | 📋 Planned | — |
 | Mise en production dailypopsociety.be + coupure Netlify/Firebase | 📋 Planned | — |
 
@@ -83,6 +83,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 - ✨ Ajout : logos servis en 256 px par srcset (écrans à forte densité), image Open Graph, position de lecture du générique conservée au retour sur la page
 - ♻️ Refactor : passe Lighthouse — montage des logos réduit (133 Ko → 47 Ko), LCP 4,0 s → 2,6 s
 - 📝 Décision : Lighthouse mobile mesuré le 2026-09-08 — accueil perf 95 / a11y 100 / bonnes pratiques 100 / SEO 100 ; la carte 98/100/100/100
+- ✨ Ajout : maquette déployée sur dailypopsociety.chris-ia.com (Coolify maquettes, dépôt GitHub public)
 
 ### 2026-09-07
 - 📝 Décisions : site 100 % statique (pas de quiz/points/admin), français seul, pas de vidéo, direction visuelle « le générique » façon Marvel Studios (intensité I), illustrations générées (pas de fausses photos), stack Astro 5 + GSAP + nginx (gabarit dentalexpert/xenia), port dev 4332, dépôt GitHub public
@@ -103,7 +104,9 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 - ⚠️ Sécurité de l'ancien site : la base Firebase Realtime Database du site Netlify actuel est lisible et modifiable sans authentification depuis le navigateur (noms, e-mails, points et drapeau admin des clients). Le nouveau site ne stocke aucune donnée client, mais l'ancien doit être coupé et le projet Firebase supprimé ou verrouillé à la mise en production.
 
 ## Déploiement
-- Maquette : en cours, à déployer sur `dailypopsociety.chris-ia.com` (Coolify maquettes, via `/deploy-maquette`). URL et identifiants de redéploiement à ajouter ici une fois la mise en ligne faite.
+- **Maquette en ligne depuis le 2026-09-08 : https://dailypopsociety.chris-ia.com** — vérifié : 8 pages, `/sitemap-index.xml`, `/robots.txt`, `/media/og.png` en 200 ; `/nimportequoi` en 404 réelle.
+- Coolify maquettes `http://46.224.83.139:8000` (⚠️ pas l'instance de production Noveo) : projet `dailypopsociety` (uuid `sx4bmqtu54ejgpf4p2mpxdwg`), application uuid `o129qzwy4inm5tsgfrmqrtw7`, serveur `zw8ck4ckcw08gg00g8wwkkso`, build pack `dockerfile`, branche `main`, port 80, domaine `https://dailypopsociety.chris-ia.com` (wildcard `*.chris-ia.com`, HTTPS automatique).
+- Redéploiement après un push : `git push origin HEAD` puis `curl -s -H "Authorization: Bearer $TOK" "http://46.224.83.139:8000/api/v1/deploy?uuid=o129qzwy4inm5tsgfrmqrtw7"` (GET) — le jeton vit dans `~/.claude.json` → `mcpServers.coolify.env.COOLIFY_ACCESS_TOKEN`, ne jamais l'écrire ici. Suivi : `GET /api/v1/applications/o129qzwy4inm5tsgfrmqrtw7` jusqu'à `status: running…` (le build passe par `exited:unhealthy` pendant ~1 min, c'est normal).
 - Image Docker nginx (2 étages : build Node 22 + service nginx alpine) testée en local : 404 réelle, caches (`immutable` sur `/_astro/`, 30 jours sur `/media/`, `no-cache` sur tout le HTML), en-têtes de sécurité de base.
-- Dépôt : GitHub public, `cltconcept/dailypopsociety-website` (même convention que `dentalexpert-website` et `xenia-website`).
-- Production (plus tard) : réserver `dailypopsociety.be`, configurer le DNS, puis couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).
+- Dépôt : GitHub public, `cltconcept/dailypopsociety-website` (même convention que `dentalexpert-website` et `xenia-website`) ; `brief/` (moodboard, images du site actuel, PNG sources) gitignoré et exclu de l'image.
+- Production (plus tard) : réserver `dailypopsociety.be`, configurer le DNS, nommer l'hébergeur dans les mentions légales, passer `DEMO = false` dans `src/data/carte.ts` (le contrôleur refuse la mise en production sinon : `PROD=1 pnpm verifier`), puis couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).

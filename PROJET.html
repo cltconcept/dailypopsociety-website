@@ -149,7 +149,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
         <tr><td>Pages carte, events, galerie, à propos, contact</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>SEO, Open Graph, JSON-LD, passe Lighthouse</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>Image Docker nginx testée en local</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
-        <tr><td>Maquette en ligne (dailypopsociety.chris-ia.com)</td><td><span class="badge b-prog">In Progress</span></td><td>—</td></tr>
+        <tr><td>Maquette en ligne (dailypopsociety.chris-ia.com)</td><td><span class="badge b-done">Done</span></td><td>2026-09-08</td></tr>
         <tr><td>Vraie carte, photos, logos HD (cliente)</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
         <tr><td>Mise en production dailypopsociety.be + coupure Netlify/Firebase</td><td><span class="badge b-plan">Planned</span></td><td>—</td></tr>
       </table></div>
@@ -184,6 +184,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
             <li>✨ Ajout : logos servis en 256&nbsp;px par srcset (écrans à forte densité), image Open Graph, position de lecture du générique conservée au retour sur la page</li>
             <li>♻️ Refactor : passe Lighthouse — montage des logos réduit (133&nbsp;Ko → 47&nbsp;Ko), LCP 4,0&nbsp;s → 2,6&nbsp;s</li>
             <li>📝 Décision : Lighthouse mobile mesuré le 2026-09-08 — accueil perf 95 / a11y 100 / bonnes pratiques 100 / SEO 100 ; la carte 98/100/100/100</li>
+            <li>✨ Ajout : maquette déployée sur dailypopsociety.chris-ia.com (Coolify maquettes, dépôt GitHub public)</li>
           </ul>
         </article>
         <article class="entree">
@@ -217,10 +218,12 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
     <section id="deploiement">
       <h2>☁️ Déploiement</h2>
       <ul class="puces">
-        <li>Maquette : en cours, à déployer sur <code>dailypopsociety.chris-ia.com</code> (Coolify maquettes, via <code>/deploy-maquette</code>). URL et identifiants de redéploiement à ajouter ici une fois la mise en ligne faite.</li>
+        <li>🟢 <strong>Maquette en ligne depuis le 2026-09-08 : <a href="https://dailypopsociety.chris-ia.com">https://dailypopsociety.chris-ia.com</a></strong> — vérifié : 8 pages, <code>/sitemap-index.xml</code>, <code>/robots.txt</code>, <code>/media/og.png</code> en 200 ; <code>/nimportequoi</code> en 404 réelle.</li>
+        <li>Coolify maquettes <code>http://46.224.83.139:8000</code> (⚠️ pas l'instance de production Noveo) : projet <code>dailypopsociety</code> (uuid <code>sx4bmqtu54ejgpf4p2mpxdwg</code>), application uuid <code>o129qzwy4inm5tsgfrmqrtw7</code>, serveur <code>zw8ck4ckcw08gg00g8wwkkso</code>, build pack <code>dockerfile</code>, branche <code>main</code>, port 80, domaine <code>https://dailypopsociety.chris-ia.com</code> (wildcard <code>*.chris-ia.com</code>, HTTPS automatique).</li>
+        <li>Redéploiement après un push : <code>git push origin HEAD</code> puis <code>curl -s -H "Authorization: Bearer $TOK" "http://46.224.83.139:8000/api/v1/deploy?uuid=o129qzwy4inm5tsgfrmqrtw7"</code> (GET) — le jeton vit dans <code>~/.claude.json</code> → <code>mcpServers.coolify.env.COOLIFY_ACCESS_TOKEN</code>, ne jamais l'écrire ici. Suivi : <code>GET /api/v1/applications/o129qzwy4inm5tsgfrmqrtw7</code> jusqu'à <code>status: running…</code> (le build passe par <code>exited:unhealthy</code> pendant ~1&nbsp;min, c'est normal).</li>
         <li>Image Docker nginx (2 étages : build Node 22 + service nginx alpine) testée en local : 404 réelle, caches (<code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML), en-têtes de sécurité de base.</li>
-        <li>Dépôt : GitHub public, <code>cltconcept/dailypopsociety-website</code> (même convention que <code>dentalexpert-website</code> et <code>xenia-website</code>).</li>
-        <li>Production (plus tard) : réserver <code>dailypopsociety.be</code>, configurer le DNS, puis couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).</li>
+        <li>Dépôt : GitHub public, <code>cltconcept/dailypopsociety-website</code> (même convention que <code>dentalexpert-website</code> et <code>xenia-website</code>) ; <code>brief/</code> (moodboard, images du site actuel, PNG sources) gitignoré et exclu de l'image.</li>
+        <li>Production (plus tard) : réserver <code>dailypopsociety.be</code>, configurer le DNS, nommer l'hébergeur dans les mentions légales, passer <code>DEMO = false</code> dans <code>src/data/carte.ts</code> (le contrôleur refuse la mise en production sinon : <code>PROD=1 pnpm verifier</code>), puis couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).</li>
       </ul>
     </section>
   </main>
