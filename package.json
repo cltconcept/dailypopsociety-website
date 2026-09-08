@@ -10,7 +10,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "verifier": "node scripts/verifier.mjs",
-    "test": "pnpm build && pnpm verifier"
+    "test": "pnpm check && pnpm build && pnpm verifier"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

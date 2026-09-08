@@ -1,43 +1,75 @@
 ---
 import type { Evenement } from '../data/events';
-import { illu } from '../lib/illu';
-interface Props { ev: Evenement; sombre?: boolean; passe?: boolean }
-const { ev, sombre = false, passe = false } = Astro.props;
-/* Les illustrations d'ambiance existent en trois largeurs, les logos mensuels
-   non (une seule image). On ne pose donc un srcset que si le visuel vient bien
-   de /media/illu/ — le déduire de l'URL évite de doubler chaque entrée de
-   events.ts d'un champ que la donnée porte déjà. */
-const id = ev.visuel.match(/^\/media\/illu\/(.+)-960\.webp$/)?.[1];
-const srcset = id ? illu(id).srcset : undefined;
+import { visuel } from '../lib/illu';
+/* Carte d'event : média à gauche, texte à droite (une colonne en mobile).
+   `niveau` suit la hiérarchie de la page qui pose la carte (h3 par défaut),
+   comme Case. `passe` grise l'illustration et annonce les photos à venir. */
+interface Props { ev: Evenement; sombre?: boolean; passe?: boolean; niveau?: 2 | 3 | 4 }
+const { ev, sombre = false, passe = false, niveau = 3 } = Astro.props;
+/* La résolution du visuel (illustration à trois largeurs, ou logo mensuel à
+   160 px sans srcset) vit dans lib/illu — pas dans une regex sur l'URL. */
+const v = visuel(ev.visuel);
+const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
 ---
-<article class:list={['evc', { 'evc--sombre': sombre, 'evc--passe': passe }]}>
-  <div class="evc__media"><img src={ev.visuel} srcset={srcset} sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380px" alt={ev.alt} width="960" height="720" loading="lazy" decoding="async" /></div>
+<article class:list={['evc', { 'evc--sombre': sombre, 'evc--passe': passe, 'evc--logo': v.logo }]}>
+  <div class="evc__media">
+    <img
+      src={v.src}
+      srcset={v.srcset}
+      sizes={v.srcset ? '(max-width: 600px) 100vw, 240px' : undefined}
+      alt={v.alt}
+      width={v.largeur}
+      height={v.hauteur}
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
   <div class="evc__body">
-    <p class="evc__quand">{ev.quand}{ev.aPlanifier && ' · à planifier'}</p>
-    <h3 class="evc__titre">{ev.titre}</h3>
+    <p class="evc__quand">{ev.quand}{ev.aPlanifier && ' · Dates à venir'}</p>
+    <H class="evc__titre">{ev.titre}</H>
     <p class="evc__desc">{ev.desc}</p>
     {ev.reservation && <p class="evc__resa">Sur réservation uniquement</p>}
+    {passe && <span class="evc__note">Photos à venir</span>}
   </div>
 </article>
 
 <style>
-  /* Jetons de surface — la carte claire redéclare les jetons clairs, comme .case
-     dans global.css (§ « surfaces claires »). .evc--sombre les repasse en sombre. */
-  .evc { --txt: var(--noir); --txt-doux: var(--gris); --accent: var(--rouge); --voix: var(--bdx); --focus: var(--rouge); --ombre-btn: var(--noir); }
-  .evc--sombre { --txt: var(--blanc); --txt-doux: rgba(255, 255, 255, .78); --accent: var(--rose); --voix: var(--rose); --focus: var(--rose); --ombre-btn: var(--rose); }
-
-  .evc { display: grid; grid-template-columns: 200px 1fr; border: var(--bord); background: var(--blanc); color: var(--txt); box-shadow: var(--ombre-case); overflow: hidden; }
-  .evc__media { border-right: var(--bord); background: var(--creme); }
+  /* Les jetons de surface de .evc et .evc--sombre vivent dans global.css
+     (blocs « surfaces claires » et « surfaces sombres ») : une carte ne décide
+     pas seule de son champ de couleur, sinon la règle centrale a deux sources. */
+  .evc { display: grid; grid-template-columns: 240px 1fr; border: var(--bord); background: var(--blanc); color: var(--txt); box-shadow: var(--ombre-case); overflow: hidden; }
+  /* Même rapport que la case de comics, dans TOUTES les variantes : trois
+     cartes empilées dont les images ne font pas la même hauteur, ce sont trois
+     colonnes de texte qui ne commencent pas au même endroit. */
+  .evc__media { border-right: var(--bord); background: var(--creme); aspect-ratio: 4 / 3; overflow: hidden; }
   .evc__media img { width: 100%; height: 100%; object-fit: cover; }
+  /* Un logo mensuel est une vignette de 160 px : `object-fit: contain` sur une
+     image en width:100% le ferait AGRANDIR à 240 px (il bave). On le centre à
+     sa taille, jamais au-delà — d'où max-width/max-height plutôt que 100 %. */
+  .evc--logo .evc__media { display: grid; place-items: center; }
+  .evc--logo .evc__media img { width: auto; height: auto; max-width: 80%; max-height: 80%; object-fit: contain; }
   .evc__body { padding: 20px 22px; }
   .evc__quand { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
   .evc__titre { margin-top: 6px; font-family: var(--font-title); font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.03em; line-height: 1; }
-  .evc__desc { margin-top: 8px; color: var(--txt-doux); line-height: 1.5; }
-  .evc__resa { margin-top: 10px; display: inline-block; padding: 3px 10px; background: var(--noir); color: var(--blanc); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; }
-  .evc--sombre { background: var(--noir); color: var(--txt); border-color: var(--bdx); box-shadow: 6px 6px 0 var(--rouge); }
+  /* 60ch : au-delà, l'œil perd la ligne suivante en revenant à gauche. */
+  .evc__desc { margin-top: 8px; max-width: 60ch; color: var(--txt-doux); line-height: 1.5; }
+  /* --voix (bordeaux au clair, rose au sombre) : le badge parle de la même voix
+     que les prix et l'écriture manuscrite. Sur rose, le texte repasse en noir. */
+  .evc__resa { margin-top: 10px; display: inline-block; padding: 3px 10px; background: var(--voix); color: var(--blanc); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; }
+  .evc--sombre .evc__resa { color: var(--noir); }
+  .evc__note { display: inline-block; margin-top: 12px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+  .evc--sombre { background: var(--noir); border-color: var(--bdx); box-shadow: 6px 6px 0 var(--rouge); }
   .evc--sombre .evc__media { border-color: var(--bdx); }
   .evc--passe { grid-template-columns: 1fr; }
-  .evc--passe .evc__media { border-right: 0; border-bottom: var(--bord); aspect-ratio: 4 / 3; }
-  .evc--passe .evc__media img { filter: grayscale(0.6) contrast(1.05); }
-  @media (max-width: 600px) { .evc { grid-template-columns: 1fr; } .evc__media { border-right: 0; border-bottom: var(--bord); aspect-ratio: 16 / 9; } }
+  .evc--passe .evc__media { border-right: 0; border-bottom: var(--bord); }
+  /* Gris franc : une illustration à moitié désaturée a l'air d'un bug, pas
+     d'une archive. Elle tient lieu de photo tant que la cliente n'en a pas. */
+  .evc--passe .evc__media img { filter: grayscale(1); opacity: .85; }
+  @media (max-width: 600px) {
+    .evc { grid-template-columns: 1fr; }
+    .evc__media { border-right: 0; border-bottom: var(--bord); }
+    /* Le 16/9 pleine largeur ne vaut que pour une illustration cadrée : un logo
+       carré y flotterait dans une bande, ou s'y ferait rogner. */
+    .evc:not(.evc--logo) .evc__media { aspect-ratio: 16 / 9; }
+  }
 </style>

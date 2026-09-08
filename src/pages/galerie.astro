@@ -2,34 +2,58 @@
 import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
 import { THEMES } from '../data/galerie';
+import { visuel, SIZES_CASE } from '../lib/illu';
+
+/* Un seul flux de figures : le filtre ne fait que cacher celles des autres
+   thèmes. On résout ici (et non dans la boucle) pour numéroter les visuels :
+   seul le premier est au-dessus de la ligne de flottaison. */
+const items = THEMES.flatMap((t) => t.visuels.map((v) => ({ theme: t, v, r: visuel(v) })));
 ---
 <Base title="Galerie — Daily Pop Society, Charleroi" description="Le shop, la carte, les soirées et les logos du mois en images. La galerie par thèmes du bar pop culture de Charleroi, cosplay bienvenu.">
   <TitleCard kicker="Chapitre 3 · La galerie" variante="blanc">Les cases <em>du mois</em><Fragment slot="copy">Le shop, la carte, les soirées, les logos. Les photos des events arrivent au fil des mois.</Fragment></TitleCard>
 
   <section class="section">
     <div class="container">
-      <div class="filtres" role="group" aria-label="Filtrer par thème">
+      {/* `hidden` par défaut : sans JS, les boutons ne filtreraient rien — une
+          rangée de boutons morts vaut moins que pas de boutons du tout. Le
+          script les révèle, c'est son premier geste. */}
+      <div class="filtres" role="group" aria-label="Filtrer par thème" hidden>
         <button class="filtre is-active" data-theme="tous" aria-pressed="true">Tout</button>
         {THEMES.map((t) => <button class="filtre" data-theme={t.slug} aria-pressed="false">{t.nom}</button>)}
       </div>
       <p class="sr-only" aria-live="polite" id="gal-etat"></p>
-      <div class="grille grille--3 gal">
-        {THEMES.flatMap((t) => t.visuels.map((v) => (
-          <figure class:list={['gal__item', { 'gal__item--logo': t.slug === 'logos' }]} data-theme={t.slug}>
-            <div class="gal__media"><img src={v.src} alt={v.alt} width="960" height="720" loading="lazy" decoding="async" /></div>
-            <figcaption><span class="gal__theme">{t.nom}</span>{v.legende}</figcaption>
+      <div class="grille grille--3 gal" data-reveal data-reveal-stagger>
+        {items.map(({ theme, v, r }, i) => (
+          <figure class:list={['gal__item', { 'gal__item--contain': v.ajustement === 'contain' }]} data-theme={theme.slug}>
+            <div class="gal__media">
+              <img
+                src={r.src}
+                srcset={r.srcset}
+                sizes={r.srcset ? SIZES_CASE : undefined}
+                alt={r.alt}
+                width={r.largeur}
+                height={r.hauteur}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : undefined}
+                decoding="async"
+                style={v.focus ? `object-position: ${v.focus};` : undefined}
+              />
+            </div>
+            <figcaption><span class="gal__theme">{theme.nom}</span>{v.legende && ` — ${v.legende}`}</figcaption>
           </figure>
-        )))}
+        ))}
       </div>
     </div>
   </section>
 </Base>
 
 <script>
-  /* Filtre progressif : sans JS, tout est affiché. */
+  /* Filtre progressif : sans JS, tout est affiché et les boutons restent cachés. */
+  const filtres = document.querySelector<HTMLElement>('.filtres');
   const boutons = document.querySelectorAll<HTMLButtonElement>('.filtre');
   const items = document.querySelectorAll<HTMLElement>('.gal__item');
   const etat = document.getElementById('gal-etat');
+  if (filtres) filtres.hidden = false;
   boutons.forEach((b) => b.addEventListener('click', () => {
     const theme = b.dataset.theme;
     boutons.forEach((x) => { const on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', String(on)); });
@@ -39,19 +63,32 @@ import { THEMES } from '../data/galerie';
       it.hidden = !affiche;
       if (affiche) visibles += 1;
     });
-    if (etat) etat.textContent = `${visibles} visuel${visibles > 1 ? 's' : ''} affiché${visibles > 1 ? 's' : ''}.`;
+    /* On annonce le thème ET le compte : « 5 visuels affichés » ne dit pas ce
+       qui a été retenu, et un lecteur d'écran n'a pas vu quel bouton a bougé. */
+    const nom = theme === 'tous' ? 'Tous les thèmes' : b.textContent;
+    const s = visibles > 1 ? 's' : '';
+    if (etat) etat.textContent = `${nom} : ${visibles} visuel${s} affiché${s}.`;
   }));
 </script>
 
 <style>
   .filtres { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+  /* Une classe en display:flex bat le display:none du navigateur : sans cette
+     ligne, l'attribut `hidden` du groupe ne cacherait rien. */
+  .filtres[hidden] { display: none; }
   .filtre { padding: 8px 16px; border: var(--bord); background: var(--blanc); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+  .filtre:hover, .filtre:focus-visible { background: var(--creme); }
+  /* Après :hover, à spécificité égale : un bouton actif reste noir au survol. */
   .filtre.is-active { background: var(--noir); color: var(--blanc); text-decoration: underline; text-underline-offset: 4px; }
   .gal__item { border: var(--bord); box-shadow: var(--ombre-case); background: var(--blanc); }
   .gal__media { aspect-ratio: 4 / 3; overflow: hidden; border-bottom: var(--bord); background: var(--creme); }
-  .gal__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
-  .gal__item:hover img { transform: scale(1.04); }
-  .gal__item figcaption { padding: 12px 16px 14px; font-size: 0.92rem; color: var(--txt-doux); }
-  .gal__theme { display: block; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
-  .gal__item--logo .gal__media img { object-fit: contain; padding: 12%; }
+  .gal__media img { width: 100%; height: 100%; object-fit: cover; }
+  /* Pas de zoom au survol : ces visuels ne sont pas cliquables, un mouvement
+     promettait une action qui n'existe pas. */
+  .gal__item figcaption { padding: 12px 16px 14px; font-size: 0.95rem; color: var(--txt-doux); }
+  .gal__theme { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
+  /* Un logo mensuel fait 160 px : centré à sa taille, jamais agrandi à la
+     largeur de la case (cf. la même règle dans EventCard). */
+  .gal__item--contain .gal__media { display: grid; place-items: center; }
+  .gal__item--contain .gal__media img { width: auto; height: auto; max-width: 76%; max-height: 76%; object-fit: contain; }
 </style>

@@ -54,11 +54,14 @@ for (const c of CATEGORIES) {
   {CATEGORIES.map((c, i) => (
     <section class:list={['section', 'cat', { 'section--creme': i % 2 === 1 }]} id={c.slug}>
       <div class="container cat__grid">
+        {/* sizes : la colonne est plafonnée à 420 px. « 92vw au-dessous de
+            960 » faisait servir la 960 à une tablette de 768 px pour 414 px de
+            rendu ; `min()` dit la vraie largeur à toutes les tailles. */}
         <div class="cat__visuel" data-reveal>
           <img
             src={illu(c.visuel.id).src}
             srcset={illu(c.visuel.id).srcset}
-            sizes="(max-width: 960px) 92vw, 420px"
+            sizes="min(92vw, 420px)"
             alt={c.visuel.alt}
             width="960"
             height="720"
@@ -102,10 +105,13 @@ for (const c of CATEGORIES) {
      (--accent, --focus) y basculent, elle n'a aucune couleur en dur. */
   .ancres { position: sticky; top: var(--nav-h); z-index: 30; background: var(--noir); color: var(--txt); border-bottom: 2px solid var(--bdx); }
   /* Le dégradé de masque dit que la liste continue à droite : sans lui, une
-     barre qui déborde a l'air d'une barre qui s'arrête. */
+     barre qui déborde a l'air d'une barre qui s'arrête. À 85 %, le fondu
+     mordait sur le dernier lien même quand la barre ne débordait pas — il
+     commence à 92 %, là où il ne reste plus rien à lire. */
   .ancres__liste {
     display: flex; gap: 22px; overflow-x: auto; padding-block: 12px; scrollbar-width: none;
-    mask-image: linear-gradient(to right, #000 85%, transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 92%, transparent);
+    mask-image: linear-gradient(to right, #000 92%, transparent);
   }
   .ancres__liste a { white-space: nowrap; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; opacity: 0.8; }
   .ancres__liste a:hover { opacity: 1; color: var(--accent); }
@@ -118,13 +124,19 @@ for (const c of CATEGORIES) {
   .eph__nom { font-family: var(--font-title); font-size: 1.5rem; text-transform: uppercase; letter-spacing: 0.04em; }
   .eph__desc { margin-top: 6px; color: var(--txt-doux); }
   .eph__prix { margin-top: 12px; font-family: var(--font-title); color: var(--accent); font-size: 1.3rem; }
-  /* Le header ET la barre d'ancres sont collants : une ancre doit dégager les
-     deux, sinon le titre de la catégorie atterrit dessous. */
-  .cat, #ephemere { scroll-margin-top: calc(var(--nav-h) + var(--ancres-h) + 24px); }
+  /* La capsule du header est DÉJÀ payée par le scroll-padding-top global
+     (calc(var(--nav-h) + 24px), cf. global.css) : la recompter ici décalait
+     chaque ancre de 72 px de trop, et le titre de la catégorie arrivait au
+     milieu de l'écran. Il ne reste à dégager que la barre d'ancres. */
+  .cat, #ephemere { scroll-margin-top: calc(var(--ancres-h) + 20px); }
   .cat__grid { display: grid; grid-template-columns: 0.9fr 1.3fr; gap: clamp(28px, 5vw, 70px); align-items: start; }
   .cat__visuel { border: var(--bord); box-shadow: var(--ombre-case); background: var(--blanc); position: sticky; top: calc(var(--nav-h) + var(--ancres-h) + 18px); }
   .cat__items { margin-top: 28px; display: grid; gap: 14px; }
   .tag { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1.5px solid var(--voix); color: var(--voix); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; vertical-align: middle; }
+  /* Points de conduite : en mobile, le nom et le prix occupent presque toute la
+     ligne et le conducteur se réduit à son min-width. Un moignon de 24 px se
+     lit comme un bug ; un conducteur absent se lit comme un choix. */
+  @media (max-width: 600px) { .ligne__points { min-width: 0; } }
   @media (max-width: 960px) {
     .cat__grid { grid-template-columns: 1fr; }
     .cat__visuel { position: static; max-width: 420px; }

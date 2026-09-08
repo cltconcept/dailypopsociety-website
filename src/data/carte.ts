@@ -1,8 +1,10 @@
 /* CARTE DE DÉMONSTRATION. Le dossier « Menu » du brief n'a pas été fourni :
    noms, descriptions et prix sont fictifs mais plausibles. Remplacer ici, les
-   pages se mettent à jour seules TANT QUE chaque catégorie porte un `visuel` :
-   une catégorie ajoutée sans visuel ferait planter la page de la carte (garde
-   de frontmatter dans la-carte.astro). */
+   pages se mettent à jour seules TANT QUE chaque catégorie porte un `visuel`.
+   Ce qui le garantit, c'est le TYPE `Categorie` (`pnpm check`), pas une garde
+   de frontmatter : la-carte.astro n'en contient aucune pour le visuel — sans
+   lui, le build casse en TypeError au moment de construire l'URL de l'image.
+   Un id d'illustration inconnu, lui, est refusé par `illu()` (lib/illu.ts). */
 import { LICENCE_DU_MOIS } from './site';
 
 /* Mention « carte de démonstration » affichée tant que ceci vaut true : passer

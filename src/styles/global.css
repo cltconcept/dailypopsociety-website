@@ -126,9 +126,12 @@ main:focus { outline: none; }
 /* ===== Surfaces sombres : elles ne changent QUE les six jetons =====
    .skip-link en fait partie : il est noir, quel que soit le fond de la page.
    .gen aussi : le hero du générique est un champ bordeaux, ses jetons doivent
-   y basculer comme partout ailleurs (sinon le focus y reste rouge sur rouge). */
+   y basculer comme partout ailleurs (sinon le focus y reste rouge sur rouge).
+   ⚠️ `.evc.evc--sombre` est doublée VOLONTAIREMENT : `.evc` figure dans le bloc
+   clair ci-dessous, qui vient après — à spécificité égale il gagnerait, et la
+   carte d'event sombre se retrouverait avec du texte noir sur fond noir. */
 .tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir, .gen,
-.footer, .nav__capsule, .nav__menu, .skip-link, .ancres {
+.footer, .nav__capsule, .nav__menu, .skip-link, .ancres, .evc.evc--sombre {
   --txt: var(--blanc);
   --txt-doux: rgba(255, 255, 255, .78);
   --accent: var(--rose);
@@ -138,7 +141,7 @@ main:focus { outline: none; }
 }
 /* ===== Surfaces claires posées sur fond sombre (une case blanche dans une
    section noire) : elles retrouvent leurs jetons clairs. ===== */
-.case, .section--creme, .tc--creme, .tc--blanc, .bloc-creme {
+.case, .evc, .section--creme, .tc--creme, .tc--blanc, .bloc-creme {
   --txt: var(--noir);
   --txt-doux: var(--gris);
   --accent: var(--rouge);

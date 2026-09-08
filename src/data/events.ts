@@ -1,34 +1,106 @@
-import { illu } from '../lib/illu';
+/* Les events du shop — UNE seule liste, datée. La partition (à venir / passés /
+   soirées récurrentes) se fait au build depuis les dates, dans events.astro :
+   trois listes tenues à la main, c'est un event qui reste « à venir » six mois
+   après avoir eu lieu parce que personne ne l'a déplacé. */
+import { LICENCE_DU_MOIS } from './site';
+import type { RefVisuel } from '../lib/illu';
 
 export type Evenement = {
   titre: string;
-  quand: string;          // texte affiché
-  mois: string;           // AAAA-MM pour le tri
+  /** ISO AAAA-MM-JJ. Absents tous les deux = soirée récurrente, sans date. */
+  debut?: string;
+  /** Dernier jour de l'event : c'est LUI qui le fait basculer dans le passé. */
+  fin?: string;
+  /** Le texte affiché — les dates ISO ne servent qu'au tri et au JSON-LD. */
+  quand: string;
   desc: string;
-  visuel: string;         // /media/… (illustration d'ambiance en attendant les photos)
-  alt: string;
+  /** Id d'illustration (cf. ALT de lib/illu) ou « logo:<id de LOGOS> ». */
+  visuel: RefVisuel;
   reservation?: boolean;  // sur réservation uniquement
-  aPlanifier?: boolean;   // date à confirmer par la gérante
+  aPlanifier?: boolean;   // dates à confirmer par la gérante
 };
 
-/* Les prochains events (une licence par mois) */
-export const A_VENIR: Evenement[] = [
-  { titre: 'Daily Pop Coven', quand: '21 octobre, puis du 28 au 31 octobre', mois: '2026-10', desc: 'Viens célébrer le sabbat que toutes les sorcières attendent : carte éphémère, déco et soirées à thème.', visuel: '/media/logos/2025-10-halloween.webp', alt: 'Logo mensuel Halloween de Daily Pop Society' },
-  { titre: 'Tim Burton', quand: 'Novembre', mois: '2026-11', desc: 'Un mois entier dans l\'univers de Tim Burton. Dates à venir.', visuel: illu('comptoir').src, alt: 'Illustration : le comptoir du bar', aPlanifier: true },
-  { titre: 'Daily Pop Christmas', quand: 'Décembre', mois: '2026-12', desc: 'Les plus gros succès des fêtes de fin d\'année réunis, et le closing annuel du shop. Dates à venir.', visuel: '/media/logos/2024-12-noel.webp', alt: 'Logo mensuel de Noël', aPlanifier: true },
-];
+export const EVENTS: Evenement[] = [
+  /* ===== Licences (datées) ===== */
+  /* La licence du mois est DÉRIVÉE de site.ts : elle s'affiche déjà sur
+     l'accueil et sur la carte. La recopier ici, c'est trois endroits à changer
+     tous les mois — et deux qui se contrediront. Le visuel est le logo de la
+     maison et non celui d'Halloween 2025, qui porte encore « Nakama's Coffee ». */
+  {
+    titre: LICENCE_DU_MOIS.nom,
+    debut: '2026-10-21',
+    fin: '2026-10-31',
+    quand: LICENCE_DU_MOIS.dates,
+    desc: LICENCE_DU_MOIS.accroche,
+    visuel: { id: 'logo:2026-05-daily-pop-society', alt: 'Logo de Daily Pop Society' },
+  },
+  {
+    titre: 'Tim Burton',
+    fin: '2026-11-30',
+    quand: 'Novembre',
+    desc: "Un mois entier dans l'univers de Tim Burton.",
+    visuel: { id: 'comptoir' },
+    aPlanifier: true,
+  },
+  {
+    titre: 'Daily Pop Christmas',
+    fin: '2026-12-31',
+    quand: 'Décembre',
+    desc: 'Les plus gros succès des fêtes de fin d\'année réunis, et le closing annuel du shop.',
+    visuel: { id: 'logo:2024-12-noel' },
+    aPlanifier: true,
+  },
+  {
+    titre: 'Séries cultes',
+    debut: '2026-09-02',
+    fin: '2026-09-05',
+    quand: 'Du 2 au 5 septembre 2026',
+    desc: 'Quatre jours axés sur les séries et sitcoms cultes des années 2000.',
+    visuel: { id: 'starters' },
+  },
+  {
+    titre: 'Disney Nostalgie 90-2000',
+    debut: '2026-08-12',
+    fin: '2026-08-15',
+    quand: 'Du 12 au 15 août 2026',
+    desc: 'Viens (re)découvrir les classiques de ton enfance.',
+    visuel: { id: 'patisserie' },
+  },
+  {
+    titre: 'Jurassic Pop',
+    debut: '2026-07-01',
+    fin: '2026-07-31',
+    quand: 'Juillet 2026',
+    desc: 'Les dinosaures ont pris le bar.',
+    visuel: { id: 'cafe-latte' },
+  },
+  {
+    titre: 'Spider Day',
+    debut: '2026-07-01',
+    fin: '2026-07-31',
+    quand: 'Juillet 2026',
+    desc: 'Une journée dans la toile, cosplay bienvenu.',
+    visuel: { id: 'mocktail-fraise' },
+  },
 
-/* Les soirées récurrentes */
-export const SOIREES: Evenement[] = [
-  { titre: 'Blind test pop culture', quand: 'Deux fois par mois, le vendredi à 19h', mois: '', desc: 'Films, séries, animés, jeux vidéo : tu reconnais, tu buzzes, tu gagnes.', visuel: illu('blind-test').src, alt: 'Illustration : un micro sous un néon bordeaux' },
-  { titre: 'Soirée JDR', quand: 'Sur réservation, à 18h', mois: '', desc: 'Blood on the Clocktower et d\'autres jeux de rôle. Places limitées, réservation par téléphone ou Messenger.', visuel: illu('jdr').src, alt: 'Illustration : dés, feuilles de personnage et bougie', reservation: true },
-  { titre: 'Animations du week-end', quand: 'Chaque week-end', mois: '', desc: 'Quiz, rassemblements cosplay, tournois sur Switch et PS4 : le programme se dévoile sur Instagram.', visuel: illu('coin-gaming').src, alt: 'Illustration : manettes et étagère de mangas' },
-];
-
-/* « Précédemment dans Daily Pop » — les events passés (photos à venir de la cliente) */
-export const PASSES: Evenement[] = [
-  { titre: 'Séries cultes', quand: 'Du 2 au 5 septembre 2026', mois: '2026-09', desc: 'Quatre jours axés sur les séries et sitcoms cultes des années 2000.', visuel: illu('comptoir').src, alt: 'Illustration d\'ambiance, photos de l\'event à venir' },
-  { titre: 'Disney Nostalgie 90-2000', quand: 'Du 12 au 15 août 2026', mois: '2026-08', desc: 'Viens (re)découvrir les classiques de ton enfance.', visuel: illu('patisserie').src, alt: 'Illustration d\'ambiance, photos de l\'event à venir' },
-  { titre: 'Jurassic Pop', quand: 'Juillet 2026', mois: '2026-07', desc: 'Les dinosaures ont pris le bar.', visuel: illu('starters').src, alt: 'Illustration d\'ambiance, photos de l\'event à venir' },
-  { titre: 'Spider Day', quand: 'Juillet 2026', mois: '2026-07', desc: 'Une journée dans la toile, cosplay bienvenu.', visuel: illu('cocktail-zoro').src, alt: 'Illustration d\'ambiance, photos de l\'event à venir' },
+  /* ===== Soirées récurrentes (sans date : elles reviennent) ===== */
+  {
+    titre: 'Blind test pop culture',
+    quand: 'Deux fois par mois, le vendredi à 19h',
+    desc: 'Films, séries, animés, jeux vidéo : tu reconnais, tu buzzes, tu gagnes.',
+    visuel: { id: 'blind-test' },
+  },
+  {
+    titre: 'Soirée JDR',
+    quand: 'À 18h, sur réservation',
+    desc: "Blood on the Clocktower et d'autres jeux de rôle. Places limitées, réservation par téléphone ou Messenger.",
+    visuel: { id: 'jdr' },
+    reservation: true,
+  },
+  {
+    titre: 'Animations du week-end',
+    quand: 'Chaque week-end',
+    desc: 'Quiz, rassemblements cosplay, tournois sur Switch et PS4 : le programme se dévoile sur Instagram.',
+    visuel: { id: 'coin-gaming' },
+  },
 ];

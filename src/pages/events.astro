@@ -3,19 +3,66 @@ import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
 import EventCard from '../components/EventCard.astro';
 import LienExterne from '../components/LienExterne.astro';
-import { A_VENIR, SOIREES, PASSES } from '../data/events';
+import { EVENTS } from '../data/events';
+import { visuel } from '../lib/illu';
 import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
+
+/* La partition se fait AU BUILD, depuis les dates de events.ts : un event
+   passe tout seul de « à venir » à « passé » au lendemain de sa dernière
+   journée. Le site est statique — c'est donc la date de BUILD qui fait foi :
+   republier tous les mois (la licence du mois l'impose déjà) suffit. */
+const AUJ = new Date().toISOString().slice(0, 10);
+
+const dates = EVENTS.filter((e) => e.fin);
+/* Deux events voisins qui portent la même image, c'est le lecteur qui croit
+   avoir déjà lu la carte et saute la seconde. Les soirées récurrentes sont hors
+   du contrôle : elles vivent dans une autre section, sur un autre fond. */
+const vus = new Map<string, string>();
+for (const e of dates) {
+  const jumeau = vus.get(e.visuel.id);
+  if (jumeau) throw new Error(`events : « ${e.titre} » et « ${jumeau} » partagent le visuel « ${e.visuel.id} » — deux events datés doivent se distinguer d'un coup d'œil`);
+  vus.set(e.visuel.id, e.titre);
+}
+
+/* Un event sans début est classé sur sa fin (le mois annoncé, pas encore daté). */
+const repere = (e: (typeof EVENTS)[number]) => e.debut ?? e.fin ?? '';
+const aVenir = dates.filter((e) => e.fin! >= AUJ).sort((a, b) => repere(a).localeCompare(repere(b)));
+const passes = dates.filter((e) => e.fin! < AUJ).sort((a, b) => repere(b).localeCompare(repere(a)));
+const soirees = EVENTS.filter((e) => !e.fin);
+
+const adresse = {
+  '@type': 'PostalAddress',
+  streetAddress: IDENTITE.rue,
+  postalCode: IDENTITE.codePostal,
+  addressLocality: IDENTITE.ville,
+  addressCountry: 'BE',
+};
+/* Un Event par event À VENIR : un event passé n'a plus rien à proposer dans une
+   SERP, et une soirée récurrente n'a pas de date à donner. */
+const schemas = aVenir.map((e) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: e.titre,
+  description: e.desc,
+  startDate: e.debut ?? e.fin,
+  endDate: e.fin,
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  location: { '@type': 'Place', name: IDENTITE.nom, address: adresse },
+  organizer: { '@type': 'Organization', name: IDENTITE.nom, url: IDENTITE.domaine },
+  image: new URL(visuel(e.visuel).src, Astro.site).toString(),
+}));
 ---
-<Base title="Events et soirées — Daily Pop Society, Charleroi" description="Une licence à l'honneur chaque mois, blind tests pop culture deux fois par mois, soirées JDR sur réservation, animations le week-end. Le programme du bar pop culture de Charleroi.">
-  <TitleCard kicker="Chapitre 2 · Les events" variante="noir" letterbox>Ce mois-ci :<br /><em>{LICENCE_DU_MOIS.nom}</em><Fragment slot="copy">{LICENCE_DU_MOIS.accroche} {LICENCE_DU_MOIS.dates}. Une licence par mois, une carte éphémère, et des soirées toutes les semaines.</Fragment><Fragment slot="actions"><LienExterne href={IDENTITE.instagram} class="btn">Le programme sur Instagram</LienExterne></Fragment></TitleCard>
+<Base title="Events et soirées — Daily Pop Society, Charleroi" description="Une licence à l'honneur chaque mois, blind tests pop culture deux fois par mois, soirées JDR sur réservation, animations le week-end. Le programme du bar pop culture de Charleroi." schemas={schemas}>
+  <TitleCard kicker="Chapitre 2 · Les events" variante="noir" letterbox>Ce mois-ci :<br /><em>{LICENCE_DU_MOIS.nom}</em><Fragment slot="copy">{`${LICENCE_DU_MOIS.accroche} ${LICENCE_DU_MOIS.dates}. Une licence par mois, une carte éphémère, et des soirées toutes les semaines.`}</Fragment><Fragment slot="actions"><LienExterne href={IDENTITE.instagram} class="btn">Le programme sur Instagram</LienExterne></Fragment></TitleCard>
 
   <section class="section">
     <div class="container">
       <span class="kicker">À venir</span>
       <h2 class="titre titre--md">Les prochaines <em>licences</em></h2>
-      <div class="liste" data-reveal data-reveal-stagger>
-        {A_VENIR.map((ev) => <EventCard ev={ev} />)}
-      </div>
+      <ul class="liste" role="list" data-reveal data-reveal-stagger>
+        {aVenir.map((ev) => <li><EventCard ev={ev} /></li>)}
+      </ul>
     </div>
   </section>
 
@@ -23,9 +70,9 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
     <div class="container">
       <span class="kicker">Toutes les semaines</span>
       <h2 class="titre titre--md">Les <em>soirées</em></h2>
-      <div class="liste" data-reveal data-reveal-stagger>
-        {SOIREES.map((ev) => <EventCard ev={ev} sombre />)}
-      </div>
+      <ul class="liste" role="list" data-reveal data-reveal-stagger>
+        {soirees.map((ev) => <li><EventCard ev={ev} sombre /></li>)}
+      </ul>
       <p class="copy">Réservation JDR par téléphone au <a href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a> ou par Messenger.</p>
     </div>
   </section>
@@ -35,14 +82,16 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
       <span class="kicker">Précédemment dans Daily Pop</span>
       <h2 class="titre titre--md">Les events <em>passés</em></h2>
       <p class="copy">Pour comprendre ce qu'est un event au shop. Les photos arrivent, en attendant voilà l'ambiance.</p>
-      <div class="grille grille--2 passes" data-reveal data-reveal-stagger>
-        {PASSES.map((ev) => <EventCard ev={ev} passe />)}
-      </div>
+      <ul class="grille grille--2 passes" role="list" data-reveal data-reveal-stagger>
+        {passes.map((ev) => <li><EventCard ev={ev} passe /></li>)}
+      </ul>
     </div>
   </section>
 </Base>
 
 <style>
-  .liste { margin-top: 36px; display: grid; gap: 22px; }
+  /* Même échelle d'espacement que .grille (global.css) : deux listes de cartes
+     côte à côte dans la même page ne doivent pas respirer différemment. */
+  .liste { margin-top: 36px; display: grid; gap: clamp(18px, 2.6vw, 30px); }
   .passes { margin-top: 36px; }
 </style>
