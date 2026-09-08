@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
 import { THEMES } from '../data/galerie';
-import { visuel, SIZES_CASE } from '../lib/illu';
+import { visuel, SIZES_CASE, SIZES_GALERIE_LOGO } from '../lib/illu';
 
 /* Un seul flux de figures : le filtre ne fait que cacher celles des autres
    thèmes. On résout ici (et non dans la boucle) pour numéroter les visuels :
@@ -14,6 +14,12 @@ const items = THEMES.flatMap((t) => t.visuels.map((v) => ({ theme: t, v, r: visu
 
   <section class="section">
     <div class="container">
+      {/* Un titre de section AVANT les filtres : la page passait de la title
+          card à une rangée de boutons nus, sans dire de quoi il s'agissait — et
+          le plan du document sautait de h1 à rien. Même patron que les autres
+          pages : kicker en <span>, h2 en .titre--md. */}
+      <span class="kicker">Par thème</span>
+      <h2 class="titre titre--md">Choisis ton <em>univers</em></h2>
       {/* `hidden` par défaut : sans JS, les boutons ne filtreraient rien — une
           rangée de boutons morts vaut moins que pas de boutons du tout. Le
           script les révèle, c'est son premier geste. */}
@@ -23,8 +29,14 @@ const items = THEMES.flatMap((t) => t.visuels.map((v) => ({ theme: t, v, r: visu
       </div>
       <p class="sr-only" aria-live="polite" id="gal-etat"></p>
       <div class="grille grille--3 gal" data-reveal data-reveal-stagger>
+        {/* `r.logo ||` : un logo se centre à sa taille QUOI QU'IL ARRIVE — le
+            `sizes` de 160 px et le cadrage `contain` disent la même chose, et
+            un jour où un logo entrerait dans la galerie sans son `ajustement`
+            (une source dérivée, un thème ajouté à la main), il se ferait étirer
+            à 380 px de large. La donnée reste libre de le demander pour une
+            illustration, elle ne peut plus l'oublier pour un logo. */}
         {items.map(({ theme, v, r }, i) => (
-          <figure class:list={['gal__item', { 'gal__item--contain': v.ajustement === 'contain' }]} data-theme={theme.slug}>
+          <figure class:list={['gal__item', { 'gal__item--contain': r.logo || v.ajustement === 'contain' }]} data-theme={theme.slug}>
             <div class="gal__media">
               {/* Le discriminant est `logo`, JAMAIS la présence d'un srcset :
                   depuis que les vignettes existent en 160 et 256, les deux
@@ -35,7 +47,7 @@ const items = THEMES.flatMap((t) => t.visuels.map((v) => ({ theme: t, v, r: visu
               <img
                 src={r.src}
                 srcset={r.srcset}
-                sizes={r.logo ? r.sizes : SIZES_CASE}
+                sizes={r.logo ? SIZES_GALERIE_LOGO : SIZES_CASE}
                 alt={r.alt}
                 width={r.largeur}
                 height={r.hauteur}
@@ -78,7 +90,7 @@ const items = THEMES.flatMap((t) => t.visuels.map((v) => ({ theme: t, v, r: visu
 </script>
 
 <style>
-  .filtres { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+  .filtres { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 32px; margin-bottom: 32px; }
   /* Une classe en display:flex bat le display:none du navigateur : sans cette
      ligne, l'attribut `hidden` du groupe ne cacherait rien. */
   .filtres[hidden] { display: none; }

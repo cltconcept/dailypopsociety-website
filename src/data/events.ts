@@ -14,8 +14,16 @@ export type Evenement = {
   /** Le texte affiché — les dates ISO ne servent qu'au tri et au JSON-LD. */
   quand: string;
   desc: string;
-  /** Id d'illustration (cf. ALT de lib/illu) ou « logo:<id de LOGOS> ». */
-  visuel: RefVisuel;
+  /** Id d'illustration (cf. ALT de lib/illu) ou « logo:<id de LOGOS> ».
+   *  OPTIONNEL : un event passé dont on n'a pas la photo n'a PAS d'image du
+   *  tout. Lui prêter une illustration d'ambiance sans rapport, c'est raconter
+   *  autre chose que ce qui s'est passé — la carte se réduit alors au texte. */
+  visuel?: RefVisuel;
+  /** Périodes RÉELLES quand l'event n'est pas d'un seul tenant (« 21/10 puis
+   *  28 → 31 octobre » : deux blocs, pas onze jours). `debut`/`fin` gardent
+   *  l'enveloppe, qui sert au tri et à la partition ; ce sont ces périodes-ci
+   *  qui partent dans le JSON-LD, un `Event` chacune. */
+  periodes?: { debut: string; fin: string }[];
   reservation?: boolean;  // sur réservation uniquement
   aPlanifier?: boolean;   // dates à confirmer par la gérante
 };
@@ -30,6 +38,13 @@ export const EVENTS: Evenement[] = [
     titre: LICENCE_DU_MOIS.nom,
     debut: '2026-10-21',
     fin: '2026-10-31',
+    /* Les deux dates ci-dessus sont l'ENVELOPPE (tri, bascule dans le passé).
+       Les vraies journées sont ces deux blocs-là : annoncer « du 21 au 31 »
+       dans une SERP promettrait onze jours d'affilée, dont sept sans rien. */
+    periodes: [
+      { debut: '2026-10-21', fin: '2026-10-21' },
+      { debut: '2026-10-28', fin: '2026-10-31' },
+    ],
     quand: LICENCE_DU_MOIS.dates,
     desc: 'Carte éphémère, déco et soirées à thème pendant toute la période. Le programme détaillé se dévoile sur Instagram.',
     visuel: { id: 'logo:2026-05-daily-pop-society', alt: 'Logo de Daily Pop Society' },
@@ -56,7 +71,6 @@ export const EVENTS: Evenement[] = [
     fin: '2026-09-05',
     quand: 'Du 2 au 5 septembre 2026',
     desc: 'Quatre jours axés sur les séries et sitcoms cultes des années 2000.',
-    visuel: { id: 'starters' },
   },
   {
     titre: 'Disney Nostalgie 90-2000',
@@ -64,7 +78,6 @@ export const EVENTS: Evenement[] = [
     fin: '2026-08-15',
     quand: 'Du 12 au 15 août 2026',
     desc: 'Viens (re)découvrir les classiques de ton enfance.',
-    visuel: { id: 'patisserie' },
   },
   {
     titre: 'Jurassic Pop',
@@ -72,7 +85,6 @@ export const EVENTS: Evenement[] = [
     fin: '2026-07-31',
     quand: 'Juillet 2026',
     desc: 'Les dinosaures ont pris le bar.',
-    visuel: { id: 'cafe-latte' },
   },
   {
     titre: 'Spider Day',
@@ -80,19 +92,23 @@ export const EVENTS: Evenement[] = [
     fin: '2026-07-31',
     quand: 'Juillet 2026',
     desc: 'Une journée dans la toile, cosplay bienvenu.',
-    visuel: { id: 'mocktail-fraise' },
   },
 
-  /* ===== Soirées récurrentes (sans date : elles reviennent) ===== */
+  /* ===== Soirées récurrentes (sans date : elles reviennent) =====
+     ⚠️ À CONFIRMER CLIENTE : heures des soirées. Le brief ne les donne pas et
+     l'ancien site annonce 20h-22h — les « 19h » et « 18h » affichés ici
+     venaient de nulle part. Tant que la cliente n'a pas tranché, on dit le
+     RYTHME (« deux fois par mois, le vendredi ») et pas l'heure : un horaire
+     faux fait venir les gens porte close, une heure absente fait téléphoner. */
   {
     titre: 'Blind test pop culture',
-    quand: 'Deux fois par mois, le vendredi à 19h',
+    quand: 'Deux fois par mois, le vendredi',
     desc: 'Films, séries, animés, jeux vidéo : tu reconnais, tu buzzes, tu gagnes.',
     visuel: { id: 'blind-test' },
   },
   {
     titre: 'Soirée JDR',
-    quand: 'À 18h, sur réservation',
+    quand: 'Sur réservation',
     desc: "Blood on the Clocktower et d'autres jeux de rôle. Places limitées, réservation par téléphone ou Messenger.",
     visuel: { id: 'jdr' },
     reservation: true,

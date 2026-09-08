@@ -6,6 +6,14 @@ import Horaires from '../components/Horaires.astro';
 import LienExterne from '../components/LienExterne.astro';
 import { IDENTITE, LICENCE_DU_MOIS } from '../data/site';
 import { illu } from '../lib/illu';
+
+/* `{...illu(id)}` répandait aussi l'`alt` sur <Case>, qui l'IGNORE dès qu'un
+   `href` est posé (l'image y est décorative, le nom du lien vient du texte) :
+   on croyait décrire trois images qui ne l'étaient pas. On passe donc ce que la
+   case lit vraiment, et rien d'autre. */
+const caseCarte = illu('cocktail-zoro');
+const caseEvents = illu('blind-test');
+const caseFandom = illu('coin-gaming');
 ---
 <Base title="Daily Pop Society — Bar pop culture à Charleroi" description="Food, drinks, fandom : cocktails à personnages, burgers, bubble teas, events mensuels, blind tests et JDR au cœur de Charleroi. Cosplay bienvenu, tout le temps.">
   <!-- Pré-paint : pose l'état « avant générique » AVANT le premier rendu (jamais de flash).
@@ -27,9 +35,9 @@ import { illu } from '../lib/illu';
       <h2 class="titre titre--md">Food. Drinks. <em>Fandom.</em></h2>
       <p class="copy">Ton repaire pop culture à Charleroi. On parle entre potes, on vient en costume quand on veut, et chaque mois une licence prend le pouvoir sur la carte.</p>
       <div class="grille grille--3 chap__grille" data-reveal data-reveal-stagger>
-        <Case href="/la-carte/" tag="La carte" titre="Cocktails à personnages, burgers signature" texte="Bubble teas, mocktails, cafés, starters et pâtisseries : une carte qui change avec la licence du mois." sfx="Slurp !" {...illu('cocktail-zoro')} />
-        <Case href="/events/" tag="Les events" titre="Une licence par mois, des soirées chaque semaine" texte="Blind test pop culture deux fois par mois, JDR sur réservation, animations le week-end." sfx="Pop !" {...illu('blind-test')} />
-        <Case href="/a-propos/" tag="Le fandom" titre="Mangas, jeux, coin gaming, cosplay bienvenu" texte="Mangas, comics, jeux de société et coin gaming Switch / PS4 à dispo pour tous ceux qui consomment." sfx="Crunch !" {...illu('coin-gaming')} />
+        <Case href="/la-carte/" tag="La carte" titre="Cocktails à personnages, burgers signature" texte="Bubble teas, mocktails, cafés, starters et pâtisseries : une carte qui change avec la licence du mois." sfx="Slurp !" src={caseCarte.src} srcset={caseCarte.srcset} />
+        <Case href="/events/" tag="Les events" titre="Une licence par mois, des soirées chaque semaine" texte="Blind test pop culture deux fois par mois, JDR sur réservation, animations le week-end." sfx="Pop !" src={caseEvents.src} srcset={caseEvents.srcset} />
+        <Case href="/a-propos/" tag="Le fandom" titre="Mangas, jeux, coin gaming, cosplay bienvenu" texte="Mangas, comics, jeux de société et coin gaming Switch / PS4 à dispo pour tous ceux qui consomment." sfx="Crunch !" src={caseFandom.src} srcset={caseFandom.srcset} />
       </div>
     </div>
   </section>
@@ -43,7 +51,10 @@ import { illu } from '../lib/illu';
         <p class="copy">{LICENCE_DU_MOIS.accroche} Carte éphémère, déco, soirées : {LICENCE_DU_MOIS.dates}.</p>
         <div class="actions"><a class="btn" href="/events/">Voir le programme</a></div>
       </div>
-      <p class="mois__hand hand" aria-hidden="true">{`imaginé par ${IDENTITE.gerante}, alias ${IDENTITE.surnom}`}</p>
+      {/* Pas d'aria-hidden : c'est du CONTENU (qui imagine la carte du mois), pas
+          un ornement. La police manuscrite est une mise en forme, elle ne rend
+          pas la phrase décorative — la cacher, c'est la retirer à qui écoute. */}
+      <p class="mois__hand hand">{`imaginé par ${IDENTITE.gerante}, alias ${IDENTITE.surnom}`}</p>
     </div>
   </section>
 

@@ -48,6 +48,16 @@ export const illu = (id: string) => {
    · carte d'event PASSÉ : deux colonnes, (1180 − 64 − 30) / 2 ≈ 540 px. */
 export const SIZES_EVENT = '(max-width: 600px) 100vw, 240px';
 export const SIZES_EVENT_PASSE = '(max-width: 600px) 100vw, (max-width: 960px) 46vw, 540px';
+/* Un LOGO d'EventCard n'occupe pas la colonne média : il y est centré à sa
+   taille (144 px de haut dans les 240×180 de la colonne, 160 px en mobile où il
+   reprend sa dimension propre). Cette chaîne vivait en dur dans le composant,
+   à côté de deux constantes importées d'ici — trois valeurs de même nature,
+   deux façons de les tenir. */
+export const SIZES_EVENT_LOGO = '(max-width: 600px) 160px, 144px';
+/* Un logo de GALERIE est centré à sa dimension propre (160 px), jamais étiré à
+   la case : lui servir SIZES_CASE ferait croire au navigateur qu'il occupe
+   380 px et lui ferait charger la 256 partout, même en DPR 1. */
+export const SIZES_GALERIE_LOGO = '160px';
 
 /* Largeur RENDUE d'une case de comics dans la grille à 3 colonnes :
    pleine largeur en mobile, moitié en tablette, 380 px au-delà. */
@@ -66,8 +76,10 @@ export type RefVisuel = { id: string; alt?: string };
 export type VisuelResolu = {
   src: string;
   srcset?: string;
-  /** Largeur RENDUE par défaut. Un consommateur qui sait mieux la surcharge. */
-  sizes?: string;
+  /* Pas de `sizes` ici : la largeur RENDUE dépend de l'endroit où le visuel est
+     posé (colonne d'EventCard, case de galerie), pas du visuel lui-même. Le
+     champ existait, personne ne le lisait sans le remplacer — chaque
+     consommateur choisit sa constante SIZES_* ci-dessus. */
   alt: string;
   largeur: number;
   hauteur: number;
@@ -87,7 +99,6 @@ export function visuel(v: RefVisuel): VisuelResolu {
          c'est la dimension intrinsèque que le navigateur doit réserver, pas
          celle du candidat qu'il finira par choisir. */
       srcset: l.srcset,
-      sizes: '160px',
       alt: v.alt ?? `Logo mensuel ${l.licence}`,
       largeur: 160,
       hauteur: 160,

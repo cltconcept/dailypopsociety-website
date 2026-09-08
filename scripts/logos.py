@@ -59,10 +59,17 @@ if doublons:
 # sur un écran DPR 2 réclame 260 pixels réels, la 160 y bavait.
 # Le suffixe de fichier se DÉDUIT de la taille : il n'est écrit à la main ni
 # dans le srcset, ni dans la purge des orphelins.
-TAILLE = 160
+# TAILLES est la source, TAILLE s'en DÉDUIT : deux constantes indépendantes se
+# contredisaient au premier changement de base (le suffixe, le srcset et la
+# purge des orphelins auraient alors désigné trois jeux de fichiers différents).
 TAILLES = (160, 256)
+TAILLE = TAILLES[0]
 MARGE = 6  # pixels de planche gardés autour du disque, dans les coordonnées source
-suffixe = lambda t: '' if t == TAILLE else f'-{t}'
+
+
+def suffixe(t):
+    """Suffixe de fichier d'une variante : '' pour la base, '-256' au-delà."""
+    return '' if t == TAILLE else f'-{t}'
 
 # Masque circulaire : les planches sources sont des timelines, chaque logo y est
 # posé sur un trait noir qui traversait les coins des vignettes carrées. On
@@ -149,7 +156,7 @@ for id_, pl, cx, cy, r, mois, licence in LOGOS:
 # Le jeu attendu couvre TOUTES les variantes de taille (dont le suffixe -256) :
 # une purge qui ne connaîtrait que la base effacerait, à chaque exécution, les
 # vignettes que la boucle vient d'écrire.
-attendus = {f'{l[0]}{suffixe(t)}.webp' for l in LOGOS for t in TAILLES} | {'montage.webp'}
+attendus = {f'{l[0]}{suffixe(t)}.webp' for l in LOGOS for t in TAILLES} | {'montage.webp', 'montage-hd.webp'}
 for f in OUT.glob('*.webp'):
     if f.name not in attendus:
         f.unlink()
@@ -158,26 +165,34 @@ for f in OUT.glob('*.webp'):
 # Montage 10 colonnes : remplissage des lettres « DAILY POP » (background-clip: text)
 cols = 10
 rows = (len(vignettes) + cols - 1) // cols
-# …monté en pleine résolution à partir des vignettes de BASE, puis SERVI à la
-# moitié. Ce n'est pas une perte de qualité : `background-size: auto 100%` met
-# le montage à la hauteur de la couche de remplissage, qui vaut au plus 240 px
-# (`clamp(4.4rem, 15vw, 15rem)` dans Generique.astro) — les 480 px du collage
-# étaient donc TOUJOURS réduits, jamais affichés tels quels, et 3,4× de trop sur
-# un téléphone. Mesuré sur Lighthouse mobile le 2026-09-08 : 133 Ko → 47 Ko,
-# LCP 4,0 s → 2,6 s, performance 87 → 96 — c'est le plus gros fichier du site
-# ET la ressource du plus grand élément peint, il gouvernait le LCP à lui seul.
-# Le RAPPORT largeur/hauteur ne bouge pas (3,333) : le `data-montage-ratio` du
-# générique et la course du remplissage qui s'en déduit sont intacts.
-# ⚠️ Si la taille du titre grandissait au-delà de 240 px, ce diviseur devrait
-# baisser d'autant : c'est la seule chose qui rend la réduction gratuite.
+# DEUX montages, le MÊME collage à deux résolutions. Le raisonnement se tient
+# en pixels PHYSIQUES : `background-size: auto 100%` met le montage à la hauteur
+# de la couche de remplissage, qui vaut au plus 240 px CSS (`clamp(4.4rem, 15vw,
+# 15rem)` dans Generique.astro). Le montage pleine résolution fait 480 px de
+# haut, il couvre donc exactement 240 px CSS × DPR 2 — et sa moitié, 240 px
+# physiques, couvre 240 px CSS × DPR 1 comme 120 px CSS × DPR 2 (la taille
+# réelle du titre sur un téléphone).
+#   · `montage.webp` (réduit, 800×240) sert le MOBILE : il y gouvernait le LCP
+#     à lui seul, c'est le plus gros fichier du site ET la ressource du plus
+#     grand élément peint. Mesuré sur Lighthouse mobile le 2026-09-08 :
+#     133 Ko → 47 Ko, LCP 4,0 s → 2,6 s, performance 87 → 96.
+#   · `montage-hd.webp` (pleine résolution, 1600×480) sert le DESKTOP dense,
+#     où le titre monte à 240 px CSS et où la version réduite se voyait molle.
+# Le CSS du générique bascule à 1024 px et les deux `<link rel=preload>` portent
+# le `media` correspondant : une seule des deux images part par visite.
+# Le RAPPORT largeur/hauteur est identique (3,333) : le `data-montage-ratio` du
+# générique et la course du remplissage qui s'en déduit valent pour les deux.
 SERVI = 2
 # Le montage reste en RGB sur fond blanc (il sert de background-image derrière
 # du texte détouré : pas d'alpha à y traîner). Les disques y sont collés avec
 # leur propre alpha, le hors-cercle redevient donc blanc.
-mont = Image.new('RGB', (TAILLE * cols, TAILLE * rows), 'white')
+mont_hd = Image.new('RGB', (TAILLE * cols, TAILLE * rows), 'white')
 for i, v in enumerate(vignettes):
-    mont.paste(v, ((i % cols) * TAILLE, (i // cols) * TAILLE), v)
-mont = mont.resize((TAILLE * cols // SERVI, TAILLE * rows // SERVI), Image.LANCZOS)
+    mont_hd.paste(v, ((i % cols) * TAILLE, (i // cols) * TAILLE), v)
+mont_hd.save(OUT / 'montage-hd.webp', 'WEBP', quality=80, method=6)
+# Réduction depuis le collage en mémoire, pas depuis le fichier relu : deux
+# encodages WebP à la suite empileraient leurs artefacts.
+mont = mont_hd.resize((mont_hd.width // SERVI, mont_hd.height // SERVI), Image.LANCZOS)
 mont.save(OUT / 'montage.webp', 'WEBP', quality=80, method=6)
 
 ts = (RACINE / 'src' / 'data' / 'logos.ts')
@@ -186,7 +201,10 @@ ts.write_text(
     "/* GÉNÉRÉ par scripts/logos.py — ne pas éditer à la main. */\n"
     "export type LogoMensuel = { id: string; mois: string; licence: string; src: string; srcset: string };\n\n"
     "export const LOGOS: LogoMensuel[] = [\n" + "\n".join(lignes) + "\n];\n\n"
-    f"export const MONTAGE = {{ src: '/media/logos/montage.webp', largeur: {mont.width}, hauteur: {mont.height} }};\n",
+    "/* Le MÊME collage à deux résolutions : le réduit pour le mobile, la HD au-delà\n"
+    "   de 1024 px (cf. Generique.astro). Même rapport largeur/hauteur pour les deux. */\n"
+    f"export const MONTAGE = {{ src: '/media/logos/montage.webp', largeur: {mont.width}, hauteur: {mont.height} }};\n"
+    f"export const MONTAGE_HD = {{ src: '/media/logos/montage-hd.webp', largeur: {mont_hd.width}, hauteur: {mont_hd.height} }};\n",
     encoding='utf-8',
     newline='\n',  # le dépôt est en LF ; write_text traduisait en CRLF sous Windows
 )

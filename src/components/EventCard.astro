@@ -1,34 +1,39 @@
 ---
 import type { Evenement } from '../data/events';
-import { visuel, SIZES_EVENT, SIZES_EVENT_PASSE } from '../lib/illu';
+import { visuel, SIZES_EVENT, SIZES_EVENT_PASSE, SIZES_EVENT_LOGO } from '../lib/illu';
 /* Carte d'event : média à gauche, texte à droite (une colonne en mobile).
    `niveau` suit la hiérarchie de la page qui pose la carte (h3 par défaut),
-   comme Case. `passe` grise l'illustration et annonce les photos à venir. */
+   comme Case. `passe` grise l'illustration et annonce les photos à venir ;
+   sans visuel du tout, la carte se réduit au texte (date, titre, phrase,
+   pastille « Photos à venir »). */
 interface Props { ev: Evenement; sombre?: boolean; passe?: boolean; niveau?: 2 | 3 | 4 }
 const { ev, sombre = false, passe = false, niveau = 3 } = Astro.props;
 /* La résolution du visuel (illustration en 480/960/1440, ou logo mensuel en
    160/256) vit dans lib/illu — pas dans une regex sur l'URL. Les deux familles
    portent un srcset : ce qui les distingue est `v.logo`, jamais sa présence. */
-const v = visuel(ev.visuel);
+/* `visuel` est OPTIONNEL : un event passé sans photo n'a plus d'illustration du
+   tout (une image d'ambiance sans rapport avec l'event racontait autre chose
+   que ce qui s'est passé). La carte devient alors du texte seul. */
+const v = ev.visuel ? visuel(ev.visuel) : null;
 const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
 ---
-<article class:list={['evc', { 'evc--sombre': sombre, 'evc--passe': passe, 'evc--logo': v.logo }]}>
-  <div class="evc__media">
-    {/* `sizes` : un logo n'occupe pas la colonne média, il y est centré à sa
-        taille (144 px de haut dans les 240×180 de la colonne, 160 px en mobile
-        où il reprend sa dimension propre). Les largeurs de colonne qui suivent
-        ne valent que pour une illustration cadrée en 4/3. */}
-    <img
-      src={v.src}
-      srcset={v.srcset}
-      sizes={v.logo ? '(max-width: 600px) 160px, 144px' : passe ? SIZES_EVENT_PASSE : SIZES_EVENT}
-      alt={v.alt}
-      width={v.largeur}
-      height={v.hauteur}
-      loading="lazy"
-      decoding="async"
-    />
-  </div>
+<article class:list={['evc', { 'evc--sombre': sombre, 'evc--passe': passe, 'evc--logo': v?.logo, 'evc--nu': !v }]}>
+  {v && (
+    <div class="evc__media">
+      {/* `sizes` : les largeurs de colonne ne valent que pour une illustration
+          cadrée en 4/3 ; un logo est centré à sa taille (cf. SIZES_EVENT_LOGO). */}
+      <img
+        src={v.src}
+        srcset={v.srcset}
+        sizes={v.logo ? SIZES_EVENT_LOGO : passe ? SIZES_EVENT_PASSE : SIZES_EVENT}
+        alt={v.alt}
+        width={v.largeur}
+        height={v.hauteur}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  )}
   <div class="evc__body">
     <p class="evc__quand">{ev.quand}{ev.aPlanifier && ' · Dates à venir'}</p>
     <H class="evc__titre">{ev.titre}</H>
@@ -68,6 +73,13 @@ const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
   .evc--sombre { background: var(--noir); border-color: var(--bdx); box-shadow: 6px 6px 0 var(--rouge); }
   .evc--sombre .evc__media { border-color: var(--bdx); }
   .evc--passe { grid-template-columns: 1fr; }
+  /* Carte SANS média (event passé dont la photo n'existe pas encore) : la
+     colonne de 240 px n'a plus rien à tenir, le texte doit prendre toute la
+     largeur — sinon le body se rangeait dans la colonne de l'image absente.
+     Un peu plus d'air en haut et en bas : sans image, la carte est basse, et
+     quatre cartes plates alignées ressemblaient à une liste de liens. */
+  .evc--nu { grid-template-columns: 1fr; }
+  .evc--nu .evc__body { padding: 26px 24px 28px; }
   .evc--passe .evc__media { border-right: 0; border-bottom: var(--bord); }
   /* Gris franc : une illustration à moitié désaturée a l'air d'un bug, pas
      d'une archive. Elle tient lieu de photo tant que la cliente n'en a pas. */

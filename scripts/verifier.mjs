@@ -52,6 +52,27 @@ for (const p of PAGES) {
   }
   for (const v of medias) ok(existsSync(join(DIST, v)), `${p} : média manquant ${v}`);
 
+  // Canonical : la page doit en porter un, dans le HEAD (un <link> égaré dans le
+  // corps est ignoré des moteurs), et il doit désigner le domaine DE PRODUCTION.
+  // Un canonical relatif ou pointant sur la maquette ferait indexer chris-ia.com
+  // à la place de dailypopsociety.be — la faute la plus chère du lot.
+  const canon = head.match(/<link[^>]*\srel="canonical"[^>]*\shref="([^"]*)"/);
+  ok(Boolean(canon), `${p} : <link rel="canonical"> absent du <head>`);
+  if (canon) ok(canon[1].startsWith(`${ORIGINE}/`), `${p} : canonical hors du domaine de production : ${canon[1]}`);
+
+  // Liens internes : chaque href="/…" doit se ramener à un fichier de dist/.
+  // Les ancres, tel:, mailto: et les liens externes n'ont rien à y exister.
+  // Une URL de dossier (« /events/ ») est servie par son index.html : c'est LUI
+  // qu'on cherche, sinon nginx répondrait 404 sur un lien du menu.
+  for (const m of html.matchAll(/href="([^"]+)"/g)) {
+    const v = m[1];
+    if (!v.startsWith('/') || v.startsWith('//')) continue;
+    const sansAncre = v.split('#')[0].split('?')[0];
+    if (sansAncre === '') continue;
+    const cible = sansAncre.endsWith('/') ? `${sansAncre}index.html` : sansAncre;
+    ok(existsSync(join(DIST, cible)), `${p} : lien interne mort ${v} (attendu : dist${cible})`);
+  }
+
   // JSON-LD : on le PARSE au lieu de chercher la chaîne. C'est le seul moyen
   // de voir un horaire mal transformé (« 9:00 » au lieu de « 09:00 »).
   if (p !== '404.html') {

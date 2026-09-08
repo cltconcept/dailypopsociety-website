@@ -7,7 +7,7 @@
 | Framework | Astro 5 (sortie 100 % statique, `site: https://dailypopsociety.be`) |
 | Animation | GSAP 3 + ScrollTrigger, import différé (idle/scroll), scrub réservé au desktop (≥ 1024 px) |
 | Fontes | Anton, Inter Variable, Caveat, Bangers (`@fontsource`, auto-hébergées, `font-display: swap`) |
-| Images | Illustrations : WebP 3 tailles (480/960/1440, sharp) · Logos mensuels : WebP 160/256 px + montage (Pillow) |
+| Images | Illustrations : WebP 3 tailles (480/960/1440, sharp) · Logos mensuels : WebP 160/256 px + montage en 2 résolutions, réduite au mobile et HD au-delà de 1024 px (Pillow) |
 | Illustrations | Kie.ai `nano-banana-pro`, style cel-shadé sticker (démo, à remplacer par des photos) |
 | SEO | `@astrojs/sitemap`, JSON-LD `BarOrPub` + `Event`, Open Graph, canonical |
 | Serveur | nginx alpine (Docker 2 étages, aucune variable d'env au run), Coolify maquettes (`*.chris-ia.com`) |
@@ -32,10 +32,17 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 - `src/pages/` — `index`, `la-carte`, `events`, `galerie`, `a-propos`, `contact`, `mentions-legales`, `404` (8 pages, cf. `PAGES` de `scripts/verifier.mjs`)
 - `scripts/` — `verifier.mjs` (contrôle `dist/` après build), `logos.py` (découpe les planches de la cliente en vignettes WebP 160/256 px + montage, écrit `src/data/logos.ts`), `illustrations.sh` + `illustrations.txt` (génération Kie), `webp.mjs` (PNG Kie → WebP 3 tailles)
 - `public/` — `favicon.svg`, `media/og.png`, `media/logos/`, `media/illu/`, `robots.txt`
-- `nginx.conf` — un seul `Cache-Control` par réponse, `immutable` sur `/_astro/`, 30 jours sur `/media/`, `no-cache` sur tout le HTML (`location ~ \.html$`), en-têtes de sécurité (`X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`), 404 réelle sans fallback SPA
+- `nginx.conf` — un seul `Cache-Control` par réponse, `immutable` sur `/_astro/`, 30 jours sur `/media/`, `no-cache` sur tout le HTML (`location ~ \.html$`), en-têtes de sécurité (`X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`), `X-Robots-Tag: noindex` **tant que le site est une maquette**, 404 réelle sans fallback SPA
 - `docs/superpowers/` — spec de design et plan d'implémentation (17 tâches) qui ont guidé cette session
 - `brief/` (gitignoré) — moodboard, `info.txt`, planches de logos, PNG sources des illustrations
-- Flux : données TS → pages Astro → HTML statique → nginx. Mise à jour mensuelle = éditer `site.ts` (licence du mois), `events.ts`, `carte.ts`.
+- Flux : données TS → pages Astro → HTML statique → nginx.
+
+### Procédure mensuelle
+1. `src/data/site.ts` — `LICENCE_DU_MOIS` (nom, dates, accroche). Tout ce qui est *dérivé* suit : la title card des events, le bandeau de l'accueil, le titre de la carte éphémère.
+2. `src/data/events.ts` — les dates ISO de l'event de la licence (`debut`, `fin`, et `periodes` si le mois n'est pas d'un seul tenant), et le passage des events du mois écoulé dans le passé se fait **tout seul** au build.
+3. `src/data/carte.ts` — ⚠️ **la carte éphémère est à RÉÉCRIRE à la main** : seul son *titre* est dérivé de `LICENCE_DU_MOIS`. L'`intro` et les `items` de `EPHEMERE` (noms, descriptions, prix) sont du contenu, pas une dérivation — les laisser tels quels, c'est afficher la carte du mois précédent sous le nom du mois en cours.
+4. `pnpm test`, puis pousser : le site étant statique, c'est la date de **build** qui fait basculer les events dans le passé. Republier chaque mois est donc obligatoire.
+- ℹ️ L'image Open Graph (`public/media/og.png`) est **intemporelle** depuis le 2026-09-08 (« DAILY POP / SOCIETY » seul, sans la title card du mois) : plus rien à regénérer mensuellement.
 
 ## Variables d'environnement
 | Variable | Description | Requis |
@@ -60,6 +67,8 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 
 ## Journal des changements
 ### 2026-09-08
+- 🐛 Fix : dernière passe — `sizes` des bandes du générique aligné sur son `clamp` (la 256 ne part plus sur mobile), montage HD servi au desktop dense (deux fichiers, un seul téléchargé), events passés sans faux visuels (cartes de texte seul), garde de cohérence sur la licence du mois, JSON-LD `Event` en deux périodes réelles, image Open Graph intemporelle, maquette `noindex` côté nginx, alignements et titres de section
+- ✨ Ajout : contrôle du `canonical` et des liens internes dans `scripts/verifier.mjs`
 - ✨ Ajout : socle visuel (tokens, layout SEO/JSON-LD, header capsule, footer, horaires, page 404)
 - 🐛 Fix : menu mobile refermable, horaires robustes, focus et contrastes, JSON-LD extrait dans `lib/jsonld.ts`, contrôleur renforcé
 - ✨ Ajout : 28 logos mensuels découpés des planches de la cliente (`scripts/logos.py`, Pillow) en WebP 160 px + montage pour le remplissage des lettres du générique ; `src/data/logos.ts` généré
@@ -100,6 +109,9 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 - Coordonnées GPS et lien Messenger absents de la page contact (Messenger n'est mentionné qu'en texte, sans lien cliquable).
 - Réservation du domaine `dailypopsociety.be` à faire côté cliente.
 - Dates des soirées d'octobre à décembre à confirmer (Tim Burton, Noël : `aPlanifier: true` dans `src/data/events.ts`).
+- Frise des logos arrêtée à mai 2026 : les logos de juin à septembre 2026 sont à fournir par la cliente (planches `brief/site-actuel/timeline-*.jpg`, puis `python scripts/logos.py`).
+- Heures des soirées à confirmer : le site annonce le **rythme** (« deux fois par mois, le vendredi », « sur réservation ») et **pas l'heure**. Le brief ne la donne pas, l'ancien site annonce 20h-22h — les heures affichées auparavant (19h, 18h) venaient de nulle part.
+- Horaires : le brief et l'ancien site se contredisent (mercredi 13h vs 12h ; vendredi et samedi, fermeture à 22h vs 22h/23h). **Le site reprend le brief** ; à trancher avec la cliente.
 - ⚠️ À vérifier avant livraison définitive : certaines figurines visibles dans l'illustration générée « comptoir » pourraient rappeler des personnages sous droits — à signaler à la cliente et à repasser en revue.
 - ⚠️ Sécurité de l'ancien site : la base Firebase Realtime Database du site Netlify actuel est lisible et modifiable sans authentification depuis le navigateur (noms, e-mails, points et drapeau admin des clients). Le nouveau site ne stocke aucune donnée client, mais l'ancien doit être coupé et le projet Firebase supprimé ou verrouillé à la mise en production.
 
@@ -109,4 +121,10 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
 - Redéploiement après un push : `git push origin HEAD` puis `curl -s -H "Authorization: Bearer $TOK" "http://46.224.83.139:8000/api/v1/deploy?uuid=o129qzwy4inm5tsgfrmqrtw7"` (GET) — le jeton vit dans `~/.claude.json` → `mcpServers.coolify.env.COOLIFY_ACCESS_TOKEN`, ne jamais l'écrire ici. Suivi : `GET /api/v1/applications/o129qzwy4inm5tsgfrmqrtw7` jusqu'à `status: running…` (le build passe par `exited:unhealthy` pendant ~1 min, c'est normal).
 - Image Docker nginx (2 étages : build Node 22 + service nginx alpine) testée en local : 404 réelle, caches (`immutable` sur `/_astro/`, 30 jours sur `/media/`, `no-cache` sur tout le HTML), en-têtes de sécurité de base.
 - Dépôt : GitHub public, `cltconcept/dailypopsociety-website` (même convention que `dentalexpert-website` et `xenia-website`) ; `brief/` (moodboard, images du site actuel, PNG sources) gitignoré et exclu de l'image.
-- Production (plus tard) : réserver `dailypopsociety.be`, configurer le DNS, nommer l'hébergeur dans les mentions légales, passer `DEMO = false` dans `src/data/carte.ts` (le contrôleur refuse la mise en production sinon : `PROD=1 pnpm verifier`), puis couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).
+- **Checklist de mise en production** (dans l'ordre) :
+  1. Réserver `dailypopsociety.be` et configurer le DNS.
+  2. Nommer l'hébergeur dans les mentions légales (`src/pages/mentions-legales.astro`).
+  3. Passer `DEMO = false` dans `src/data/carte.ts` avec la vraie carte — le contrôleur refuse la mise en production sinon (`PROD=1 pnpm verifier`).
+  4. ⚠️ **Retirer les `add_header X-Robots-Tag "noindex" always;` de `nginx.conf`** (le bloc `server` + les trois `location`) : ils empêchent l'indexation de la MAQUETTE, ils interdiraient celle du vrai site. Chaque ligne porte le commentaire « MAQUETTE : à retirer en production ».
+  5. `PROD=1 pnpm verifier`, puis déployer.
+  6. Couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).

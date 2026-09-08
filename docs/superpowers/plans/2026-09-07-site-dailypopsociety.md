@@ -61,7 +61,7 @@ Claude-Session: https://claude.ai/code/session_019L79jh7bQLpHnkHyeQ8KLi
 - Create: `package.json`, `pnpm-workspace.yaml`, `tsconfig.json`, `astro.config.mjs`, `src/pages/index.astro`, `public/robots.txt`, `scripts/verifier.mjs`
 - Modify: `.gitignore` (déjà présent : `node_modules/ dist/ .astro/ .gstack/ .superpowers/ brief/`)
 
-- [ ] **Step 1 : Écrire `package.json`**
+- [x] **Step 1 : Écrire `package.json`**
 
 ```json
 {
@@ -95,7 +95,7 @@ Claude-Session: https://claude.ai/code/session_019L79jh7bQLpHnkHyeQ8KLi
 }
 ```
 
-- [ ] **Step 2 : Écrire `pnpm-workspace.yaml`, `tsconfig.json`, `astro.config.mjs`**
+- [x] **Step 2 : Écrire `pnpm-workspace.yaml`, `tsconfig.json`, `astro.config.mjs`**
 
 `pnpm-workspace.yaml` :
 ```yaml
@@ -130,7 +130,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 3 : Écrire une page minimale `src/pages/index.astro` et `public/robots.txt`**
+- [x] **Step 3 : Écrire une page minimale `src/pages/index.astro` et `public/robots.txt`**
 
 ```astro
 ---
@@ -148,7 +148,7 @@ Allow: /
 Sitemap: https://dailypopsociety.be/sitemap-index.xml
 ```
 
-- [ ] **Step 4 : Écrire le contrôleur `scripts/verifier.mjs` (le test qui tourne à chaque tâche)**
+- [x] **Step 4 : Écrire le contrôleur `scripts/verifier.mjs` (le test qui tourne à chaque tâche)**
 
 ```js
 // Contrôle de dist/ après build. Sortie 1 = une attente non satisfaite.
@@ -187,12 +187,12 @@ if (erreurs.length) { console.error('✗ verifier :\n - ' + erreurs.join('\n - '
 console.log(`✓ verifier : ${PAGES.length} pages contrôlées, aucun écart`);
 ```
 
-- [ ] **Step 5 : Installer et lancer le contrôle (il doit ÉCHOUER : 404.html, description courte, JSON-LD)**
+- [x] **Step 5 : Installer et lancer le contrôle (il doit ÉCHOUER : 404.html, description courte, JSON-LD)**
 
 Run : `cd C:/Dev/Noveo/_autres/website/dailypopsociety && pnpm install && pnpm test`
 Expected : `pnpm install` passe ; `verifier` sort en 1 avec `page absente : 404.html`, `index.html : description absente ou < 40 caractères`, `index.html : JSON-LD absent`. C'est le point de départ : la Task 2 fait passer ces trois lignes.
 
-- [ ] **Step 6 : Commit**
+- [x] **Step 6 : Commit**
 
 ```bash
 git add package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json astro.config.mjs src public scripts
@@ -207,7 +207,7 @@ git commit -m "chore: projet Astro 5 sur le port 4332, contrôleur de dist"
 - Create: `src/styles/global.css`, `src/lib/motion.ts`, `src/data/site.ts`, `src/data/horaires.ts`, `src/layouts/Base.astro`, `src/components/Header.astro`, `src/components/Footer.astro`, `src/components/Horaires.astro`, `src/pages/404.astro`, `public/favicon.svg`
 - Modify: `src/pages/index.astro`
 
-- [ ] **Step 1 : Écrire `src/data/site.ts`**
+- [x] **Step 1 : Écrire `src/data/site.ts`**
 
 ```ts
 /* Données partagées — une seule source pour les pages, le footer et le JSON-LD.
@@ -250,7 +250,7 @@ export const NAV = [
 ];
 ```
 
-- [ ] **Step 2 : Écrire `src/data/horaires.ts`**
+- [x] **Step 2 : Écrire `src/data/horaires.ts`**
 
 ```ts
 export type Jour = { jour: string; court: string; creneaux: string[] | null; index: number };
@@ -283,7 +283,7 @@ export const HORAIRES_SCHEMA = JOURS.filter((j) => j.creneaux).flatMap((j) =>
 );
 ```
 
-- [ ] **Step 3 : Écrire `src/lib/motion.ts` (repris de xenia, inchangé sauf commentaire)**
+- [x] **Step 3 : Écrire `src/lib/motion.ts` (repris de xenia, inchangé sauf commentaire)**
 
 ```ts
 /* Socle animation partagé des sites vitrines (dentalexpert → xenia → ici) :
@@ -347,7 +347,7 @@ export function bootReveals({ gsap, ScrollTrigger }: GsapModules) {
 }
 ```
 
-- [ ] **Step 4 : Écrire `src/styles/global.css`**
+- [x] **Step 4 : Écrire `src/styles/global.css`**
 
 ```css
 /* ============================================================
@@ -552,13 +552,13 @@ a.case:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--bdx
 /* ===== Générique (états sans JS et reduced-motion) : cf. Generique.astro ===== */
 ```
 
-- [ ] **Step 5 : Écrire `public/favicon.svg`**
+- [x] **Step 5 : Écrire `public/favicon.svg`**
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#7B1E2B"/><text x="32" y="44" text-anchor="middle" font-family="Impact, Arial Narrow, sans-serif" font-size="34" fill="#fff">DP</text></svg>
 ```
 
-- [ ] **Step 6 : Écrire `src/layouts/Base.astro`**
+- [x] **Step 6 : Écrire `src/layouts/Base.astro`**
 
 ```astro
 ---
@@ -643,7 +643,7 @@ const jsonLd = {
 </html>
 ```
 
-- [ ] **Step 7 : Écrire `src/components/Header.astro`**
+- [x] **Step 7 : Écrire `src/components/Header.astro`**
 
 ```astro
 ---
@@ -737,7 +737,7 @@ const isActive = (href: string) => path === href || path.startsWith(href);
 </style>
 ```
 
-- [ ] **Step 8 : Écrire `src/components/Footer.astro` et `src/components/Horaires.astro`**
+- [x] **Step 8 : Écrire `src/components/Footer.astro` et `src/components/Horaires.astro`**
 
 `src/components/Footer.astro` :
 ```astro
@@ -838,7 +838,7 @@ import { JOURS, MENTION_HORAIRES } from '../data/horaires';
 </style>
 ```
 
-- [ ] **Step 9 : Produire le logo principal en WebP (3 tailles) depuis `brief/site-actuel/logo.jpg`**
+- [x] **Step 9 : Produire le logo principal en WebP (3 tailles) depuis `brief/site-actuel/logo.jpg`**
 
 Run :
 ```bash
@@ -856,7 +856,7 @@ ls -la public/media
 ```
 Expected : `logo-64.webp`, `logo-320.webp`, `logo-640.webp` (chacun < 60 Ko).
 
-- [ ] **Step 10 : Écrire `src/pages/404.astro` et remplacer `src/pages/index.astro` par une page sur le layout**
+- [x] **Step 10 : Écrire `src/pages/404.astro` et remplacer `src/pages/index.astro` par une page sur le layout**
 
 `src/pages/404.astro` :
 ```astro
@@ -906,12 +906,12 @@ import { IDENTITE } from '../data/site';
 </Base>
 ```
 
-- [ ] **Step 11 : Build + contrôle (doit PASSER)**
+- [x] **Step 11 : Build + contrôle (doit PASSER)**
 
 Run : `pnpm test`
 Expected : build sans erreur, `✓ verifier : 2 pages contrôlées, aucun écart`.
 
-- [ ] **Step 12 : Boucle visuelle — capture desktop + mobile de l'accueil et de la 404, lecture, corrections éventuelles**
+- [x] **Step 12 : Boucle visuelle — capture desktop + mobile de l'accueil et de la 404, lecture, corrections éventuelles**
 
 Run (serveur dev en arrière-plan : `pnpm dev`, `run_in_background: true`, puis) :
 ```bash
@@ -920,7 +920,7 @@ echo '[["viewport","1440x900"],["goto","http://localhost:4332/"],["wait","--netw
 ```
 Puis lire les trois PNG avec l'outil Read. Attendu : capsule noire lisible, title card bordeaux avec « DAILY POP / SOCIETY » en Anton, horaires avec le jour courant surligné, footer 4 colonnes (1 colonne en mobile), burger fonctionnel (tester : `["click","#nav-burger"],["screenshot",…]`). Corriger ce qui ne va pas avant de committer.
 
-- [ ] **Step 13 : Commit**
+- [x] **Step 13 : Commit**
 
 ```bash
 git add src public
@@ -934,7 +934,7 @@ git commit -m "feat: socle visuel — tokens, layout SEO/JSON-LD, header capsule
 **Files:**
 - Create: `scripts/logos.py`, `public/media/logos/*.webp` (générés), `public/media/logos/montage.webp`, `src/data/logos.ts` (généré)
 
-- [ ] **Step 1 : Écrire `scripts/logos.py`**
+- [x] **Step 1 : Écrire `scripts/logos.py`**
 
 Les coordonnées ont été relevées le 2026-09-07 sur les planches 1600×1142 (centre x, centre y, rayon). Le script est la SEULE source : il écrit les WebP ET `src/data/logos.ts`.
 
@@ -1017,17 +1017,17 @@ ts.write_text(
 print(f'{len(LOGOS)} logos → {OUT}, montage {mont.size}, logos.ts écrit')
 ```
 
-- [ ] **Step 2 : Exécuter et contrôler visuellement la planche des vignettes**
+- [x] **Step 2 : Exécuter et contrôler visuellement la planche des vignettes**
 
 Run : `python3 scripts/logos.py && python3 -c "from PIL import Image; im=Image.open('public/media/logos/montage.webp'); im.save('<scratchpad>/montage-controle.png'); print(im.size)"`
 Expected : `28 logos → …, montage (1600, 480), logos.ts écrit`. Lire `montage-controle.png` avec Read : chaque vignette doit montrer un logo rond entier, centré (aucun coupé, aucun vide). Si une vignette est décalée, corriger ses coordonnées dans `LOGOS` et relancer.
 
-- [ ] **Step 3 : Contrôle de type des données générées**
+- [x] **Step 3 : Contrôle de type des données générées**
 
 Run : `pnpm check`
 Expected : `0 errors` (les avertissements Astro sur des pages vides sont tolérés).
 
-- [ ] **Step 4 : Commit**
+- [x] **Step 4 : Commit**
 
 ```bash
 git add scripts/logos.py public/media/logos src/data/logos.ts
@@ -1042,12 +1042,12 @@ git commit -m "feat: logos mensuels découpés en WebP + montage + données gén
 - Create: `src/components/TitleCard.astro`, `src/components/Case.astro`, `src/pages/mentions-legales.astro`
 - Modify: `scripts/verifier.mjs` (PAGES), `src/pages/404.astro` et `src/pages/index.astro` (utiliser TitleCard)
 
-- [ ] **Step 1 : Étendre la liste des pages attendues, lancer le contrôle (doit ÉCHOUER sur `mentions-legales/index.html`)**
+- [x] **Step 1 : Étendre la liste des pages attendues, lancer le contrôle (doit ÉCHOUER sur `mentions-legales/index.html`)**
 
 Dans `scripts/verifier.mjs` : `export const PAGES = ['index.html', '404.html', 'mentions-legales/index.html'];`
 Run : `pnpm test` → Expected : `page absente : mentions-legales/index.html`.
 
-- [ ] **Step 2 : Écrire `src/components/TitleCard.astro`**
+- [x] **Step 2 : Écrire `src/components/TitleCard.astro`**
 
 ```astro
 ---
@@ -1072,7 +1072,7 @@ const { kicker, variante = 'bordeaux', letterbox = false, id } = Astro.props;
 </section>
 ```
 
-- [ ] **Step 3 : Écrire `src/components/Case.astro`**
+- [x] **Step 3 : Écrire `src/components/Case.astro`**
 
 ```astro
 ---
@@ -1107,7 +1107,7 @@ const Tag = href ? 'a' : 'article';
 </Tag>
 ```
 
-- [ ] **Step 4 : Écrire `src/pages/mentions-legales.astro`**
+- [x] **Step 4 : Écrire `src/pages/mentions-legales.astro`**
 
 ```astro
 ---
@@ -1139,9 +1139,9 @@ import { IDENTITE } from '../data/site';
 </style>
 ```
 
-- [ ] **Step 5 : Faire utiliser TitleCard à `404.astro` (remplacer la `<section class="tc …">` par `<TitleCard kicker="Erreur 404" variante="noir" letterbox>Cette page n'existe pas<br /><em>dans ce multivers.</em><Fragment slot="copy">Mauvaise dimension, mauvaise URL. Repars de l'accueil, ou va voir ce qu'il se passe ce mois-ci.</Fragment><Fragment slot="actions"><a class="btn" href="/">Retour à l'accueil</a><a class="btn btn--ghost" href="/events/">Les events</a></Fragment></TitleCard>`) et retirer le `<style>` devenu inutile.**
+- [x] **Step 5 : Faire utiliser TitleCard à `404.astro` (remplacer la `<section class="tc …">` par `<TitleCard kicker="Erreur 404" variante="noir" letterbox>Cette page n'existe pas<br /><em>dans ce multivers.</em><Fragment slot="copy">Mauvaise dimension, mauvaise URL. Repars de l'accueil, ou va voir ce qu'il se passe ce mois-ci.</Fragment><Fragment slot="actions"><a class="btn" href="/">Retour à l'accueil</a><a class="btn btn--ghost" href="/events/">Les events</a></Fragment></TitleCard>`) et retirer le `<style>` devenu inutile.**
 
-- [ ] **Step 6 : Build + contrôle + capture de `/mentions-legales/`, lecture, commit**
+- [x] **Step 6 : Build + contrôle + capture de `/mentions-legales/`, lecture, commit**
 
 Run : `pnpm test` → Expected : `✓ verifier : 3 pages contrôlées, aucun écart`. Capture browse de `/mentions-legales/` en 1440 et lecture.
 
@@ -1158,7 +1158,7 @@ git commit -m "feat: composants TitleCard et Case, page mentions légales"
 - Create: `src/components/Generique.astro`
 - Modify: `src/pages/index.astro`
 
-- [ ] **Step 1 : Écrire `src/components/Generique.astro` (markup + CSS)**
+- [x] **Step 1 : Écrire `src/components/Generique.astro` (markup + CSS)**
 
 ```astro
 ---
@@ -1272,7 +1272,7 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
 </style>
 ```
 
-- [ ] **Step 2 : Ajouter le script d'animation dans le même fichier `src/components/Generique.astro` (après le `<style>`)**
+- [x] **Step 2 : Ajouter le script d'animation dans le même fichier `src/components/Generique.astro` (après le `<style>`)**
 
 ```astro
 <script>
@@ -1332,7 +1332,7 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
 </script>
 ```
 
-- [ ] **Step 3 : Intégrer dans `src/pages/index.astro` (pré-paint inline + Generique à la place de la title card)**
+- [x] **Step 3 : Intégrer dans `src/pages/index.astro` (pré-paint inline + Generique à la place de la title card)**
 
 ```astro
 ---
@@ -1362,11 +1362,11 @@ import Horaires from '../components/Horaires.astro';
 </Base>
 ```
 
-- [ ] **Step 4 : Build + contrôle**
+- [x] **Step 4 : Build + contrôle**
 
 Run : `pnpm test` → Expected : `✓ verifier : 3 pages contrôlées, aucun écart`. Vérifier aussi que `dist/index.html` contient `Daily Pop Society présente` et 56 `<img` de logos (`grep -o '/media/logos/' dist/index.html | wc -l` → 57 avec le montage).
 
-- [ ] **Step 5 : Boucle visuelle du générique — 4 positions de scroll desktop, mobile, lecture des captures**
+- [x] **Step 5 : Boucle visuelle du générique — 4 positions de scroll desktop, mobile, lecture des captures**
 
 ```bash
 B="$HOME/.claude/skills/gstack/browse/dist/browse"; S="<scratchpad>"
@@ -1375,7 +1375,7 @@ echo '[["viewport","375x812"],["goto","http://localhost:4332/"],["wait","--netwo
 ```
 Lire les six captures. Attendu : gen-0 = « présente » + bandes, nom invisible ; gen-1 = bandes en mouvement ; gen-2 = « DAILY POP » rempli de logos ; gen-3 = nom blanc + SOCIETY + title card ; gen-4 = la section horaires arrive par la feuille arrondie ; gen-mobile = état final (intro jouée) avec title card centrée. Si le pin « saute » ou si la section suivante chevauche, vérifier `ScrollTrigger.refresh()` et la hauteur `100svh`. Pour la capture mobile, l'intro dure 2,6 s : faire la chaîne `viewport` + `goto` + `wait`, puis `sleep 3` dans le shell, puis une chaîne séparée avec seulement `["screenshot", …, "--viewport"]` (le daemon garde la page ouverte entre deux chaînes).
 
-- [ ] **Step 6 : Commit**
+- [x] **Step 6 : Commit**
 
 ```bash
 git add src
@@ -1391,7 +1391,7 @@ Décision validée par l'utilisateur (spec §7) : une dizaine d'illustrations ce
 **Files:**
 - Create: `scripts/illustrations.txt`, `scripts/illustrations.sh`, `scripts/webp.mjs`, `brief/illu-src/*.png` (hors git), `public/media/illu/*.webp`
 
-- [ ] **Step 1 : Préflight Kie (clé + solde), sans rien générer**
+- [x] **Step 1 : Préflight Kie (clé + solde), sans rien générer**
 
 ```bash
 [ -n "$KIE_API_KEY" ] && echo "KIE_API_KEY: presente" || echo "KIE_API_KEY: ABSENTE"
@@ -1399,7 +1399,7 @@ curl -sS --max-time 5 -H "Authorization: Bearer $KIE_API_KEY" "https://api.kie.a
 ```
 Expected : `presente` et `{"code":200,"data":<crédits>}` avec un solde > 0. Sinon arrêt : demander la clé ou un rechargement à l'utilisateur.
 
-- [ ] **Step 2 : Écrire `scripts/illustrations.txt` (une ligne = `id|sujet`, le style commun est dans le script)**
+- [x] **Step 2 : Écrire `scripts/illustrations.txt` (une ligne = `id|sujet`, le style commun est dans le script)**
 
 ```
 cocktail-zoro|a tall green cocktail in a highball glass with three lime wedges arranged like blades, ice cubes, a black straw
@@ -1415,7 +1415,7 @@ coin-gaming|two game controllers on a small couch next to a shelf full of manga 
 comptoir|a cozy bar counter with shelves of manga, pop culture figures and a chalkboard, warm light
 ```
 
-- [ ] **Step 3 : Écrire `scripts/illustrations.sh`**
+- [x] **Step 3 : Écrire `scripts/illustrations.sh`**
 
 ```bash
 #!/usr/bin/env bash
@@ -1454,7 +1454,7 @@ done < scripts/illustrations.txt
 echo "récap : $ok générées, $ko en échec"
 ```
 
-- [ ] **Step 4 : Écrire `scripts/webp.mjs`**
+- [x] **Step 4 : Écrire `scripts/webp.mjs`**
 
 ```js
 // brief/illu-src/<id>.png → public/media/illu/<id>-{480,960,1440}.webp (4:3 recadré)
@@ -1471,12 +1471,12 @@ for (const f of readdirSync('brief/illu-src').filter((n) => n.endsWith('.png')))
 }
 ```
 
-- [ ] **Step 5 : Générer (≈ 11 × 0,04 $), convertir, contrôler visuellement**
+- [x] **Step 5 : Générer (≈ 11 × 0,04 $), convertir, contrôler visuellement**
 
 Run : `bash scripts/illustrations.sh && node scripts/webp.mjs && ls -la public/media/illu | head -40`
 Expected : `récap : 11 générées, 0 en échec`, 33 WebP (chaque `-1440` < 300 Ko). Lire les 11 PNG de `brief/illu-src/` avec Read : style cohérent (contours noirs, fond clair, palette bordeaux), aucun texte incrusté, aucun visage. Une image hors style : supprimer son PNG et relancer le script (seule celle-là est regénérée, 0,04 $). Piège connu : la modération rejette parfois des scènes bénignes ; retenter une fois, sinon reformuler le sujet sans les mots `kid/child/baby/powder/petal`.
 
-- [ ] **Step 6 : Commit (les WebP entrent dans le dépôt ; les PNG sources restent dans brief/)**
+- [x] **Step 6 : Commit (les WebP entrent dans le dépôt ; les PNG sources restent dans brief/)**
 
 ```bash
 git add scripts/illustrations.txt scripts/illustrations.sh scripts/webp.mjs public/media/illu
@@ -1490,7 +1490,7 @@ git commit -m "feat: 11 illustrations cel-shadées (Kie nano-banana-pro) en WebP
 **Files:**
 - Modify: `src/pages/index.astro`
 
-- [ ] **Step 1 : Écrire la version finale de `src/pages/index.astro`**
+- [x] **Step 1 : Écrire la version finale de `src/pages/index.astro`**
 
 ```astro
 ---
@@ -1586,11 +1586,11 @@ const illu = (id: string) => ({
 </style>
 ```
 
-- [ ] **Step 2 : Build + contrôle + captures desktop/tablette/mobile de la page entière, lecture**
+- [x] **Step 2 : Build + contrôle + captures desktop/tablette/mobile de la page entière, lecture**
 
 Run : `pnpm test` (attendu : aucun écart, notamment aucune image sans `alt` et tous les `/media/illu/*` présents). Puis `echo '[["goto","http://localhost:4332/"],["wait","--networkidle"],["responsive","<scratchpad>/t7"]]' | "$B" chain` et lire `t7-desktop.png`, `t7-tablet.png`, `t7-mobile.png`. Attendu : cases avec ombre bordeaux et onomatopée, aucune grille cassée, texte lisible sur noir.
 
-- [ ] **Step 3 : Commit**
+- [x] **Step 3 : Commit**
 
 ```bash
 git add src
@@ -1605,9 +1605,9 @@ git commit -m "feat: accueil — trois cases, licence du mois, horaires et adres
 - Create: `src/data/carte.ts`, `src/pages/la-carte.astro`
 - Modify: `scripts/verifier.mjs` (PAGES)
 
-- [ ] **Step 1 : Ajouter `'la-carte/index.html'` à `PAGES` dans `scripts/verifier.mjs`, lancer `pnpm test` → Expected : `page absente : la-carte/index.html`**
+- [x] **Step 1 : Ajouter `'la-carte/index.html'` à `PAGES` dans `scripts/verifier.mjs`, lancer `pnpm test` → Expected : `page absente : la-carte/index.html`**
 
-- [ ] **Step 2 : Écrire `src/data/carte.ts` (CARTE DE DÉMONSTRATION — à remplacer par la vraie carte)**
+- [x] **Step 2 : Écrire `src/data/carte.ts` (CARTE DE DÉMONSTRATION — à remplacer par la vraie carte)**
 
 ```ts
 /* CARTE DE DÉMONSTRATION. Le dossier « Menu » du brief n'a pas été fourni :
@@ -1688,7 +1688,7 @@ export const CATEGORIES: Categorie[] = [
 ];
 ```
 
-- [ ] **Step 3 : Écrire `src/pages/la-carte.astro`**
+- [x] **Step 3 : Écrire `src/pages/la-carte.astro`**
 
 ```astro
 ---
@@ -1784,7 +1784,7 @@ const visuels: Record<string, { src: string; alt: string }> = {
 </style>
 ```
 
-- [ ] **Step 4 : Build + contrôle (`pnpm test` → 4 pages, aucun écart) + captures responsive de `/la-carte/`, lecture, commit**
+- [x] **Step 4 : Build + contrôle (`pnpm test` → 4 pages, aucun écart) + captures responsive de `/la-carte/`, lecture, commit**
 
 ```bash
 git add scripts/verifier.mjs src
@@ -1799,9 +1799,9 @@ git commit -m "feat: la carte — données de démo, carte éphémère du mois, 
 - Create: `src/data/events.ts`, `src/components/EventCard.astro`, `src/pages/events.astro`
 - Modify: `scripts/verifier.mjs` (PAGES)
 
-- [ ] **Step 1 : Ajouter `'events/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : events/index.html`**
+- [x] **Step 1 : Ajouter `'events/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : events/index.html`**
 
-- [ ] **Step 2 : Écrire `src/data/events.ts` (tout vient du brief du 06/08/2026)**
+- [x] **Step 2 : Écrire `src/data/events.ts` (tout vient du brief du 06/08/2026)**
 
 ```ts
 export type Evenement = {
@@ -1840,7 +1840,7 @@ export const PASSES: Evenement[] = [
 ];
 ```
 
-- [ ] **Step 3 : Écrire `src/components/EventCard.astro`**
+- [x] **Step 3 : Écrire `src/components/EventCard.astro`**
 
 ```astro
 ---
@@ -1878,7 +1878,7 @@ const { ev, sombre = false, passe = false } = Astro.props;
 </style>
 ```
 
-- [ ] **Step 4 : Écrire `src/pages/events.astro`**
+- [x] **Step 4 : Écrire `src/pages/events.astro`**
 
 ```astro
 ---
@@ -1930,7 +1930,7 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
 </style>
 ```
 
-- [ ] **Step 5 : Build + contrôle (`pnpm test` → 5 pages) + captures responsive de `/events/`, lecture, commit**
+- [x] **Step 5 : Build + contrôle (`pnpm test` → 5 pages) + captures responsive de `/events/`, lecture, commit**
 
 ```bash
 git add scripts/verifier.mjs src
@@ -1945,9 +1945,9 @@ git commit -m "feat: events — licences à venir, soirées récurrentes, préc�
 - Create: `src/data/galerie.ts`, `src/pages/galerie.astro`
 - Modify: `scripts/verifier.mjs` (PAGES)
 
-- [ ] **Step 1 : Ajouter `'galerie/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : galerie/index.html`**
+- [x] **Step 1 : Ajouter `'galerie/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : galerie/index.html`**
 
-- [ ] **Step 2 : Écrire `src/data/galerie.ts`**
+- [x] **Step 2 : Écrire `src/data/galerie.ts`**
 
 ```ts
 /* Galerie par thème — un thème = une licence ou un event. En attendant les
@@ -1995,7 +1995,7 @@ export const THEMES: Theme[] = [
 ];
 ```
 
-- [ ] **Step 3 : Écrire `src/pages/galerie.astro`**
+- [x] **Step 3 : Écrire `src/pages/galerie.astro`**
 
 ```astro
 ---
@@ -2048,7 +2048,7 @@ import { THEMES } from '../data/galerie';
 </style>
 ```
 
-- [ ] **Step 4 : Build + contrôle (6 pages) + capture, tester le filtre (`["click","[data-theme=logos]"],["screenshot",…]`), lecture, commit**
+- [x] **Step 4 : Build + contrôle (6 pages) + capture, tester le filtre (`["click","[data-theme=logos]"],["screenshot",…]`), lecture, commit**
 
 ```bash
 git add scripts/verifier.mjs src
@@ -2063,9 +2063,9 @@ git commit -m "feat: galerie par thèmes avec filtre progressif"
 - Create: `src/data/histoire.ts`, `src/components/FriseLogos.astro`, `src/pages/a-propos.astro`
 - Modify: `scripts/verifier.mjs` (PAGES)
 
-- [ ] **Step 1 : Ajouter `'a-propos/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : a-propos/index.html`**
+- [x] **Step 1 : Ajouter `'a-propos/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : a-propos/index.html`**
 
-- [ ] **Step 2 : Écrire `src/data/histoire.ts` (texte du brief, ton tutoyé)**
+- [x] **Step 2 : Écrire `src/data/histoire.ts` (texte du brief, ton tutoyé)**
 
 ```ts
 export type Etape = { date: string; titre: string; texte: string };
@@ -2080,7 +2080,7 @@ export const POURQUOI_LE_NOM =
   "« Daily », parce qu'il s'y passe quelque chose tous les jours. « Pop », pour toute la pop culture, pas seulement les mangas. « Society », parce que c'est une communauté avant d'être un bar : un lieu de partage où la pop culture rassemble toutes les générations.";
 ```
 
-- [ ] **Step 3 : Écrire `src/components/FriseLogos.astro`**
+- [x] **Step 3 : Écrire `src/components/FriseLogos.astro`**
 
 ```astro
 ---
@@ -2118,7 +2118,7 @@ const libelle = (mois: string) => new Date(`${mois}-01T12:00:00`).toLocaleDateSt
 </style>
 ```
 
-- [ ] **Step 4 : Écrire `src/pages/a-propos.astro`**
+- [x] **Step 4 : Écrire `src/pages/a-propos.astro`**
 
 ```astro
 ---
@@ -2189,7 +2189,7 @@ import { IDENTITE } from '../data/site';
 </style>
 ```
 
-- [ ] **Step 5 : Build + contrôle (7 pages) + captures responsive de `/a-propos/` (vérifier que la frise défile : `["js","document.querySelector('.frise').scrollLeft=900"],["screenshot",…]`), lecture, commit**
+- [x] **Step 5 : Build + contrôle (7 pages) + captures responsive de `/a-propos/` (vérifier que la frise défile : `["js","document.querySelector('.frise').scrollLeft=900"],["screenshot",…]`), lecture, commit**
 
 ```bash
 git add scripts/verifier.mjs src
@@ -2204,9 +2204,9 @@ git commit -m "feat: à propos — l'histoire en trois temps, pourquoi le nom, f
 - Create: `src/pages/contact.astro`
 - Modify: `scripts/verifier.mjs` (PAGES)
 
-- [ ] **Step 1 : Ajouter `'contact/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : contact/index.html`**
+- [x] **Step 1 : Ajouter `'contact/index.html'` à `PAGES`, `pnpm test` → Expected : `page absente : contact/index.html`**
 
-- [ ] **Step 2 : Écrire `src/pages/contact.astro`**
+- [x] **Step 2 : Écrire `src/pages/contact.astro`**
 
 ```astro
 ---
@@ -2254,7 +2254,7 @@ import { IDENTITE } from '../data/site';
 </style>
 ```
 
-- [ ] **Step 3 : Build + contrôle (8 pages, aucun écart) + captures responsive de `/contact/`, lecture, commit**
+- [x] **Step 3 : Build + contrôle (8 pages, aucun écart) + captures responsive de `/contact/`, lecture, commit**
 
 ```bash
 git add scripts/verifier.mjs src
@@ -2269,7 +2269,7 @@ git commit -m "feat: contact — adresse, horaires, coordonnées, réservation J
 - Create: `public/media/og.png`
 - Modify: `scripts/verifier.mjs` (contrôle du JSON-LD)
 
-- [ ] **Step 1 : Étendre le contrôleur au JSON-LD (doit passer directement : le layout le produit déjà)**
+- [x] **Step 1 : Étendre le contrôleur au JSON-LD (doit passer directement : le layout le produit déjà)**
 
 Dans `scripts/verifier.mjs`, remplacer la ligne `if (p !== '404.html') ok(html.includes('application/ld+json'), …)` par :
 ```js
@@ -2286,7 +2286,7 @@ Dans `scripts/verifier.mjs`, remplacer la ligne `if (p !== '404.html') ok(html.i
 ```
 Run : `pnpm test` → Expected : `✓ verifier : 8 pages contrôlées, aucun écart` (5 jours ouverts, dont 2 à deux créneaux = 7 créneaux).
 
-- [ ] **Step 2 : Produire `public/media/og.png` (1200×630) depuis l'état final du générique**
+- [x] **Step 2 : Produire `public/media/og.png` (1200×630) depuis l'état final du générique**
 
 ```bash
 B="$HOME/.claude/skills/gstack/browse/dist/browse"; S="<scratchpad>"
@@ -2295,7 +2295,7 @@ node -e "import('sharp').then(({default:s})=>s('$S/og-src.png').resize(1200,630,
 ```
 Lire `public/media/og.png` : « DAILY POP / SOCIETY » en blanc sur bordeaux, bandes de logos estompées, title card lisible. Si la capture montre l'état intermédiaire (lettres remplies), ajuster le `scrollTo` (2000 → 2600).
 
-- [ ] **Step 3 : Lighthouse mobile sur l'accueil et la carte (build de prod servi par `astro preview` sur 4333)**
+- [x] **Step 3 : Lighthouse mobile sur l'accueil et la carte (build de prod servi par `astro preview` sur 4333)**
 
 ```bash
 pnpm build && (pnpm preview --port 4333 &) ; sleep 4
@@ -2307,7 +2307,7 @@ done
 ```
 Expected : les quatre scores ≥ 90 sur les deux pages. Sous 90 en performance : vérifier le poids des logos du générique (56 images de 160 px, ~8 Ko chacune, `loading="eager"` voulu), passer les illustrations hors écran en `loading="lazy"` (déjà fait), et le `preload` des deux fontes. Sous 90 en accessibilité : lire les audits `contrast` et `link-name` du JSON et corriger la couleur ou le libellé en cause. Arrêter le preview ensuite (`Stop-Process` du processus node sur 4333 ou fermer la tâche de fond).
 
-- [ ] **Step 4 : Commit**
+- [x] **Step 4 : Commit**
 
 ```bash
 git add scripts/verifier.mjs public/media/og.png
@@ -2321,7 +2321,7 @@ git commit -m "feat: image Open Graph, contrôle du JSON-LD, passe Lighthouse"
 **Files:**
 - Create: `.dockerignore`, `Dockerfile`, `nginx.conf`
 
-- [ ] **Step 1 : Écrire les trois fichiers (copie du gabarit xenia, 404 réelle)**
+- [x] **Step 1 : Écrire les trois fichiers (copie du gabarit xenia, 404 réelle)**
 
 `.dockerignore` :
 ```
@@ -2390,7 +2390,7 @@ server {
 }
 ```
 
-- [ ] **Step 2 : Construire et tester l'image en local**
+- [x] **Step 2 : Construire et tester l'image en local**
 
 ```bash
 docker build -t dps-maquette . && docker run -d --rm --name dps-test -p 8089:80 dps-maquette && sleep 2
@@ -2399,7 +2399,7 @@ docker stop dps-test
 ```
 Expected : 200 partout sauf `/nimportequoi` → **404** (et son corps est la page 404 du site : `curl -s http://localhost:8089/nimportequoi | grep -c multivers` → 1).
 
-- [ ] **Step 3 : Commit**
+- [x] **Step 3 : Commit**
 
 ```bash
 git add .dockerignore Dockerfile nginx.conf
@@ -2413,7 +2413,7 @@ git commit -m "chore: image nginx statique avec 404 réelle"
 **Files:**
 - Create: `PROJET.md`, `PROJET.html`
 
-- [ ] **Step 1 : Écrire `PROJET.md` (structure obligatoire des règles globales)**
+- [x] **Step 1 : Écrire `PROJET.md` (structure obligatoire des règles globales)**
 
 ```markdown
 # Daily Pop Society — site vitrine
@@ -2487,7 +2487,7 @@ bash scripts/illustrations.sh && node scripts/webp.mjs   # illustrations manquan
 - Production (plus tard) : domaine `dailypopsociety.be` à réserver, DNS, puis coupure du site Netlify et suppression du projet Firebase.
 ```
 
-- [ ] **Step 2 : Écrire `PROJET.html` — même contenu, page autonome : CSS inline, dark mode par défaut avec toggle, sidebar fixe d'ancres, badges de statut (vert Done, orange In Progress, bleu Planned), timeline pour le journal, responsive, police system-ui. Structure minimale à respecter :**
+- [x] **Step 2 : Écrire `PROJET.html` — même contenu, page autonome : CSS inline, dark mode par défaut avec toggle, sidebar fixe d'ancres, badges de statut (vert Done, orange In Progress, bleu Planned), timeline pour le journal, responsive, police system-ui. Structure minimale à respecter :**
 
 ```html
 <!doctype html><html lang="fr" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Daily Pop Society — PROJET</title>
@@ -2523,7 +2523,7 @@ button.toggle{position:fixed;right:16px;top:16px;padding:8px 12px;border:1px sol
 ```
 Les `…` sont à remplir avec le contenu exact du `PROJET.md` de l'étape 1 (chaque ligne de tableau, chaque puce, chaque commande) : la page doit être complète, pas un squelette.
 
-- [ ] **Step 3 : Ouvrir `PROJET.html` dans le navigateur par défaut pour vérifier (règle globale : livrable local, pas d'artefact), puis commit**
+- [x] **Step 3 : Ouvrir `PROJET.html` dans le navigateur par défaut pour vérifier (règle globale : livrable local, pas d'artefact), puis commit**
 
 Run (PowerShell) : `Start-Process "C:\Dev\Noveo\_autres\website\dailypopsociety\PROJET.html"`
 
@@ -2538,7 +2538,7 @@ git commit -m "docs: PROJET.md et PROJET.html"
 
 **Files:** aucun nouveau fichier de code ; `PROJET.md` / `PROJET.html` mis à jour avec l'URL et l'uuid.
 
-- [ ] **Step 1 : Dépôt GitHub. Demander l'accord de l'utilisateur AVANT (le classifieur a déjà refusé `gh repo create --public` pour xenia ; le dépôt public est nécessaire au tirage par Coolify maquettes, et `brief/` est gitignoré donc rien de client n'y part).**
+- [x] **Step 1 : Dépôt GitHub. Demander l'accord de l'utilisateur AVANT (le classifieur a déjà refusé `gh repo create --public` pour xenia ; le dépôt public est nécessaire au tirage par Coolify maquettes, et `brief/` est gitignoré donc rien de client n'y part).**
 
 ```bash
 gh repo create cltconcept/dailypopsociety-website --public --source=. --remote=origin --push
@@ -2546,16 +2546,16 @@ git -C C:/Dev/Noveo/_autres/website/dailypopsociety log --oneline | head -3
 ```
 Expected : dépôt créé, branche `main` poussée.
 
-- [ ] **Step 2 : Invoquer le skill `deploy-maquette`** (Skill tool, `skill: deploy-maquette`, args : `dailypopsociety https://github.com/cltconcept/dailypopsociety-website`). Il crée le projet et l'application Coolify, déploie et vérifie. Sous-domaine attendu : `dailypopsociety.chris-ia.com`.
+- [x] **Step 2 : Invoquer le skill `deploy-maquette`** (Skill tool, `skill: deploy-maquette`, args : `dailypopsociety https://github.com/cltconcept/dailypopsociety-website`). Il crée le projet et l'application Coolify, déploie et vérifie. Sous-domaine attendu : `dailypopsociety.chris-ia.com`.
 
-- [ ] **Step 3 : Vérification réelle des 8 URL + 404 + sitemap sur le domaine**
+- [x] **Step 3 : Vérification réelle des 8 URL + 404 + sitemap sur le domaine**
 
 ```bash
 for u in / /la-carte/ /events/ /galerie/ /a-propos/ /contact/ /mentions-legales/ /sitemap-index.xml /robots.txt /media/og.png /nimportequoi; do printf "%-24s %s\n" "$u" "$(curl -s -o /dev/null -w '%{http_code}' https://dailypopsociety.chris-ia.com$u)"; done
 ```
 Expected : 200 partout, 404 sur `/nimportequoi`. Puis une capture browse de la page d'accueil en ligne (desktop + mobile), lue, pour confirmer que les fontes et les logos sont servis.
 
-- [ ] **Step 4 : Consigner dans `PROJET.md` (section Déploiement : URL, uuid de l'app, commande de redéploiement `GET http://46.224.83.139:8000/api/v1/deploy?uuid=<uuid>` avec le jeton de `~/.claude.json` → `mcpServers.coolify.env`) et régénérer `PROJET.html` ; passer « Maquette en ligne » en ✅ Done. Commit + push.**
+- [x] **Step 4 : Consigner dans `PROJET.md` (section Déploiement : URL, uuid de l'app, commande de redéploiement `GET http://46.224.83.139:8000/api/v1/deploy?uuid=<uuid>` avec le jeton de `~/.claude.json` → `mcpServers.coolify.env`) et régénérer `PROJET.html` ; passer « Maquette en ligne » en ✅ Done. Commit + push.**
 
 ```bash
 git add PROJET.md PROJET.html

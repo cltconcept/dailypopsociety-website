@@ -33,9 +33,9 @@ tr:last-child td{border-bottom:none}
 code{background:var(--panel2);color:var(--code);padding:1px 6px;border-radius:4px;font-size:.88em;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 pre{background:var(--panel);padding:16px 18px;overflow:auto;border:1px solid var(--line);border-radius:10px;font-size:.86rem;line-height:1.55}
 pre code{background:none;padding:0;color:var(--txt)}
-ul.puces{padding-left:20px;margin:0}
-ul.puces li{margin-bottom:10px}
-ul.puces li::marker{color:var(--acc2)}
+ul.puces,ol.puces{padding-left:20px;margin:0}
+ul.puces li,ol.puces li{margin-bottom:10px}
+ul.puces li::marker,ol.puces li::marker{color:var(--acc2)}
 .tl{border-left:2px solid var(--acc);padding-left:22px;margin-left:4px}
 .tl .entree{position:relative;margin-bottom:30px}
 .tl .entree::before{content:'';position:absolute;left:-28px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px var(--bg)}
@@ -92,7 +92,7 @@ footer.bas{padding:24px 44px;color:var(--muted);font-size:.82rem;border-top:1px 
         <tr><td>Framework</td><td>Astro 5 (sortie 100&nbsp;% statique, <code>site: https://dailypopsociety.be</code>)</td></tr>
         <tr><td>Animation</td><td>GSAP 3 + ScrollTrigger, import différé (idle/scroll), scrub réservé au desktop (≥&nbsp;1024&nbsp;px)</td></tr>
         <tr><td>Fontes</td><td>Anton, Inter Variable, Caveat, Bangers (<code>@fontsource</code>, auto-hébergées, <code>font-display: swap</code>)</td></tr>
-        <tr><td>Images</td><td>Illustrations : WebP 3 tailles (480/960/1440, sharp) · Logos mensuels : WebP 160/256&nbsp;px + montage (Pillow)</td></tr>
+        <tr><td>Images</td><td>Illustrations : WebP 3 tailles (480/960/1440, sharp) · Logos mensuels : WebP 160/256&nbsp;px + montage en 2 résolutions, réduite au mobile et HD au-delà de 1024&nbsp;px (Pillow)</td></tr>
         <tr><td>Illustrations</td><td>Kie.ai <code>nano-banana-pro</code>, style cel-shadé sticker (démo, à remplacer par des photos)</td></tr>
         <tr><td>SEO</td><td><code>@astrojs/sitemap</code>, JSON-LD <code>BarOrPub</code> + <code>Event</code>, Open Graph, canonical</td></tr>
         <tr><td>Serveur</td><td>nginx alpine (Docker 2 étages, aucune variable d'env au run), Coolify maquettes (<code>*.chris-ia.com</code>)</td></tr>
@@ -121,11 +121,19 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
         <li><code>src/pages/</code> — <code>index</code>, <code>la-carte</code>, <code>events</code>, <code>galerie</code>, <code>a-propos</code>, <code>contact</code>, <code>mentions-legales</code>, <code>404</code> (8 pages, cf. <code>PAGES</code> de <code>scripts/verifier.mjs</code>)</li>
         <li><code>scripts/</code> — <code>verifier.mjs</code> (contrôle <code>dist/</code> après build), <code>logos.py</code> (découpe les planches de la cliente en vignettes WebP 160/256&nbsp;px + montage, écrit <code>src/data/logos.ts</code>), <code>illustrations.sh</code> + <code>illustrations.txt</code> (génération Kie), <code>webp.mjs</code> (PNG Kie → WebP 3 tailles)</li>
         <li><code>public/</code> — <code>favicon.svg</code>, <code>media/og.png</code>, <code>media/logos/</code>, <code>media/illu/</code>, <code>robots.txt</code></li>
-        <li><code>nginx.conf</code> — un seul <code>Cache-Control</code> par réponse, <code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML (<code>location ~ \.html$</code>), en-têtes de sécurité (<code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, <code>X-Frame-Options</code>, <code>Permissions-Policy</code>), 404 réelle sans fallback SPA</li>
+        <li><code>nginx.conf</code> — un seul <code>Cache-Control</code> par réponse, <code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML (<code>location ~ \.html$</code>), en-têtes de sécurité (<code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, <code>X-Frame-Options</code>, <code>Permissions-Policy</code>), <code>X-Robots-Tag: noindex</code> <strong>tant que le site est une maquette</strong>, 404 réelle sans fallback SPA</li>
         <li><code>docs/superpowers/</code> — spec de design et plan d'implémentation (17 tâches) qui ont guidé cette session</li>
         <li><code>brief/</code> (gitignoré) — moodboard, <code>info.txt</code>, planches de logos, PNG sources des illustrations</li>
-        <li>Flux : données TS → pages Astro → HTML statique → nginx. Mise à jour mensuelle = éditer <code>site.ts</code> (licence du mois), <code>events.ts</code>, <code>carte.ts</code>.</li>
+        <li>Flux : données TS → pages Astro → HTML statique → nginx.</li>
       </ul>
+      <h3>Procédure mensuelle</h3>
+      <ol class="puces">
+        <li><code>src/data/site.ts</code> — <code>LICENCE_DU_MOIS</code> (nom, dates, accroche). Tout ce qui est <em>dérivé</em> suit : la title card des events, le bandeau de l'accueil, le titre de la carte éphémère.</li>
+        <li><code>src/data/events.ts</code> — les dates ISO de l'event de la licence (<code>debut</code>, <code>fin</code>, et <code>periodes</code> si le mois n'est pas d'un seul tenant) ; le passage des events du mois écoulé dans le passé se fait <strong>tout seul</strong> au build.</li>
+        <li><code>src/data/carte.ts</code> — ⚠️ <strong>la carte éphémère est à RÉÉCRIRE à la main</strong> : seul son <em>titre</em> est dérivé de <code>LICENCE_DU_MOIS</code>. L'<code>intro</code> et les <code>items</code> de <code>EPHEMERE</code> (noms, descriptions, prix) sont du contenu, pas une dérivation — les laisser tels quels, c'est afficher la carte du mois précédent sous le nom du mois en cours.</li>
+        <li><code>pnpm test</code>, puis pousser : le site étant statique, c'est la date de <strong>build</strong> qui fait basculer les events dans le passé. Republier chaque mois est donc obligatoire.</li>
+      </ol>
+      <div class="note">ℹ️ L'image Open Graph (<code>public/media/og.png</code>) est <strong>intemporelle</strong> depuis le 2026-09-08 (« DAILY POP / SOCIETY » seul, sans la title card du mois) : plus rien à regénérer mensuellement.</div>
     </section>
 
     <section id="env">
@@ -161,6 +169,8 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
         <article class="entree">
           <h3>2026-09-08</h3>
           <ul>
+            <li>🐛 Fix : dernière passe — <code>sizes</code> des bandes du générique aligné sur son <code>clamp</code> (la 256 ne part plus sur mobile), montage HD servi au desktop dense (deux fichiers, un seul téléchargé), events passés sans faux visuels (cartes de texte seul), garde de cohérence sur la licence du mois, JSON-LD <code>Event</code> en deux périodes réelles, image Open Graph intemporelle, maquette <code>noindex</code> côté nginx, alignements et titres de section</li>
+            <li>✨ Ajout : contrôle du <code>canonical</code> et des liens internes dans <code>scripts/verifier.mjs</code></li>
             <li>✨ Ajout : socle visuel (tokens, layout SEO/JSON-LD, header capsule, footer, horaires, page 404)</li>
             <li>🐛 Fix : menu mobile refermable, horaires robustes, focus et contrastes, JSON-LD extrait dans <code>lib/jsonld.ts</code>, contrôleur renforcé</li>
             <li>✨ Ajout : 28 logos mensuels découpés des planches de la cliente (<code>scripts/logos.py</code>, Pillow) en WebP 160&nbsp;px + montage pour le remplissage des lettres du générique ; <code>src/data/logos.ts</code> généré</li>
@@ -210,6 +220,9 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
         <li>Coordonnées GPS et lien Messenger absents de la page contact (Messenger n'est mentionné qu'en texte, sans lien cliquable).</li>
         <li>Réservation du domaine <code>dailypopsociety.be</code> à faire côté cliente.</li>
         <li>Dates des soirées d'octobre à décembre à confirmer (Tim Burton, Noël : <code>aPlanifier: true</code> dans <code>src/data/events.ts</code>).</li>
+        <li>Frise des logos arrêtée à mai 2026 : les logos de juin à septembre 2026 sont à fournir par la cliente (planches <code>brief/site-actuel/timeline-*.jpg</code>, puis <code>python scripts/logos.py</code>).</li>
+        <li>Heures des soirées à confirmer : le site annonce le <strong>rythme</strong> (« deux fois par mois, le vendredi », « sur réservation ») et <strong>pas l'heure</strong>. Le brief ne la donne pas, l'ancien site annonce 20h-22h — les heures affichées auparavant (19h, 18h) venaient de nulle part.</li>
+        <li>Horaires : le brief et l'ancien site se contredisent (mercredi 13h vs 12h ; vendredi et samedi, fermeture à 22h vs 22h/23h). <strong>Le site reprend le brief</strong> ; à trancher avec la cliente.</li>
         <li>⚠️ À vérifier avant livraison définitive : certaines figurines visibles dans l'illustration générée « comptoir » pourraient rappeler des personnages sous droits — à signaler à la cliente et à repasser en revue.</li>
       </ul>
       <div class="note">⚠️ <strong>Sécurité de l'ancien site</strong> : la base Firebase Realtime Database du site Netlify actuel est lisible et modifiable sans authentification depuis le navigateur (noms, e-mails, points et drapeau admin des clients). Le nouveau site ne stocke aucune donnée client, mais l'ancien doit être coupé et le projet Firebase supprimé ou verrouillé à la mise en production.</div>
@@ -223,8 +236,16 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que la car
         <li>Redéploiement après un push : <code>git push origin HEAD</code> puis <code>curl -s -H "Authorization: Bearer $TOK" "http://46.224.83.139:8000/api/v1/deploy?uuid=o129qzwy4inm5tsgfrmqrtw7"</code> (GET) — le jeton vit dans <code>~/.claude.json</code> → <code>mcpServers.coolify.env.COOLIFY_ACCESS_TOKEN</code>, ne jamais l'écrire ici. Suivi : <code>GET /api/v1/applications/o129qzwy4inm5tsgfrmqrtw7</code> jusqu'à <code>status: running…</code> (le build passe par <code>exited:unhealthy</code> pendant ~1&nbsp;min, c'est normal).</li>
         <li>Image Docker nginx (2 étages : build Node 22 + service nginx alpine) testée en local : 404 réelle, caches (<code>immutable</code> sur <code>/_astro/</code>, 30 jours sur <code>/media/</code>, <code>no-cache</code> sur tout le HTML), en-têtes de sécurité de base.</li>
         <li>Dépôt : GitHub public, <code>cltconcept/dailypopsociety-website</code> (même convention que <code>dentalexpert-website</code> et <code>xenia-website</code>) ; <code>brief/</code> (moodboard, images du site actuel, PNG sources) gitignoré et exclu de l'image.</li>
-        <li>Production (plus tard) : réserver <code>dailypopsociety.be</code>, configurer le DNS, nommer l'hébergeur dans les mentions légales, passer <code>DEMO = false</code> dans <code>src/data/carte.ts</code> (le contrôleur refuse la mise en production sinon : <code>PROD=1 pnpm verifier</code>), puis couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).</li>
       </ul>
+      <h3>Checklist de mise en production</h3>
+      <ol class="puces">
+        <li>Réserver <code>dailypopsociety.be</code> et configurer le DNS.</li>
+        <li>Nommer l'hébergeur dans les mentions légales (<code>src/pages/mentions-legales.astro</code>).</li>
+        <li>Passer <code>DEMO = false</code> dans <code>src/data/carte.ts</code> avec la vraie carte — le contrôleur refuse la mise en production sinon (<code>PROD=1 pnpm verifier</code>).</li>
+        <li>⚠️ <strong>Retirer les <code>add_header X-Robots-Tag "noindex" always;</code> de <code>nginx.conf</code></strong> (le bloc <code>server</code> + les trois <code>location</code>) : ils empêchent l'indexation de la MAQUETTE, ils interdiraient celle du vrai site. Chaque ligne porte le commentaire « MAQUETTE : à retirer en production ».</li>
+        <li><code>PROD=1 pnpm verifier</code>, puis déployer.</li>
+        <li>Couper le site Netlify et supprimer ou verrouiller le projet Firebase (cf. Problèmes connus).</li>
+      </ol>
     </section>
   </main>
 </div>

@@ -32,4 +32,7 @@ export const LOGOS: LogoMensuel[] = [
   { id: "2026-05-daily-pop-society", mois: "2026-05", licence: "Daily Pop Society (nouveau logo)", src: "/media/logos/2026-05-daily-pop-society.webp", srcset: "/media/logos/2026-05-daily-pop-society.webp 160w, /media/logos/2026-05-daily-pop-society-256.webp 256w" },
 ];
 
+/* Le MÊME collage à deux résolutions : le réduit pour le mobile, la HD au-delà
+   de 1024 px (cf. Generique.astro). Même rapport largeur/hauteur pour les deux. */
 export const MONTAGE = { src: '/media/logos/montage.webp', largeur: 800, hauteur: 240 };
+export const MONTAGE_HD = { src: '/media/logos/montage-hd.webp', largeur: 1600, hauteur: 480 };

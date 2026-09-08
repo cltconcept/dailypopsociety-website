@@ -16,9 +16,13 @@ const AUJ = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Brussels' }).fo
 const dates = EVENTS.filter((e) => e.fin);
 /* Deux events voisins qui portent la même image, c'est le lecteur qui croit
    avoir déjà lu la carte et saute la seconde. Les soirées récurrentes sont hors
-   du contrôle : elles vivent dans une autre section, sur un autre fond. */
+   du contrôle : elles vivent dans une autre section, sur un autre fond.
+   Seuls les events QUI EN ONT UN sont contrôlés : depuis que les events passés
+   sans photo n'ont plus d'illustration du tout, « pas de visuel » n'est pas un
+   visuel partagé — trois cartes de texte ne se ressemblent pas, elles se lisent. */
 const vus = new Map<string, string>();
 for (const e of dates) {
+  if (!e.visuel) continue;
   const jumeau = vus.get(e.visuel.id);
   if (jumeau) throw new Error(`events : « ${e.titre} » et « ${jumeau} » partagent le visuel « ${e.visuel.id} » — deux events datés doivent se distinguer d'un coup d'œil`);
   vus.set(e.visuel.id, e.titre);
@@ -30,6 +34,16 @@ const aVenir = dates.filter((e) => e.fin! >= AUJ).sort((a, b) => repere(a).local
 const passes = dates.filter((e) => e.fin! < AUJ).sort((a, b) => repere(b).localeCompare(repere(a)));
 const soirees = EVENTS.filter((e) => !e.fin);
 
+/* Garde de cohérence : la licence du mois de `site.ts` doit se retrouver dans
+   les events À VENIR. Les deux sont liés — l'event est dérivé de
+   LICENCE_DU_MOIS — mais ses DATES, elles, sont écrites ici : le 1er novembre,
+   la partition fait passer « Daily Pop Coven » dans les passés pendant que la
+   title card de la page continue d'annoncer « Ce mois-ci : Daily Pop Coven ».
+   La page se contredirait sans que rien ne casse. Elle casse donc. */
+if (!aVenir.some((e) => e.titre === LICENCE_DU_MOIS.nom)) {
+  throw new Error(`events : « ${LICENCE_DU_MOIS.nom} » n'est plus à venir — mettre à jour LICENCE_DU_MOIS dans site.ts`);
+}
+
 const adresse = {
   '@type': 'PostalAddress',
   streetAddress: IDENTITE.rue,
@@ -37,24 +51,31 @@ const adresse = {
   addressLocality: IDENTITE.ville,
   addressCountry: 'BE',
 };
-/* Un Event par event À VENIR avec des dates FIXÉES : un event passé n'a plus
+/* Seulement les events À VENIR avec des dates FIXÉES : un event passé n'a plus
    rien à proposer dans une SERP, une soirée récurrente n'a pas de date à
    donner, et un event `aPlanifier` (fin = fin de mois provisoire, sans début)
    annoncerait une date qui n'est pas la vraie — mieux vaut ne rien publier
-   qu'un startDate inventé. */
-const schemas = aVenir.filter((e) => e.debut && e.fin && !e.aPlanifier).map((e) => ({
-  '@context': 'https://schema.org',
-  '@type': 'Event',
-  name: e.titre,
-  description: e.desc,
-  startDate: e.debut,
-  endDate: e.fin,
-  eventStatus: 'https://schema.org/EventScheduled',
-  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-  location: { '@type': 'Place', name: IDENTITE.nom, address: adresse },
-  organizer: { '@type': 'Organization', name: IDENTITE.nom, url: IDENTITE.domaine },
-  image: new URL(visuel(e.visuel).src, Astro.site).toString(),
-}));
+   qu'un startDate inventé.
+   Et un `Event` par PÉRIODE, pas par event : « 21/10 puis 28 → 31 octobre »,
+   c'est deux blocs et non onze jours d'affilée. Un event sans `periodes` est
+   d'un seul tenant, ses `debut`/`fin` font la seule période. */
+const schemas = aVenir.filter((e) => e.debut && e.fin && !e.aPlanifier).flatMap((e) =>
+  (e.periodes ?? [{ debut: e.debut!, fin: e.fin! }]).map((p) => ({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: e.titre,
+    description: e.desc,
+    startDate: p.debut,
+    endDate: p.fin,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: { '@type': 'Place', name: IDENTITE.nom, address: adresse },
+    organizer: { '@type': 'Organization', name: IDENTITE.nom, url: IDENTITE.domaine },
+    /* Pas d'`image` quand l'event n'a pas de visuel : une propriété absente vaut
+       mieux qu'un lien vers une image qui n'illustre pas l'event. */
+    ...(e.visuel ? { image: new URL(visuel(e.visuel).src, Astro.site).toString() } : {}),
+  }))
+);
 ---
 <Base title="Events et soirées — Daily Pop Society, Charleroi" description="Une licence à l'honneur chaque mois, blind tests pop culture deux fois par mois, soirées JDR sur réservation, animations le week-end. Le programme du bar pop culture de Charleroi." schemas={schemas}>
   <TitleCard kicker="Chapitre 2 · Les events" variante="noir" letterbox>Ce mois-ci :<br /><em>{LICENCE_DU_MOIS.nom}</em><Fragment slot="copy">{`${LICENCE_DU_MOIS.accroche} ${LICENCE_DU_MOIS.dates}. Une licence par mois, une carte éphémère, et des soirées toutes les semaines.`}</Fragment><Fragment slot="actions"><LienExterne href={IDENTITE.instagram} class="btn">Le programme sur Instagram</LienExterne></Fragment></TitleCard>
@@ -84,7 +105,7 @@ const schemas = aVenir.filter((e) => e.debut && e.fin && !e.aPlanifier).map((e) 
     <div class="container">
       <span class="kicker">Précédemment dans Daily Pop</span>
       <h2 class="titre titre--md">Les events <em>passés</em></h2>
-      <p class="copy">Pour comprendre ce qu'est un event au shop. Les photos arrivent, en attendant voilà l'ambiance.</p>
+      <p class="copy">Pour comprendre ce qu'est un event au shop. Les photos arrivent : elles remplaceront ces quelques lignes.</p>
       <ul class="grille grille--2 passes" role="list" data-reveal data-reveal-stagger>
         {passes.map((ev) => <li><EventCard ev={ev} passe /></li>)}
       </ul>
@@ -97,4 +118,9 @@ const schemas = aVenir.filter((e) => e.debut && e.fin && !e.aPlanifier).map((e) 
      côte à côte dans la même page ne doivent pas respirer différemment. */
   .liste { margin-top: 36px; display: grid; gap: clamp(18px, 2.6vw, 30px); }
   .passes { margin-top: 36px; }
+  /* Les cartes d'events passés sont du texte SEUL depuis qu'elles n'ont plus
+     d'illustration : leur hauteur suit la longueur de la phrase, et deux
+     voisines de hauteurs différentes font un damier là où l'image donnait la
+     même assise à toutes. On les fait remplir leur cellule de grille. */
+  .passes > li { display: grid; }
 </style>

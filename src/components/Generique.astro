@@ -5,17 +5,22 @@
    en blanc, « SOCIETY » se compose, la title card du mois apparaît.
    Desktop : scène épinglée, scrubée au scroll (rejouable). Mobile : intro
    courte au chargement. Sans JS / reduced-motion : état final statique. */
-import { LOGOS, MONTAGE } from '../data/logos';
+import { LOGOS, MONTAGE, MONTAGE_HD } from '../data/logos';
 import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
 const bande1 = LOGOS.filter((_, i) => i % 2 === 0);
 const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
 /* Une vignette de bande est haute comme la bande et carrée (aspect-ratio: 1) :
    sa largeur rendue est donc exactement `clamp(70px, 9vw, 130px)`, la hauteur
    déclarée plus bas en CSS. On n'en garde que les deux bornes — un `sizes` ne
-   sait pas lire un clamp, et 9vw ne dépasse 130 px qu'au-delà de 1444 px de
-   large. Cette valeur DOIT suivre la hauteur de .gen__bande : les deux se
-   contredisant, le navigateur choisirait la mauvaise vignette. */
-const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
+   sait pas lire un clamp. Cette valeur DOIT suivre la hauteur de .gen__bande :
+   les deux se contredisant, le navigateur choisirait la mauvaise vignette.
+   ⚠️ Les trois bornes suivent le clamp TERME À TERME : 130 px au-delà de
+   1444 px (là où 9vw dépasse le maximum), 9vw entre les deux, 70 px sous
+   778 px (là où 9vw tombe sous le minimum). Le « 90px » d'avant était une
+   moyenne inventée : sur un téléphone de 390 px en DPR 2, il réclamait
+   180 pixels réels et faisait donc télécharger la variante 256 — deux fois
+   plus lourde — pour une vignette rendue à 70 px. */
+const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
 ---
 {/* Le montage est la ressource du plus grand élément peint de la page (le titre
     est détouré DEDANS) et c'est aussi le plus gros fichier du site : tant qu'il
@@ -25,8 +30,13 @@ const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
     Un preload dans le corps est vu par l'analyseur comme s'il était dans le
     head — le générique est le premier bloc de <main>, il tient dans le premier
     paquet — et il n'a pas à voyager jusqu'au layout, qui le poserait alors sur
-    les SEPT pages qui n'ont pas de générique. */}
-<link rel="preload" as="image" href={MONTAGE.src} fetchpriority="high" />
+    les SEPT pages qui n'ont pas de générique.
+    DEUX preloads et non un : le CSS choisit le montage réduit ou la HD selon la
+    largeur, le `media` du preload doit poser EXACTEMENT la même condition —
+    sinon le navigateur préchargerait une image que la page n'affiche pas, et
+    téléchargerait les deux. */}
+<link rel="preload" as="image" href={MONTAGE.src} media="(max-width: 1023px)" fetchpriority="high" />
+<link rel="preload" as="image" href={MONTAGE_HD.src} media="(min-width: 1024px)" fetchpriority="high" />
 <section class="gen letterbox" id="generique" aria-label="Daily Pop Society, le bar pop culture de Charleroi">
   <div class="gen__grain" aria-hidden="true"></div>
   <p class="gen__presente">Daily Pop Society présente</p>
@@ -53,7 +63,7 @@ const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
         class="gen__nom-fill"
         aria-hidden="true"
         data-montage-ratio={MONTAGE.largeur / MONTAGE.hauteur}
-        style={`background-image: url(${MONTAGE.src})`}
+        style={`--montage: url(${MONTAGE.src}); --montage-hd: url(${MONTAGE_HD.src})`}
       >Daily Pop</span>
       <span class="gen__nom-blanc">Daily Pop</span>
     </span>
@@ -124,9 +134,21 @@ const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
      js-intro : sans JS, cette couche ne doit jamais apparaître. */
   .gen__nom-fill {
     position: absolute; inset: 0; opacity: 0;
+    /* Les deux URL arrivent en variables posées sur l'élément (Astro les
+       calcule, le CSS scopé ne peut pas les écrire) : c'est le CSS qui CHOISIT,
+       pas le markup — un `background-image` en style inline aurait battu toute
+       règle de feuille, et le desktop serait resté sur le montage réduit. */
+    background-image: var(--montage);
     background-size: auto 100%; background-repeat: repeat-x; background-position: 0 0;
     -webkit-background-clip: text; background-clip: text; color: transparent;
     -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+  }
+  /* Au-delà de 1024 px, le titre monte vers ses 240 px CSS : sur un écran dense
+     cela réclame 480 pixels réels, exactement la hauteur du montage HD. Même
+     seuil que le `media` des deux preloads — les deux se contredisant, le
+     navigateur téléchargerait les deux montages. */
+  @media (min-width: 1024px) {
+    .gen__nom-fill { background-image: var(--montage-hd); }
   }
   /* text-shadow et non filter: drop-shadow — le filtre crée un contexte
      d'empilement et repasse tout le nom par le compositeur à chaque frame. */
@@ -287,7 +309,11 @@ const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
              APRÈS le refresh, jamais avant : c'est lui qui insère les 250 % de
              hauteur du pin, donc qui donne son sens à une position de scroll.
              sessionStorage peut lever (mode privé strict, cookies bloqués) :
-             une position de lecture ne vaut pas de casser l'intro. */
+             une position de lecture ne vaut pas de casser l'intro.
+             ⚠️ Cette mémorisation n'existe QUE sur desktop avec GSAP chargé —
+             c'est la seule branche qui coupe la restauration native. Partout
+             ailleurs (mobile, sans JS, reduced-motion, GSAP en échec), le
+             navigateur restaure seul et ce code ne tourne jamais. */
           const cleScroll = `dps:scroll:${location.pathname}`;
           try {
             const memo = sessionStorage.getItem(cleScroll);
@@ -295,7 +321,12 @@ const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
                laissée derrière se rejouerait à la prochaine ouverture. */
             sessionStorage.removeItem(cleScroll);
             const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-            if (memo && (!nav || nav.type === 'back_forward')) {
+            /* `nav?.type === 'back_forward'` et non `!nav || …` : sans Navigation
+               Timing (vieux navigateur, API désactivée) on ne SAIT pas d'où
+               vient la visite — et le repli d'avant restaurait alors la position
+               à chaque ouverture normale, générique sauté. En cas de doute, on
+               ouvre sur le générique : c'est le comportement voulu par défaut. */
+            if (memo && nav?.type === 'back_forward') {
               window.scrollTo({ top: Number(memo), behavior: 'instant' });
             }
           } catch {}
@@ -304,6 +335,13 @@ const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
              Safari mobile émette de façon fiable. */
           addEventListener('pagehide', () => {
             try { sessionStorage.setItem(cleScroll, String(window.scrollY)); } catch {}
+          });
+          /* Retour depuis le cache arrière/avant : la page n'est pas réexécutée,
+             le navigateur a REMIS lui-même la position — et notre mémo, écrit
+             par le pagehide qui l'y a envoyée, resterait derrière et se
+             rejouerait à la prochaine ouverture normale. On le jette. */
+          window.addEventListener('pageshow', (e) => {
+            if (e.persisted) { try { sessionStorage.removeItem(cleScroll); } catch {} }
           });
         } else {
           /* Mobile / tablette : intro courte au chargement, pas de pin (fragile au tactile) */

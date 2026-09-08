@@ -25,7 +25,10 @@ const schemas = [{
         <div class="ct__horaires"><Horaires /></div>
       </div>
       <div class="bloc-creme">
-        <h2 class="kicker">Coordonnées</h2>
+        {/* Un h2 ne porte pas le style d'un kicker : le kicker est la surtitre,
+            le h2 est le titre. Même patron que partout ailleurs sur le site. */}
+        <span class="kicker">Coordonnées</span>
+        <h2 class="titre titre--md">Nous <em>joindre</em></h2>
         <p class="ct__adresse">{IDENTITE.rue}<br />{IDENTITE.codePostal} {IDENTITE.ville}, Belgique</p>
         <dl class="ct__liste">
           <dt>Téléphone</dt><dd><a href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a></dd>
@@ -42,7 +45,7 @@ const schemas = [{
 
 <style>
   .ct { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 80px); align-items: start; }
-  .ct__adresse { font-family: var(--font-title); font-size: 1.7rem; line-height: 1.05; text-transform: uppercase; }
+  .ct__adresse { margin-top: 20px; font-family: var(--font-title); font-size: 1.7rem; line-height: 1.05; text-transform: uppercase; }
   .ct__liste { margin-top: 22px; display: grid; grid-template-columns: auto 1fr; gap: 8px 18px; }
   .ct__liste dt { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); align-self: center; }
   /* Le poids se pose sur le <dd>, pas sur le <a> : les liens externes sont

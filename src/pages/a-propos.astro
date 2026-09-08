@@ -10,7 +10,7 @@ import { IDENTITE } from '../data/site';
   <TitleCard kicker="Chapitre 4 · L'histoire" variante="bordeaux-sombre" letterbox>De Nakama's Coffee<br />à <em>Daily Pop Society</em><Fragment slot="copy">Pourquoi on a changé de nom, qui est {IDENTITE.gerante}, alias {IDENTITE.surnom}, et ce que veut dire « safe place » ici.</Fragment></TitleCard>
 
   <section class="section">
-    <div class="container container--narrow">
+    <div class="container etapes-wrap">
       <span class="kicker">L'histoire</span>
       <h2 class="titre titre--md">En trois <em>temps</em></h2>
       <ol class="etapes" role="list" data-reveal data-reveal-stagger>
@@ -63,6 +63,12 @@ import { IDENTITE } from '../data/site';
 </Base>
 
 <style>
+  /* Même patron que mentions-legales : la div garde le conteneur du site, donc
+     le MÊME bord gauche que la title card, la frise et le reste de la page ;
+     c'est le CONTENU qui est borné à une largeur de lecture. `container--narrow`
+     rétrécissait le conteneur LUI-MÊME, qui se recentrait — la frise en dessous
+     commençait alors 100 px à gauche du titre de cette section. */
+  .etapes-wrap > * { max-width: 760px; }
   .etapes { display: grid; gap: 40px; margin-top: 40px; }
   .etape { position: relative; padding-left: 36px; border-left: 3px solid var(--voix); }
   .etape::before { content: ''; position: absolute; left: -6px; top: 6px; width: 15px; height: 15px; background: var(--voix); border: 2px solid var(--txt); }
