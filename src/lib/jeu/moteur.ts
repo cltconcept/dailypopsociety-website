@@ -68,12 +68,20 @@ export function creerJeu(canvas: HTMLCanvasElement, sprites: Sprites, opts: Opti
   let bonusListe: Entite[] = [];
   const alea = (a: number, b: number) => a + Math.random() * (b - a);
 
+  /* Affecter canvas.width vide le bitmap, même à valeur égale : en mobile, la
+     barre d'adresse qui s'escamote déclenche un resize et laissait un écran
+     noir tant que la partie ne tournait pas. On ne réalloue que si la taille
+     change, et on redessine hors partie (la boucle s'en charge en cours). */
   function redimensionner() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (canvas.width === LARGEUR * dpr && canvas.height === HAUTEUR * dpr) return;
     canvas.width = LARGEUR * dpr;
     canvas.height = HAUTEUR * dpr;
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ciel = null;
+    if (etat !== 'en-cours') dessiner();
   }
+  let ciel: CanvasGradient | null = null;
 
   function reinitialiser() {
     temps = 0; vitesse = V0; distance = 0; bonus = 0; score = 0;
@@ -137,7 +145,7 @@ export function creerJeu(canvas: HTMLCanvasElement, sprites: Sprites, opts: Opti
     prochainObstacle -= dt;
     if (prochainObstacle <= 0) {
       const boulet = temps > 8 && Math.random() < 0.35;
-      obstacles.push(boulet ? { type: 'boulet', x: LARGEUR + 40, y: SOL, w: 44, h: 44, vx: 1.35 } : { type: 'tonneau', x: LARGEUR + 40, y: SOL, w: 58, h: 66, vx: 1 });
+      obstacles.push(boulet ? { type: 'boulet', x: LARGEUR + 40, y: SOL, w: 44, h: 44, vx: 1.35 } : { type: 'tonneau', x: LARGEUR + 40, y: SOL, w: 58, h: 46, vx: 1 } /* 46 = hauteur réellement dessinée en « contain » (sprite 256×204 dans 58 de large) : la boîte de collision suit le dessin */);
       prochainObstacle = Math.max(0.75, 1.6 - temps * 0.02) * alea(0.85, 1.35);
     }
     prochainBonus -= dt;
@@ -190,11 +198,13 @@ export function creerJeu(canvas: HTMLCanvasElement, sprites: Sprites, opts: Opti
     const c = ctx!;
     const p = opts.reduced ? 0 : decor;
     // ciel
-    const ciel = c.createLinearGradient(0, 0, 0, SOL);
-    ciel.addColorStop(0, '#7B1E2B'); ciel.addColorStop(0.55, '#B4162F'); ciel.addColorStop(1, '#E3A1AB');
+    if (!ciel) {
+      ciel = c.createLinearGradient(0, 0, 0, SOL);
+      ciel.addColorStop(0, '#7B1E2B'); ciel.addColorStop(0.55, '#B4162F'); ciel.addColorStop(1, '#E3A1AB');
+    }
     c.fillStyle = ciel; c.fillRect(0, 0, LARGEUR, HAUTEUR);
     // nuages (parallaxe 0,2)
-    c.fillStyle = 'rgba(255,255,255,0.22)';
+    c.fillStyle = 'rgba(255,255,255,0.35)';
     for (let i = 0; i < 6; i++) {
       const x = ((i * 230 - p * 0.2) % (LARGEUR + 260) + LARGEUR + 260) % (LARGEUR + 260) - 130;
       const y = 60 + (i % 3) * 55;
@@ -214,18 +224,18 @@ export function creerJeu(canvas: HTMLCanvasElement, sprites: Sprites, opts: Opti
       const x = ((i * 100 - p * 0.5) % (LARGEUR + 100) + LARGEUR + 100) % (LARGEUR + 100) - 50;
       c.fillRect(x, SOL - 58 + (i % 2) * 18, 60, 4);
     }
-    // pont (parallaxe 1)
-    c.fillStyle = '#6B4423'; c.fillRect(0, SOL, LARGEUR, HAUTEUR - SOL);
-    c.fillStyle = '#5A3719';
+    // pont : il porte le mouvement du jeu, il défile donc même en reduced-motion (seule la parallaxe du fond se fige)
+    c.fillStyle = '#4A2E16'; c.fillRect(0, SOL, LARGEUR, HAUTEUR - SOL);
+    c.fillStyle = '#3A2310';
     for (let i = 0; i < 14; i++) {
-      const x = ((i * 80 - p) % (LARGEUR + 80) + LARGEUR + 80) % (LARGEUR + 80) - 40;
+      const x = ((i * 80 - decor) % (LARGEUR + 80) + LARGEUR + 80) % (LARGEUR + 80) - 40;
       c.fillRect(x, SOL, 3, HAUTEUR - SOL);
     }
     c.fillStyle = '#0E0E0E'; c.fillRect(0, SOL - 4, LARGEUR, 4);
     // entités
-    for (const b of bonusListe) sprite(b.type, b.x, b.y + Math.sin(temps * 6 + b.x) * 4, b.w, b.h);
+    for (const b of bonusListe) sprite(b.type, b.x, b.y + (opts.reduced ? 0 : Math.sin(temps * 6 + b.x) * 4), b.w, b.h);
     for (const o of obstacles) sprite(o.type, o.x, o.y, o.w, o.h);
-    const bob = joueur.auSol && etat === 'en-cours' ? Math.sin(temps * 18) * 3 : 0;
+    const bob = !opts.reduced && joueur.auSol && etat === 'en-cours' ? Math.sin(temps * 18) * 3 : 0;
     sprite('avatar', joueur.x, joueur.y + bob, joueur.w, joueur.h);
   }
 

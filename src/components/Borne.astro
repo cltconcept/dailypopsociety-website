@@ -60,7 +60,7 @@
      flex centrée dont le contenu déborde rend son haut INATTEIGNABLE au scroll ;
      les marges automatiques, elles, se rétractent. Sur un écran haut, la borne
      se pose donc au milieu ; sur un écran court, elle défile normalement. */
-  .borne__corps { display: grid; grid-template-columns: 1.7fr 1fr; gap: clamp(18px, 3vw, 36px); align-items: start; margin-block: auto; }
+  .borne__corps { display: grid; grid-template-columns: 2.1fr 1fr; gap: clamp(18px, 3vw, 36px); align-items: start; margin-block: auto; }
   .borne__hud { display: flex; gap: 22px; font-family: var(--font-title); font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
   .borne__hud b { color: var(--accent); }
   .borne__ecran { position: relative; border: var(--bord); box-shadow: var(--ombre-btn) 8px 8px 0; background: var(--noir); }
@@ -94,6 +94,8 @@
   .borne__note { margin-top: 12px; font-size: 0.82rem; opacity: 0.75; }
   @media (max-width: 960px) {
     .borne__corps { grid-template-columns: 1fr; }
+    /* En mobile l'écran fait ~200 px de haut : le formulaire de fin (~260 px) se range SOUS le canvas au lieu de le recouvrir */
+    .borne__fin { position: static; inset: auto; padding: 16px; gap: 8px; }
     .borne__hud { font-size: 0.95rem; gap: 14px; }
     /* Le rappel des touches prend toute la largeur et passe SOUS le titre :
        sans lui sur la première ligne, la croix de fermeture reste là où on la

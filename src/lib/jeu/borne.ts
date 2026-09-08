@@ -34,6 +34,7 @@ export function initBorne() {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let jeu: Jeu | null = null;
+  let dernierScore = -1, dernierTemps = -1;
   let dernier = { score: 0, duree: 0 };
   let record = Number(lire(CLE_RECORD)) || 0;
   let dernierPseudo = '';
@@ -92,7 +93,10 @@ export function initBorne() {
            partie a démarré — espace, tap ou bouton Rejouer. */
         onScore: (s, t) => {
           if (!elMessage.hidden) elMessage.hidden = true;
-          elScore.textContent = fmt(s); elTemps.textContent = String(Math.floor(t));
+          // Écritures DOM seulement au changement (la boucle appelle ici 60 fois/s) ; ceil : « 1 s » dès la première seconde, pas « 0 s »
+          if (s !== dernierScore) { dernierScore = s; elScore.textContent = fmt(s); }
+          const ts = Math.ceil(t);
+          if (ts !== dernierTemps) { dernierTemps = ts; elTemps.textContent = String(ts); }
         },
         onFin: (s, d) => finPartie(s, d),
       });
@@ -157,7 +161,11 @@ export function initBorne() {
   rejouerBtn.addEventListener('click', () => { form.hidden = true; elMessage.hidden = true; jeu?.demarrer(); canvas.focus(); });
   fermerBtn.addEventListener('click', fermer);
   start.addEventListener('click', ouvrir);
-  borne.addEventListener('keydown', (e) => {
+  /* Sur document, pas sur #borne : un clic sur le fond du calque rend le focus
+     à <body>, et l'événement ne remonterait plus jusqu'à la borne — Échap et
+     le piège de focus ne fonctionneraient plus qu'après un nouveau clic dedans. */
+  document.addEventListener('keydown', (e) => {
+    if (borne.hidden) return;
     if (e.key === 'Escape') { e.preventDefault(); fermer(); return; }
     if (e.key !== 'Tab') return;
     const focalisables = Array.from(borne.querySelectorAll<HTMLElement>('button, input, canvas, [tabindex="0"]')).filter((el) => !el.closest('[hidden]'));
