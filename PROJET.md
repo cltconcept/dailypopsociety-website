@@ -76,6 +76,7 @@ PROD=1 pnpm verifier   # contrôle de mise en production (refuse tant que `DEMO`
 
 ## Journal des changements
 ### 2026-09-08
+- 🐛 Fix : revue qualité du jeu (commit `dfbf41f`) — boîte de collision du tonneau alignée sur le dessin (14 px de « mort invisible » au-dessus du fût), canvas redessiné au `resize` (écran noir en mobile quand la barre d'adresse s'escamotait), Échap écouté sur `document` (perdu après un clic sur le fond du calque), formulaire de fin rangé sous l'écran en mobile ; pont plus sombre et nuages plus lisibles, pont qui défile même en reduced-motion, HUD « 1 s » dès la première seconde, écran de jeu élargi
 - ✨ Ajout : Nakama Run en ligne — moteur canvas, borne, top 3 dans le hero, API des scores (Hono, JSON par mois) ; app Coolify sur 8080
 - 🐛 Fix : **rétention des classements tenue pour de vrai** — `moisIlYA()` + `Stockage.purger()` (`server/scores.mjs`) suppriment les `scores-AAAA-MM.json` et leurs `.corrompu` de plus de douze mois, appelés au démarrage puis toutes les 24 h ; les mentions légales sont réécrites en conséquence (rien d'autre qu'un pseudo, un score et une date, aucune adresse ; douze mois de conservation) et ne prétendent plus « aucun formulaire »
 - 🔒 Sécurité : image Docker **non-root** (`USER node`, uid 1000) sur le **port 8080** (< 1024 interdit à un non-root ; `ports_exposes` et labels Traefik corrigés sur l'app Coolify le jour même), `chown -R node:node /app /data` avant le `VOLUME`, `HEALTHCHECK` sur `/health`, et fichiers de tests exclus de l'image
