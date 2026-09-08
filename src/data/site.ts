@@ -22,6 +22,11 @@ export const IDENTITE = {
   surnom: "l'Hokage",
 };
 
+/* Description de référence de l'établissement — sert au JSON-LD (schema.org).
+   Elle vit ici et pas dans le layout : un layout ne porte pas de contenu (§8). */
+export const DESCRIPTION =
+  'Bar food & drinks dédié à la pop culture à Charleroi : cocktails à personnages, burgers, bubble teas, events mensuels, blind tests, JDR, coin gaming. Cosplay friendly.';
+
 /* La licence du mois — mise à jour mensuelle, lue par le générique et les events */
 export const LICENCE_DU_MOIS = {
   nom: 'Daily Pop Coven',

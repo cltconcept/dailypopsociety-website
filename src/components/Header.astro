@@ -1,16 +1,21 @@
 ---
 import { NAV, IDENTITE } from '../data/site';
 const path = Astro.url.pathname;
-const isActive = (href: string) => path === href || path.startsWith(href);
+/* `startsWith` nu marquait « / » actif partout et « /events » actif sur
+   « /events-quelque-chose ». On normalise la barre finale et on traite
+   l'accueil comme une égalité stricte. */
+const isActive = (href: string) => (href === '/' ? path === '/' : path.replace(/\/?$/, '/').startsWith(href));
 ---
 <header class="nav" id="site-nav">
   <div class="nav__capsule">
     <a href="/" class="nav__brand" aria-label="Daily Pop Society — accueil">
-      <img src="/media/logo-64.webp" alt="" width="32" height="32" />
+      <img src="/media/logo-64.webp" srcset="/media/logo-64.webp 1x, /media/logo-320.webp 4x" alt="" width="32" height="32" />
       <span>Daily Pop <b>Society</b></span>
     </a>
     <nav class="nav__links" aria-label="Navigation principale">
-      {NAV.map((item) => <a href={item.href} class:list={{ 'is-active': isActive(item.href) }}>{item.label}</a>)}
+      {NAV.map((item) => (
+        <a href={item.href} class:list={{ 'is-active': isActive(item.href) }} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+      ))}
     </nav>
     <a class="nav__cta" href="/contact/">Nous trouver</a>
     <button class="nav__burger" id="nav-burger" aria-expanded="false" aria-controls="nav-menu" aria-label="Ouvrir le menu">
@@ -19,7 +24,9 @@ const isActive = (href: string) => path === href || path.startsWith(href);
   </div>
   <div class="nav__menu" id="nav-menu" aria-hidden="true">
     <nav aria-label="Menu mobile">
-      {NAV.map((item, i) => <a href={item.href} style={`--i: ${i}`}>{item.label}</a>)}
+      {NAV.map((item, i) => (
+        <a href={item.href} style={`--i: ${i}`} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
+      ))}
     </nav>
     <div class="nav__menu-foot">
       <a class="btn btn--blanc" href="/contact/">Nous trouver</a>
@@ -43,16 +50,34 @@ const isActive = (href: string) => path === href || path.startsWith(href);
     burger?.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
     menu?.setAttribute('aria-hidden', String(!open));
     document.body.style.overflow = open ? 'hidden' : '';
+    /* Le reste de la page sort de l'arbre d'accessibilité tant que le menu
+       couvre l'écran : sans ça, le lecteur d'écran continue de lire dessous. */
+    document.querySelectorAll('main, footer').forEach((el) => {
+      (el as HTMLElement).inert = open;
+    });
   };
   burger?.addEventListener('click', () => setMenu(!menu?.classList.contains('is-open')));
   menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu?.classList.contains('is-open')) {
+      setMenu(false);
+      burger?.focus();
+    }
+  });
+  /* Passage en desktop pendant que le menu est ouvert : il disparaît en CSS,
+     l'état JS doit suivre (sinon body reste bloqué et main reste inert). */
+  window.matchMedia('(min-width: 961px)').addEventListener('change', (e) => {
+    if (e.matches) setMenu(false);
+  });
 </script>
 
 <style>
   /* Capsule noire flottante — lisible sur les six title cards */
   .nav { position: fixed; inset-inline: 0; top: 14px; z-index: 60; display: flex; justify-content: center; pointer-events: none; padding-inline: 12px; }
+  /* La capsule (donc le burger) doit rester AU-DESSUS du plein écran du menu,
+     sinon le clic de fermeture tombe sur le menu et le menu ne se referme plus. */
   .nav__capsule {
+    position: relative; z-index: 2;
     pointer-events: auto;
     display: flex; align-items: center; gap: clamp(14px, 2vw, 28px);
     padding: 8px 8px 8px 16px;
@@ -69,13 +94,15 @@ const isActive = (href: string) => path === href || path.startsWith(href);
   .nav__links { display: flex; align-items: center; gap: clamp(12px, 1.6vw, 22px); }
   .nav__links a { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; color: rgba(255, 255, 255, 0.78); padding: 6px 2px; transition: color 0.2s; }
   .nav__links a:hover { color: var(--blanc); }
-  .nav__links a.is-active { color: var(--rose); }
+  /* Repère non chromatique : le soulignement dit « page courante » même sans
+     perception de la couleur. */
+  .nav__links a.is-active { color: var(--rose); text-decoration: underline; text-underline-offset: 6px; }
   .nav__cta { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; background: var(--rouge); color: var(--blanc); padding: 10px 16px; }
   .nav__burger { display: none; width: 42px; height: 42px; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
   .nav__burger span { display: block; width: 22px; height: 2px; background: var(--blanc); transition: transform 0.3s var(--ease); }
   .nav__burger.is-open span:first-child { transform: translateY(4px) rotate(45deg); }
   .nav__burger.is-open span:last-child { transform: translateY(-4px) rotate(-45deg); }
-  .nav__menu { position: fixed; inset: 0; z-index: 50; background: var(--noir); color: var(--blanc); display: flex; flex-direction: column; justify-content: center; padding: 100px 32px 40px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s; pointer-events: auto; }
+  .nav__menu { position: fixed; inset: 0; z-index: 1; background: var(--noir); color: var(--blanc); display: flex; flex-direction: column; justify-content: center; padding: 100px 32px 40px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s; pointer-events: auto; overflow-y: auto; overscroll-behavior: contain; }
   .nav__menu.is-open { opacity: 1; visibility: visible; }
   .nav__menu nav a { display: block; font-family: var(--font-title); font-size: clamp(2.2rem, 9vw, 3.4rem); text-transform: uppercase; text-decoration: none; line-height: 1.1; transform: translateY(20px); opacity: 0; transition: transform 0.5s var(--ease) calc(var(--i) * 60ms), opacity 0.5s ease calc(var(--i) * 60ms); }
   .nav__menu.is-open nav a { transform: none; opacity: 1; }
@@ -85,5 +112,10 @@ const isActive = (href: string) => path === href || path.startsWith(href);
     .nav__links, .nav__cta { display: none; }
     .nav__burger { display: flex; }
     .nav__capsule { width: 100%; justify-content: space-between; }
+  }
+  /* En desktop le menu plein écran n'existe pas : rien ne doit pouvoir le faire
+     réapparaître (redimensionnement, état JS resté ouvert). */
+  @media (min-width: 961px) {
+    .nav__menu { display: none; }
   }
 </style>

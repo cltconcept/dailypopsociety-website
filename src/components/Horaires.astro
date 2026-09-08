@@ -2,7 +2,7 @@
 import { JOURS, MENTION_HORAIRES } from '../data/horaires';
 ---
 <div class="horaires" id="horaires">
-  <ul class="horaires__liste">
+  <ul class="horaires__liste" role="list">
     {JOURS.map((j) => (
       <li class="horaires__jour" data-jour={j.index}>
         <span class="horaires__nom">{j.jour}</span>
@@ -15,10 +15,29 @@ import { JOURS, MENTION_HORAIRES } from '../data/horaires';
 </div>
 
 <script>
-  /* Surligne le jour courant — amélioration progressive, rien sans JS */
-  const today = new Date().getDay();
+  /* Surligne le jour courant — amélioration progressive, rien sans JS.
+     Le jour se lit en heure de Bruxelles, pas dans le fuseau du visiteur :
+     un client à Montréal ne doit pas voir « aujourd'hui » sur la mauvaise ligne. */
+  const NOMS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  const today = NOMS.indexOf(
+    new Intl.DateTimeFormat('fr-BE', { weekday: 'long', timeZone: 'Europe/Brussels' })
+      .format(new Date())
+      .toLowerCase()
+  );
   document.querySelectorAll<HTMLElement>('.horaires__jour').forEach((li) => {
-    li.classList.toggle('is-today', Number(li.dataset.jour) === today);
+    const estAujourdhui = Number(li.dataset.jour) === today;
+    li.classList.toggle('is-today', estAujourdhui);
+    if (!estAujourdhui) return;
+    /* Le surlignage rouge est purement visuel : on double l'information
+       pour les lecteurs d'écran. */
+    li.setAttribute('aria-current', 'date');
+    const nom = li.querySelector('.horaires__nom');
+    if (nom && !nom.querySelector('.sr-only')) {
+      const marque = document.createElement('span');
+      marque.className = 'sr-only';
+      marque.textContent = " (aujourd'hui)";
+      nom.appendChild(marque);
+    }
   });
 </script>
 

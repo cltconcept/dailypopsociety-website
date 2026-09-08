@@ -2,7 +2,15 @@
    DAILY POP SOCIETY — système « Le générique »
    Noir d'encre, bordeaux profond, blanc, crème papier.
    Titres : Anton (title card). Texte : Inter. Annotations : Caveat.
-   Onomatopées : Bangers (uniquement dans les cases, aria-hidden).
+   Onomatopées : Bangers (uniquement dans les cases, aria-hidden ;
+   la fonte est importée par le composant Case, pas par le layout).
+
+   SURFACES PAR JETONS — règle centrale de ce fichier :
+   un composant ne connaît JAMAIS la couleur du fond sur lequel il tombe.
+   Il lit --txt / --txt-doux / --accent / --focus. Chaque champ de couleur
+   (title card sombre, section noire) redéfinit ces quatre jetons ; les
+   composants n'ont donc aucune règle « .section--noir .machin ».
+   Poser un nouveau fond sombre = ajouter sa classe au bloc « surfaces sombres ».
    ============================================================ */
 :root {
   --noir: #0E0E0E;
@@ -15,6 +23,12 @@
   --gris: #5B5B5B;
   --gris-ligne: rgba(14, 14, 14, 0.14);
 
+  /* Jetons de surface — valeurs du fond CLAIR (défaut) */
+  --txt: var(--noir);
+  --txt-doux: var(--gris);
+  --accent: var(--rouge);
+  --focus: var(--rouge);
+
   --font-title: 'Anton', Impact, 'Arial Narrow', sans-serif;
   --font-body: 'Inter Variable', system-ui, sans-serif;
   --font-hand: 'Caveat', cursive;
@@ -24,6 +38,7 @@
   --container-narrow: 820px;
   --gutter: clamp(20px, 4vw, 32px);
   --section-pad: clamp(72px, 10vw, 130px);
+  --nav-h: 72px;
   --bord: 3px solid var(--noir);
   --ombre-case: 6px 6px 0 var(--bdx);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -33,8 +48,19 @@
 
 /* ===== Reset ===== */
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 90px; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 24px);
+  -webkit-text-size-adjust: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
 body {
   margin: 0;
   font-family: var(--font-body);
@@ -49,10 +75,16 @@ h1, h2, h3, h4, p, figure, ul, ol { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 a { color: inherit; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-:focus-visible { outline: 3px solid var(--rouge); outline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* Réservé aux lecteurs d'écran (jamais display:none : il faut rester annoncé) */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 
 .skip-link {
-  position: absolute; left: 12px; top: -60px; z-index: 100;
+  position: absolute; left: 50%; transform: translateX(-50%); top: -60px; z-index: 100;
   padding: 10px 16px; background: var(--noir); color: var(--blanc);
   font-weight: 700; text-decoration: none;
 }
@@ -70,6 +102,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   background-size: 7px 7px;
 }
 
+/* ===== Surfaces sombres : elles ne changent QUE les quatre jetons ===== */
+.tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir {
+  --txt: var(--blanc);
+  --txt-doux: rgba(255, 255, 255, .78);
+  --accent: var(--rose);
+  --focus: var(--rose);
+}
+
 /* ===== Typographie ===== */
 .titre {
   font-family: var(--font-title);
@@ -82,27 +122,23 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .titre--md { font-size: clamp(2rem, 4.4vw, 3.4rem); }
 .titre--sm { font-size: clamp(1.4rem, 2.6vw, 2rem); }
-.titre em, .titre .accent { font-style: normal; color: var(--rouge); }
-.section--noir .titre em, .tc--bordeaux .titre em, .tc--bordeaux-sombre .titre em, .tc--noir .titre em { color: var(--rose); }
+.titre em, .titre .accent { font-style: normal; color: var(--accent); }
 .kicker {
   display: block;
   font-size: 0.76rem; font-weight: 700; letter-spacing: 0.32em; text-transform: uppercase;
-  color: var(--rouge); margin-bottom: 18px;
+  color: var(--accent); margin-bottom: 18px;
 }
-.section--noir .kicker { color: var(--rose); }
 .copy {
   margin-top: 20px;
   font-size: clamp(1.02rem, 1.4vw, 1.18rem);
   line-height: 1.6;
-  color: var(--gris);
+  color: var(--txt-doux);
   max-width: 38em;
   text-wrap: pretty;
 }
-.section--noir .copy { color: rgba(255, 255, 255, 0.78); }
 .copy strong { color: inherit; font-weight: 700; }
 .copy--center { margin-inline: auto; text-align: center; }
-.hand { font-family: var(--font-hand); font-size: 1.5em; color: var(--bdx); line-height: 1.1; }
-.section--noir .hand { color: var(--rose); }
+.hand { font-family: var(--font-hand); font-size: 1.5em; color: var(--accent); line-height: 1.1; }
 .center { text-align: center; }
 
 /* ===== Boutons ===== */
@@ -135,7 +171,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   padding: clamp(150px, 20vw, 220px) 0 clamp(60px, 8vw, 100px);
   overflow: hidden;
 }
-.tc--bordeaux { background: radial-gradient(ellipse at 50% 70%, #9A2334 0%, var(--bdx) 45%, var(--bdx-deep) 100%); color: var(--blanc); }
+/* Centre du dégradé assombri (#9A2334 → #7F1F2D) pour que le rose des kickers
+   et des accents reste au-dessus de 4,5:1 au point le plus clair du champ. */
+.tc--bordeaux { background: radial-gradient(ellipse at 50% 70%, #7F1F2D 0%, var(--bdx) 45%, var(--bdx-deep) 100%); color: var(--blanc); }
 .tc--bordeaux-sombre { background: linear-gradient(180deg, var(--bdx-deep), #2A0810); color: var(--blanc); }
 .tc--noir { background: var(--noir); color: var(--blanc); }
 .tc--creme {
@@ -144,10 +182,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   background-size: 7px 7px;
 }
 .tc--blanc { background: var(--blanc); border-bottom: var(--bord); }
-.tc .kicker { color: var(--rose); }
-.tc--creme .kicker, .tc--blanc .kicker { color: var(--rouge); }
-.tc .copy { color: inherit; opacity: 0.82; }
-.tc--creme .copy, .tc--blanc .copy { color: var(--gris); opacity: 1; }
 /* Letterbox : bandes noires de cinéma en haut et en bas d'une section */
 .letterbox { position: relative; }
 .letterbox::before, .letterbox::after {
@@ -169,9 +203,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
 }
 a.case:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--bdx); }
-.case__media { border-bottom: var(--bord); aspect-ratio: 4 / 3; overflow: hidden; background: var(--creme); }
+.case__media { flex: none; border-bottom: var(--bord); aspect-ratio: 4 / 3; overflow: hidden; background: var(--creme); }
 .case__media img { width: 100%; height: 100%; object-fit: cover; }
-.case__body { padding: 18px 20px 22px; }
+.case__body { flex: 1; padding: 18px 20px 22px; }
 .case__titre { font-family: var(--font-title); font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1; }
 .case__texte { margin-top: 8px; font-size: 0.95rem; color: var(--gris); line-height: 1.5; }
 .case__tag { display: inline-block; margin-bottom: 8px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rouge); }
@@ -192,9 +226,9 @@ a.case:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--bdx
 .ligne { display: flex; align-items: baseline; gap: 10px; }
 .ligne__nom { font-weight: 700; }
 .ligne__points { flex: 1; border-bottom: 2px dotted var(--gris-ligne); transform: translateY(-5px); min-width: 24px; }
-.ligne__prix { font-family: var(--font-title); font-size: 1.15rem; color: var(--bdx); letter-spacing: 0.04em; white-space: nowrap; }
+.ligne__prix { font-family: var(--font-title); font-size: 1.15rem; color: var(--accent); letter-spacing: 0.04em; white-space: nowrap; }
 
 /* ===== Transition douce entre sections (feuille arrondie) ===== */
-.feuille { position: relative; margin-top: -28px; border-radius: 28px 28px 0 0; z-index: 1; }
+.feuille { position: relative; margin-top: -28px; border-radius: 28px 28px 0 0; z-index: 1; overflow: hidden; }
 
 /* ===== Générique (états sans JS et reduced-motion) : cf. Generique.astro ===== */

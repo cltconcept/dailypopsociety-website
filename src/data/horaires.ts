@@ -14,10 +14,19 @@ export const JOURS: Jour[] = [
 export const MENTION_HORAIRES =
   'Horaires susceptibles de changer avec la rentrée et la saison : vérifie sur Instagram avant de venir.';
 
-/* Pour le JSON-LD schema.org (openingHoursSpecification) */
+/* Pour le JSON-LD schema.org (openingHoursSpecification).
+   « 9h » → « 09:00 », « 9h30 » → « 09:30 », « 16h » → « 16:00 ».
+   Le séparateur accepte le tiret cadratin (–) comme le tiret ordinaire (-),
+   avec ou sans espaces : une graphie saisie à la main ne doit pas produire
+   un horaire faux et silencieux dans le JSON-LD. */
+const heure = (h: string) => {
+  const [hh, mm] = h.trim().replace(/\s/g, '').split('h');
+  return `${hh.padStart(2, '0')}:${(mm || '').padEnd(2, '0')}`;
+};
+
 export const HORAIRES_SCHEMA = JOURS.filter((j) => j.creneaux).flatMap((j) =>
   j.creneaux!.map((c) => {
-    const [ouvre, ferme] = c.split(' – ').map((h) => h.replace('h', ':').padEnd(5, '0').replace(/^(\d):/, '0$1:'));
+    const [ouvre, ferme] = c.split(/\s*[–-]\s*/).map(heure);
     return {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][j.index],

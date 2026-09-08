@@ -15,5 +15,6 @@ import Base from '../layouts/Base.astro';
   </section>
 </Base>
 <style>
-  .nf { min-height: 80svh; display: flex; align-items: center; }
+  /* Repli empilé : svh n'existe pas partout, vh reste le filet. */
+  .nf { min-height: 80vh; min-height: 80svh; display: flex; align-items: center; }
 </style>
