@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 const DIST = 'dist';
 const ORIGINE = 'https://dailypopsociety.be';
-const PAGES = ['index.html', '404.html', 'mentions-legales/index.html'];
+const PAGES = ['index.html', '404.html', 'mentions-legales/index.html', 'la-carte/index.html'];
 const erreurs = [];
 const ok = (cond, msg) => { if (!cond) erreurs.push(msg); };
 
