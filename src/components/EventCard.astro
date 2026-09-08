@@ -1,0 +1,36 @@
+---
+import type { Evenement } from '../data/events';
+interface Props { ev: Evenement; sombre?: boolean; passe?: boolean }
+const { ev, sombre = false, passe = false } = Astro.props;
+---
+<article class:list={['evc', { 'evc--sombre': sombre, 'evc--passe': passe }]}>
+  <div class="evc__media"><img src={ev.visuel} alt={ev.alt} width="960" height="720" loading="lazy" decoding="async" /></div>
+  <div class="evc__body">
+    <p class="evc__quand">{ev.quand}{ev.aPlanifier && ' · à planifier'}</p>
+    <h3 class="evc__titre">{ev.titre}</h3>
+    <p class="evc__desc">{ev.desc}</p>
+    {ev.reservation && <p class="evc__resa">Sur réservation uniquement</p>}
+  </div>
+</article>
+
+<style>
+  /* Jetons de surface — la carte claire redéclare les jetons clairs, comme .case
+     dans global.css (§ « surfaces claires »). .evc--sombre les repasse en sombre. */
+  .evc { --txt: var(--noir); --txt-doux: var(--gris); --accent: var(--rouge); --voix: var(--bdx); --focus: var(--rouge); --ombre-btn: var(--noir); }
+  .evc--sombre { --txt: var(--blanc); --txt-doux: rgba(255, 255, 255, .78); --accent: var(--rose); --voix: var(--rose); --focus: var(--rose); --ombre-btn: var(--rose); }
+
+  .evc { display: grid; grid-template-columns: 200px 1fr; border: var(--bord); background: var(--blanc); color: var(--txt); box-shadow: var(--ombre-case); overflow: hidden; }
+  .evc__media { border-right: var(--bord); background: var(--creme); }
+  .evc__media img { width: 100%; height: 100%; object-fit: cover; }
+  .evc__body { padding: 20px 22px; }
+  .evc__quand { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+  .evc__titre { margin-top: 6px; font-family: var(--font-title); font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.03em; line-height: 1; }
+  .evc__desc { margin-top: 8px; color: var(--txt-doux); line-height: 1.5; }
+  .evc__resa { margin-top: 10px; display: inline-block; padding: 3px 10px; background: var(--noir); color: var(--blanc); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; }
+  .evc--sombre { background: var(--noir); color: var(--txt); border-color: var(--bdx); box-shadow: 6px 6px 0 var(--rouge); }
+  .evc--sombre .evc__media { border-color: var(--bdx); }
+  .evc--passe { grid-template-columns: 1fr; }
+  .evc--passe .evc__media { border-right: 0; border-bottom: var(--bord); aspect-ratio: 4 / 3; }
+  .evc--passe .evc__media img { filter: grayscale(0.6) contrast(1.05); }
+  @media (max-width: 600px) { .evc { grid-template-columns: 1fr; } .evc__media { border-right: 0; border-bottom: var(--bord); aspect-ratio: 16 / 9; } }
+</style>

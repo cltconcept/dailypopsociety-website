@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import TitleCard from '../components/TitleCard.astro';
+import EventCard from '../components/EventCard.astro';
+import { A_VENIR, SOIREES, PASSES } from '../data/events';
+import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
+---
+<Base title="Events et soirées — Daily Pop Society, Charleroi" description="Une licence à l'honneur chaque mois, blind tests pop culture deux fois par mois, soirées JDR sur réservation, animations le week-end. Le programme du bar pop culture de Charleroi.">
+  <TitleCard kicker="Chapitre 2 · Les events" variante="noir" letterbox>Ce mois-ci :<br /><em>{LICENCE_DU_MOIS.nom}</em><Fragment slot="copy">{LICENCE_DU_MOIS.accroche} {LICENCE_DU_MOIS.dates}. Une licence par mois, une carte éphémère, et des soirées toutes les semaines.</Fragment><Fragment slot="actions"><a class="btn" href={IDENTITE.instagram} target="_blank" rel="noopener">Le programme sur Instagram</a></Fragment></TitleCard>
+
+  <section class="section">
+    <div class="container">
+      <span class="kicker">À venir</span>
+      <h2 class="titre titre--md">Les prochaines <em>licences</em></h2>
+      <div class="liste" data-reveal data-reveal-stagger>
+        {A_VENIR.map((ev) => <EventCard ev={ev} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--noir letterbox">
+    <div class="container">
+      <span class="kicker">Toutes les semaines</span>
+      <h2 class="titre titre--md">Les <em>soirées</em></h2>
+      <div class="liste" data-reveal data-reveal-stagger>
+        {SOIREES.map((ev) => <EventCard ev={ev} sombre />)}
+      </div>
+      <p class="copy">Réservation JDR par téléphone au <a href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a> ou par Messenger.</p>
+    </div>
+  </section>
+
+  <section class="section section--trame">
+    <div class="container">
+      <span class="kicker">Précédemment dans Daily Pop</span>
+      <h2 class="titre titre--md">Les events <em>passés</em></h2>
+      <p class="copy">Pour comprendre ce qu'est un event au shop. Les photos arrivent, en attendant voilà l'ambiance.</p>
+      <div class="grille grille--2 passes" data-reveal data-reveal-stagger>
+        {PASSES.map((ev) => <EventCard ev={ev} passe />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .liste { margin-top: 36px; display: grid; gap: 22px; }
+  .passes { margin-top: 36px; }
+</style>
