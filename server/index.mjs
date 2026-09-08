@@ -88,8 +88,11 @@ app.post(
   },
 );
 
+/* L'API et elle seule : /apiculture est une page du site, pas une route JSON. */
+const estApi = (p) => p === '/api' || p.startsWith('/api/');
+
 app.notFound(async (c) => {
-  if (c.req.path.startsWith('/api')) return c.json({ erreur: 'route inconnue' }, 404);
+  if (estApi(c.req.path)) return c.json({ erreur: 'route inconnue' }, 404);
   const html = await readFile(join(DIST, '404.html'), 'utf8').catch(() => 'Page introuvable');
   c.header('Cache-Control', 'no-cache');
   return c.html(html, 404);
@@ -108,7 +111,7 @@ app.use('*', async (c, next) => {
 /* /la-carte → /la-carte/ (le sitemap et les liens internes ont le slash) */
 app.use('*', async (c, next) => {
   const p = c.req.path;
-  if (p !== '/' && !p.endsWith('/') && !extname(p) && !p.startsWith('/api')) {
+  if (p !== '/' && !p.endsWith('/') && !extname(p) && !estApi(p)) {
     const index = join(DIST, p, 'index.html');
     if (await stat(index).then((s) => s.isFile()).catch(() => false)) {
       const u = new URL(c.req.url); // la query survit à la redirection

@@ -100,6 +100,22 @@ test('/api et /api/x rendent du JSON, pas la page 404', async () => {
   }
 });
 
+test('/apiculture n est pas une route d API : page 404 puis 301 si la page existe', async () => {
+  const sansPage = await app.request('/apiculture');
+  assert.equal(sansPage.status, 404);
+  assert.match(await sansPage.text(), /Cette page a pris la mer/); // 404.html, pas du JSON
+
+  await mkdir(join(dist, 'apiculture'), { recursive: true });
+  await writeFile(join(dist, 'apiculture', 'index.html'), '<!doctype html><title>Apiculture</title>');
+  try {
+    const res = await app.request('/apiculture');
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.get('location'), '/apiculture/');
+  } finally {
+    await rm(join(dist, 'apiculture'), { recursive: true, force: true });
+  }
+});
+
 test('POST valide : 201 avec le rang, puis GET rend le top et « conserves »', async () => {
   const res = await envoyer(partie('Luffy'), { 'x-forwarded-for': '10.0.0.1' });
   assert.equal(res.status, 201);

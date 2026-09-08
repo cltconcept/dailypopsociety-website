@@ -60,8 +60,10 @@ export class Stockage {
       // JSON illisible : on met le fichier de côté plutôt que de rendre l'API
       // morte jusqu'à la fin du mois. Le mois repart vide, la trace est gardée.
       if (e instanceof SyntaxError) {
-        console.error(`scores : ${chemin} illisible (${e.message}) — mis de côté en .corrompu`);
-        await rename(chemin, `${chemin}.corrompu`).catch((err) => console.error(`scores : mise de côté impossible — ${err.message}`));
+        // Horodaté : une seconde corruption ne doit pas écraser la trace de la première.
+        const mis = `${chemin}.${new Date().toISOString().replace(/[:.]/g, '-')}.corrompu`;
+        console.error(`scores : ${chemin} illisible (${e.message}) — mis de côté en ${mis}`);
+        await rename(chemin, mis).catch((err) => console.error(`scores : mise de côté impossible — ${err.message}`));
         return [];
       }
       throw e;

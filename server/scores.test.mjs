@@ -115,10 +115,19 @@ test('Stockage : JSON corrompu mis de côté, le mois repart vide', async () => 
     await writeFile(join(dir, 'scores-2026-10.json'), '{ "scores": [ ceci n\'est pas du JSON', 'utf8');
     assert.deepEqual(await s.top('2026-10', 10), []);
     const fichiers = await readdir(dir);
-    assert.ok(fichiers.includes('scores-2026-10.json.corrompu'), fichiers.join(','));
+    assert.equal(fichiers.filter((f) => f.endsWith('.corrompu')).length, 1, fichiers.join(','));
     assert.equal(fichiers.includes('scores-2026-10.json'), false);
     const r = await s.ajouter('2026-10', { pseudo: 'Robin', score: 42, duree: 5 });
     assert.equal(r.rang, 1);
+
+    // Seconde corruption : l'horodatage doit donner un second fichier, pas
+    // écraser le premier. Pause de 5 ms car l'horodatage est à la milliseconde.
+    await new Promise((r2) => setTimeout(r2, 5));
+    await writeFile(join(dir, 'scores-2026-10.json'), 'encore du n import quoi', 'utf8');
+    assert.deepEqual(await s.top('2026-10', 10), []);
+    const apres = (await readdir(dir)).filter((f) => f.endsWith('.corrompu'));
+    assert.equal(apres.length, 2, apres.join(','));
+    assert.equal(new Set(apres).size, 2);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
