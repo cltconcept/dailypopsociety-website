@@ -6,12 +6,6 @@ import Horaires from '../components/Horaires.astro';
 import LienExterne from '../components/LienExterne.astro';
 import { IDENTITE, LICENCE_DU_MOIS } from '../data/site';
 import { illu } from '../lib/illu';
-
-/* illu() rend {src, srcset} (le nommage HTML) ; Case attend {img, largeurs}. */
-const media = (id: string) => {
-  const i = illu(id);
-  return { img: i.src, largeurs: i.srcset };
-};
 ---
 <Base title="Daily Pop Society — Bar pop culture à Charleroi" description="Food, drinks, fandom : cocktails à personnages, burgers, bubble teas, events mensuels, blind tests et JDR au cœur de Charleroi. Cosplay bienvenu, tout le temps.">
   <!-- Pré-paint : pose l'état « avant générique » AVANT le premier rendu (jamais de flash).
@@ -33,9 +27,9 @@ const media = (id: string) => {
       <h2 class="titre titre--md">Food. Drinks. <em>Fandom.</em></h2>
       <p class="copy">Ton repaire pop culture à Charleroi. On parle entre potes, on vient en costume quand on veut, et chaque mois une licence prend le pouvoir sur la carte.</p>
       <div class="grille grille--3 chap__grille" data-reveal data-reveal-stagger>
-        <Case href="/la-carte/" tag="La carte" titre="Cocktails à personnages, burgers signature" texte="Bubble teas, mocktails, cafés, starters et pâtisseries : une carte qui change avec la licence du mois." sfx="Slurp !" {...media('cocktail-zoro')} />
-        <Case href="/events/" tag="Les events" titre="Une licence par mois, des soirées chaque semaine" texte="Blind test pop culture deux fois par mois, JDR sur réservation, animations le week-end." sfx="Pop !" {...media('blind-test')} />
-        <Case href="/a-propos/" tag="Le fandom" titre="Mangas, jeux, coin gaming, cosplay bienvenu" texte="Mangas, comics, jeux de société et coin gaming Switch / PS4 à dispo pour tous ceux qui consomment." sfx="Crunch !" {...media('coin-gaming')} />
+        <Case href="/la-carte/" tag="La carte" titre="Cocktails à personnages, burgers signature" texte="Bubble teas, mocktails, cafés, starters et pâtisseries : une carte qui change avec la licence du mois." sfx="Slurp !" {...illu('cocktail-zoro')} />
+        <Case href="/events/" tag="Les events" titre="Une licence par mois, des soirées chaque semaine" texte="Blind test pop culture deux fois par mois, JDR sur réservation, animations le week-end." sfx="Pop !" {...illu('blind-test')} />
+        <Case href="/a-propos/" tag="Le fandom" titre="Mangas, jeux, coin gaming, cosplay bienvenu" texte="Mangas, comics, jeux de société et coin gaming Switch / PS4 à dispo pour tous ceux qui consomment." sfx="Crunch !" {...illu('coin-gaming')} />
       </div>
     </div>
   </section>
@@ -61,7 +55,7 @@ const media = (id: string) => {
         <h2 class="titre titre--md">Quand passer <em>nous voir</em></h2>
         <div class="ouv__horaires"><Horaires /></div>
       </div>
-      <div class="bloc-creme ouv__adresse">
+      <div class="bloc-creme">
         <p class="ouv__rue">{IDENTITE.rue}<br />{IDENTITE.codePostal} {IDENTITE.ville}</p>
         <p class="ouv__lieu">Au cœur de Charleroi, sur le quai. Terre-6000.</p>
         <div class="actions">

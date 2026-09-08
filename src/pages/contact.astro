@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import TitleCard from '../components/TitleCard.astro';
+import Horaires from '../components/Horaires.astro';
+import LienExterne from '../components/LienExterne.astro';
+import { IDENTITE } from '../data/site';
+---
+<Base title="Contact et horaires — Daily Pop Society, Quai Arthur Rimbaud 9, Charleroi" description="Daily Pop Society, Quai Arthur Rimbaud 9 à 6000 Charleroi. Horaires d'ouverture, téléphone, e-mail, Instagram et Facebook. Réservation des soirées JDR par téléphone ou Messenger.">
+  <TitleCard kicker="Chapitre 5 · Nous trouver" variante="noir" letterbox>Quai Arthur Rimbaud 9,<br /><em>Charleroi</em><Fragment slot="copy">Au cœur de Charleroi, sur le quai. Pas de réservation en ligne : un coup de fil, un message, et on te garde une place.</Fragment><Fragment slot="actions"><LienExterne href={IDENTITE.itineraire} class="btn">Itinéraire</LienExterne><a class="btn btn--ghost" href={`tel:${IDENTITE.telephoneIntl}`}>Appeler</a></Fragment></TitleCard>
+
+  <section class="section">
+    <div class="container ct">
+      <div>
+        <span class="kicker">Horaires</span>
+        <h2 class="titre titre--md">Quand <em>on est là</em></h2>
+        <div style="margin-top: 28px"><Horaires /></div>
+      </div>
+      <div class="bloc-creme">
+        <span class="kicker">Coordonnées</span>
+        <p class="ct__adresse">{IDENTITE.rue}<br />{IDENTITE.codePostal} {IDENTITE.ville}, Belgique</p>
+        <dl class="ct__liste">
+          <dt>Téléphone</dt><dd><a href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a></dd>
+          <dt>E-mail</dt><dd><a href={`mailto:${IDENTITE.email}`}>{IDENTITE.email}</a></dd>
+          <dt>Instagram</dt><dd><LienExterne href={IDENTITE.instagram}>@dailypopsociety</LienExterne></dd>
+          <dt>Facebook</dt><dd><LienExterne href={IDENTITE.facebook}>Daily Pop Society</LienExterne></dd>
+        </dl>
+        <p class="ct__resa">Soirées JDR sur réservation uniquement : par téléphone ou par Messenger. Les groupes et les rassemblements cosplay, pareil, on s'organise ensemble.</p>
+        <p class="hand" style="margin-top: 18px">Cosplay bienvenu, tout le temps.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .ct { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 80px); align-items: start; }
+  .ct__adresse { font-family: var(--font-title); font-size: 1.7rem; line-height: 1.05; text-transform: uppercase; }
+  .ct__liste { margin-top: 22px; display: grid; grid-template-columns: auto 1fr; gap: 8px 18px; }
+  .ct__liste dt { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); align-self: center; }
+  .ct__liste dd { margin: 0; }
+  .ct__liste a { font-weight: 600; }
+  .ct__resa { margin-top: 22px; color: var(--txt-doux); line-height: 1.6; }
+  @media (max-width: 960px) { .ct { grid-template-columns: 1fr; } }
+</style>

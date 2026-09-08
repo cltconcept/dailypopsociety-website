@@ -1,6 +1,7 @@
 /* Les illustrations d'ambiance — UNE seule façon de construire leur URL et de
    les décrire. Chaque id existe en 480 / 960 / 1440 (cf. public/media/illu/,
-   généré par scripts/illu.py). Cette fonction était recopiée dans quatre
+   généré par scripts/illustrations.sh + scripts/illustrations.txt, puis
+   converti par scripts/webp.mjs). Cette fonction était recopiée dans quatre
    fichiers : la copie qui oubliait le srcset servait une image 960 à un écran
    de 390 px. */
 import { LOGOS } from '../data/logos';

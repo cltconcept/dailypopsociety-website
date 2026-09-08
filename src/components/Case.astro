@@ -13,12 +13,12 @@ import { SIZES_CASE } from '../lib/illu';
 interface Props {
   titre: string;
   texte?: string;
-  img?: string;
+  src?: string;
   alt?: string;
   sfx?: string;
   tag?: string;
   href?: string;
-  largeurs?: string; // srcset optionnel
+  srcset?: string; // srcset optionnel
   sizes?: string;
   niveau?: 2 | 3 | 4;
   prioritaire?: boolean;
@@ -26,12 +26,12 @@ interface Props {
 const {
   titre,
   texte,
-  img,
+  src,
   alt = '',
   sfx,
   tag,
   href,
-  largeurs,
+  srcset,
   sizes = SIZES_CASE,
   niveau = 3,
   prioritaire = false,
@@ -41,11 +41,11 @@ const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
 ---
 <Tag class="case" href={href || undefined}>
   {sfx && <span class="sfx" aria-hidden="true">{sfx}</span>}
-  {img && (
+  {src && (
     <div class="case__media">
       <img
-        src={img}
-        srcset={largeurs}
+        src={src}
+        srcset={srcset}
         sizes={sizes}
         alt={href ? '' : alt}
         width="960"
