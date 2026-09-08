@@ -1,26 +1,16 @@
 ---
 /* ===== LE GÉNÉRIQUE =====
-   L'intro Marvel Studios avec les vrais logos mensuels du bar : deux bandes
-   obliques de cases défilent, « DAILY POP » se remplit du défilé puis se fige
-   en blanc, « SOCIETY » se compose, la title card du mois apparaît.
+   L'intro Marvel Studios avec les vrais logos mensuels du bar : le défilé de
+   cases traverse « DAILY POP » de plus en plus vite — les logos ne vivent QUE
+   dans les lettres (les deux bandes obliques de vignettes d'origine ont été
+   retirées le 2026-09-08, décision utilisateur : « pas terrible sauf dans la
+   typo »), le nom se fige en blanc, « SOCIETY » se compose, la title card du
+   mois apparaît. START transforme ensuite le hero en borne plein écran
+   (allumage GSAP dans borne.ts).
    Desktop : scène épinglée, scrubée au scroll (rejouable). Mobile : intro
    courte au chargement. Sans JS / reduced-motion : état final statique. */
-import { LOGOS, MONTAGE, MONTAGE_HD } from '../data/logos';
+import { MONTAGE, MONTAGE_HD } from '../data/logos';
 import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
-const bande1 = LOGOS.filter((_, i) => i % 2 === 0);
-const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
-/* Une vignette de bande est haute comme la bande et carrée (aspect-ratio: 1) :
-   sa largeur rendue est donc exactement `clamp(70px, 9vw, 130px)`, la hauteur
-   déclarée plus bas en CSS. On n'en garde que les deux bornes — un `sizes` ne
-   sait pas lire un clamp. Cette valeur DOIT suivre la hauteur de .gen__bande :
-   les deux se contredisant, le navigateur choisirait la mauvaise vignette.
-   ⚠️ Les trois bornes suivent le clamp TERME À TERME : 130 px au-delà de
-   1444 px (là où 9vw dépasse le maximum), 9vw entre les deux, 70 px sous
-   778 px (là où 9vw tombe sous le minimum). Le « 90px » d'avant était une
-   moyenne inventée : sur un téléphone de 390 px en DPR 2, il réclamait
-   180 pixels réels et faisait donc télécharger la variante 256 — deux fois
-   plus lourde — pour une vignette rendue à 70 px. */
-const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
 ---
 {/* Le montage est la ressource du plus grand élément peint de la page (le titre
     est détouré DEDANS) et c'est aussi le plus gros fichier du site : tant qu'il
@@ -41,19 +31,6 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
   <div class="gen__grain" aria-hidden="true"></div>
   <p class="gen__presente">Daily Pop Society présente</p>
 
-  {/* loading="eager" ET fetchpriority="low" : ces 56 vignettes sont dans le
-      premier écran, elles ne doivent donc pas être différées (lazy les ferait
-      apparaître après coup, en pleine animation) — mais elles pèsent ~190 Ko à
-      elles seules, décoratives (aria-hidden, alt vide) et estompées à 0,22 dès
-      la fin du générique. Sans le frein, elles se servaient AVANT le script qui
-      lance ce générique : le titre était le dernier élément peint de la page.
-      Le frein ne les retarde pas, il les met derrière ce qui bloque le rendu. */}
-  <div class="gen__bande gen__bande--1" aria-hidden="true">
-    <div class="gen__piste">
-      {[...bande1, ...bande1].map((l) => <img src={l.src} srcset={l.srcset} sizes={SIZES_BANDE} alt="" width="160" height="160" loading="eager" fetchpriority="low" decoding="async" />)}
-    </div>
-  </div>
-
   <h1 class="gen__titre">
     <span class="gen__nom">
       {/* data-montage-ratio : le <script> client est compilé à part, il ne peut
@@ -70,11 +47,6 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
     <span class="gen__society">Society</span>
   </h1>
 
-  <div class="gen__bande gen__bande--2" aria-hidden="true">
-    <div class="gen__piste">
-      {[...bande2, ...bande2].map((l) => <img src={l.src} srcset={l.srcset} sizes={SIZES_BANDE} alt="" width="160" height="160" loading="eager" fetchpriority="low" decoding="async" />)}
-    </div>
-  </div>
 
   <div class="gen__pied">
     {/* Le classement du mois du mini-jeu : rempli par borne.ts au boot, masqué
@@ -114,25 +86,6 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
   .gen__presente {
     position: absolute; left: 0; right: 0; top: clamp(96px, 15vh, 140px);
     text-align: center; font-size: 0.78rem; letter-spacing: 0.42em; text-transform: uppercase; opacity: 0.85;
-  }
-  /* Bandes obliques : ROTATION et non skewX. Le skew déformait les vignettes en
-     ellipses ; le contre-skew sur l'image les redressait mais aplatissait la
-     bande, qui redevenait une rangée horizontale. La rotation incline vraiment
-     la bande et laisse les disques ronds, juste penchés. Angles doux (−5°/+4°)
-     pour que les extrémités ne montent pas dans le header ni sur le pied. */
-  .gen__bande {
-    position: absolute; left: -14vw; right: -14vw;
-    height: clamp(70px, 9vw, 130px);
-    overflow: hidden;
-  }
-  .gen__bande--1 { top: 21%; transform: rotate(-5deg); }
-  .gen__bande--2 { bottom: 22%; transform: rotate(4deg); opacity: 0.6; }
-  .gen__piste { display: flex; gap: 8px; width: max-content; height: 100%; will-change: transform; }
-  /* Les vignettes sont détourées en disque par scripts/logos.py (leurs coins
-     portaient les traits de la timeline source) : on les affiche donc rondes. */
-  .gen__piste img {
-    height: 100%; width: auto; aspect-ratio: 1;
-    border: 2px solid rgba(255, 255, 255, 0.75); border-radius: 50%; background: var(--blanc);
   }
   .gen__titre {
     position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-54%);
@@ -217,7 +170,6 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
     .gen__pied { justify-content: center; }
     .gen__carte { font-size: 0.82rem; letter-spacing: 0.06em; padding: 8px 12px; line-height: 1.4; }
     .gen__top { font-size: 0.62rem; }
-    .gen__bande--1 { top: 20%; } .gen__bande--2 { bottom: 18%; }
   }
   /* Pré-paint (class js-intro posée avant le premier rendu par index.astro) :
      les éléments que GSAP fait entrer partent invisibles — aucun flash.
@@ -225,6 +177,10 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
      l'arbre d'accessibilité, un h1 en visibility:hidden n'est plus annoncé. */
   :global(html.js-intro) .gen__nom-blanc,
   :global(html.js-intro) .gen__society { opacity: 0; }
+  /* À t=0 le nom rempli de logos est la seule chose à voir : le pré-paint le
+     montre tout de suite (GSAP le confirme par un set à 0 de la timeline).
+     Sans JS, js-intro n'existe pas et c'est le nom blanc qui s'affiche. */
+  :global(html.js-intro) .gen__nom-fill { opacity: 1; }
   /* La carte, elle, est un LIEN : transparente mais toujours dans l'ordre de
      tabulation, elle se faisait atteindre au clavier avant d'exister (lien
      fantôme). visibility:hidden la retire du parcours ET du pointeur ; GSAP
@@ -255,8 +211,7 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
 
         const gen = document.querySelector<HTMLElement>('.gen');
         if (!gen) return;
-        const pistes = gen.querySelectorAll('.gen__piste');
-        const bandes = gen.querySelectorAll('.gen__bande');
+        const nom = gen.querySelector('.gen__nom');
         const fill = gen.querySelector<HTMLElement>('.gen__nom-fill');
         const blanc = gen.querySelector('.gen__nom-blanc');
         const society = gen.querySelector('.gen__society');
@@ -271,39 +226,32 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
         const top = gen.querySelector('.gen__top');
         const entree = [carte, start, top].filter((el): el is Element => el !== null);
 
-        /* Course des bandes : une demi-piste (elle est doublée, la boucle est
-           donc parfaite) MAIS jamais plus que ce qui dépasse du cadre. Le
-           xPercent: -50 d'avant vidait la moitié droite des bandes sur un écran
-           large, où la piste ne dépasse presque pas. Math.max(0, …) : une piste
-           qui tient entièrement dans le cadre ne bouge pas, elle ne recule pas. */
-        const course = (_i: number, t: HTMLElement) => {
-          const cadre = t.parentElement ? t.parentElement.offsetWidth : t.scrollWidth / 2;
-          return -Math.max(0, Math.min(t.scrollWidth / 2, t.scrollWidth - cadre));
-        };
-
         /* Largeur RÉELLE d'une tuile du montage : background-size: auto 100% met
            l'image à la hauteur de la couche, sa largeur suit donc le ratio. Le
            -1600px en dur d'avant ne parcourait pas le même nombre de tuiles
            selon la taille du titre (clamp de 4,4rem à 15rem).
-           Fonction et non constante, comme course() : la hauteur du titre suit
-           le viewport, la course doit donc être RELUE à chaque refresh. */
+           Fonction et non constante : la hauteur du titre suit le viewport,
+           la course doit donc être RELUE à chaque refresh. */
         const ratio = fill ? Number(fill.dataset.montageRatio) || 1 : 1;
-        const remplissage = () => `-${2 * (fill ? fill.offsetHeight : 0) * ratio}px`;
+        const remplissage = () => `-${3 * (fill ? fill.offsetHeight : 0) * ratio}px`;
 
         /* Les trois temps du générique, en fractions de la timeline (0 → 1) :
-           1. 0 → 0.40  les bandes défilent, de plus en plus vite
-           2. 0.28 → 0.72  « DAILY POP » se remplit du défilé puis se fige en blanc
-           3. 0.72 → 1  « SOCIETY » se compose, les bandes s'estompent, title card */
+           1. 0 → 0.66  le défilé de logos traverse « DAILY POP » de plus en
+              plus vite (trois tuiles du montage, accélération power1.in), le
+              nom se resserre d'un cheveu (1,06 → 1) : c'est LUI le générique
+           2. 0.64 → 0.72  le nom se fige en blanc
+           3. 0.72 → 1  « SOCIETY » se compose, title card, START, top du mois
+           `set` à 0 et non fromTo : à t=0 (scroll 0, ou avant l'intro mobile)
+           le nom rempli doit déjà être là — c'est la seule chose à voir. */
         const composer = (tl: ReturnType<typeof gsap.timeline>, mobile: boolean) => {
           const d = mobile ? 2.6 : 1; // durée totale : secondes en mobile, fraction en scrub
-          tl.to(pistes, { x: course, duration: d, ease: mobile ? 'power2.inOut' : 'power1.in' }, 0)
-            .to(presente, { opacity: 0, y: -20, duration: 0.1 * d }, 0.25 * d)
-            .fromTo(fill, { opacity: 0 }, { opacity: 1, duration: 0.12 * d }, 0.28 * d)
-            .fromTo(fill, { backgroundPositionX: '0px' }, { backgroundPositionX: remplissage, duration: 0.5 * d, ease: 'none' }, 0.28 * d)
+          tl.set(fill, { opacity: 1 }, 0)
+            .fromTo(fill, { backgroundPositionX: '0px' }, { backgroundPositionX: remplissage, duration: 0.66 * d, ease: 'power1.in' }, 0)
+            .fromTo(nom, { scale: 1.06 }, { scale: 1, duration: 0.66 * d, ease: 'power1.in' }, 0)
+            .to(presente, { opacity: 0, y: -20, duration: 0.1 * d }, 0.45 * d)
             .fromTo(blanc, { opacity: 0 }, { opacity: 1, duration: 0.1 * d }, 0.64 * d)
             .to(fill, { opacity: 0, duration: 0.08 * d }, 0.68 * d)
             .fromTo(society, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.72 * d)
-            .to(bandes, { opacity: 0.22, duration: 0.15 * d }, 0.78 * d)
             /* autoAlpha et non opacity : la carte est un LIEN et START un
                BOUTON, ils doivent rester non focusables et non cliquables tant
                qu'ils ne sont pas apparus. */
@@ -326,10 +274,10 @@ const SIZES_BANDE = '(min-width: 1444px) 130px, (min-width: 778px) 9vw, 70px';
           /* Desktop : scène épinglée, scrubée. end = 250 % de hauteur de viewport. */
           const tl = gsap.timeline({
             defaults: { ease: 'power2.out' },
-            /* invalidateOnRefresh : les valeurs fonctionnelles (course des bandes,
-               course du remplissage) ne sont résolues qu'UNE fois à la création.
+            /* invalidateOnRefresh : la valeur fonctionnelle (course du
+               remplissage) n'est résolue qu'UNE fois à la création.
                Sans ça, un passage de 1280 à 1920 px garde l'ancienne course et
-               rouvre une bande nue à droite — le défaut même qu'on vient de
+               ne parcourt plus le même nombre de tuiles — le défaut même qu'on vient de
                fermer. Le refresh de ScrollTrigger les fait recalculer. */
             scrollTrigger: { trigger: gen, start: 'top top', end: '+=250%', scrub: 0.6, pin: true, invalidateOnRefresh: true },
           });

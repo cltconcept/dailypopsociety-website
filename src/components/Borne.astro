@@ -3,6 +3,8 @@
    Déplacée dans <body> au boot (borne.ts) pour pouvoir rendre le reste inert. */
 ---
 <div class="borne" id="borne" hidden role="dialog" aria-modal="true" aria-labelledby="borne-titre">
+  {/* Éclair blanc de l'allumage (borne.ts, GSAP) : l'écran cathodique qui s'ouvre */}
+  <div class="borne__flash" aria-hidden="true"></div>
   <div class="borne__cadre">
     <header class="borne__tete">
       <div>
@@ -46,9 +48,16 @@
 </div>
 
 <style>
+  /* --ouv : l'ouverture de l'écran cathodique, tweenée par GSAP (borne.ts) de
+     50 (ligne fermée au milieu) à 0 (plein écran). Une variable et non un
+     clip-path tweené directement : le navigateur replie `inset(0% 0% 0% 0%)`
+     en `inset(0%)` et GSAP, qui interpole les nombres un à un, n'ouvrait plus
+     qu'un seul bord. */
   .borne { position: fixed; inset: 0; z-index: 200; overflow: auto; color: var(--txt);
+    --ouv: 0; clip-path: inset(calc(var(--ouv) * 1%) 0 calc(var(--ouv) * 1%) 0);
     background: radial-gradient(ellipse at 50% 60%, #9A2334 0%, var(--bdx) 45%, var(--bdx-deep) 100%); }
-  .borne__cadre { max-width: 1180px; margin: 0 auto; padding: clamp(16px, 3vw, 32px) var(--gutter); min-height: 100%; display: flex; flex-direction: column; gap: 18px; }
+  .borne__flash { position: absolute; inset: 0; background: var(--blanc); opacity: 0; pointer-events: none; z-index: 1; }
+  .borne__cadre { position: relative; z-index: 2; max-width: 1440px; margin: 0 auto; padding: clamp(16px, 3vw, 32px) var(--gutter); min-height: 100%; display: flex; flex-direction: column; gap: 18px; }
   .borne__tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   /* Le kicker porte 18px de marge basse pour espacer un titre de section : dans
      l'en-tête serrée de la borne il décollait « Nakama Run » de son propre h2. */
@@ -60,7 +69,11 @@
      flex centrée dont le contenu déborde rend son haut INATTEIGNABLE au scroll ;
      les marges automatiques, elles, se rétractent. Sur un écran haut, la borne
      se pose donc au milieu ; sur un écran court, elle défile normalement. */
-  .borne__corps { display: grid; grid-template-columns: 2.1fr 1fr; gap: clamp(18px, 3vw, 36px); align-items: start; margin-block: auto; }
+  .borne__corps { display: flex; flex-direction: column; gap: 14px; margin-block: auto; }
+  /* Plein écran : l'écran de jeu prend toute la hauteur que le viewport lui
+     laisse (en-tête, HUD, bandeau du classement ≈ 250 px), en 16/9, centré.
+     svh et non vh : en mobile la barre d'adresse mange le bas de vh. */
+  .borne__jeu, .borne__classement { width: min(100%, calc((100vh - 250px) * 16 / 9)); width: min(100%, calc((100svh - 250px) * 16 / 9)); margin-inline: auto; }
   .borne__hud { display: flex; gap: 22px; font-family: var(--font-title); font-size: 1.1rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
   .borne__hud b { color: var(--accent); }
   .borne__ecran { position: relative; border: var(--bord); box-shadow: var(--ombre-btn) 8px 8px 0; background: var(--noir); }
@@ -75,27 +88,31 @@
   .borne__fin input { padding: 12px 14px; font: inherit; font-size: 1.1rem; text-align: center; border: var(--bord); background: var(--blanc); color: var(--noir); width: min(100%, 320px); justify-self: center; }
   .borne__fin .actions { margin-top: 6px; justify-content: center; }
   .borne__erreur { min-height: 1.2em; color: var(--accent); font-weight: 600; }
-  .borne__classement { border: 2px solid rgba(255, 255, 255, 0.35); padding: 20px; background: rgba(0, 0, 0, 0.22); }
+  /* Le classement est un BANDEAU sous l'écran (façon marquee de borne
+     d'arcade), plus une colonne à côté : l'écran garde toute la largeur. */
+  .borne__classement { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; border: 2px solid rgba(255, 255, 255, 0.35); padding: 12px 18px; background: rgba(0, 0, 0, 0.22); }
+  .borne__classement .kicker { margin: 0; flex: 0 0 auto; }
   /* ⚠️ Les lignes du classement sont CRÉÉES EN JS : elles ne portent pas
      l'attribut de scope qu'Astro pose au build, et une règle scopée ne les
      atteindrait jamais (le pseudo et le score se collaient, sans numéro de
      rang). D'où `:global()` sur tout ce qui naît à l'exécution — la liste
      elle-même, présente dans le markup, garde sa portée. */
-  .borne__liste { display: grid; gap: 6px; counter-reset: rang; }
-  .borne__liste :global(li) { display: flex; gap: 12px; align-items: baseline; font-size: 1rem; }
-  .borne__liste :global(li)::before { counter-increment: rang; content: counter(rang) '.'; font-family: var(--font-title); width: 2ch; color: var(--accent); }
-  .borne__liste :global(.pseudo) { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .borne__liste { display: flex; flex-wrap: wrap; gap: 6px 18px; counter-reset: rang; flex: 1 1 auto; }
+  .borne__liste :global(li) { display: flex; gap: 8px; align-items: baseline; font-size: 0.95rem; }
+  .borne__liste :global(li)::before { counter-increment: rang; content: counter(rang) '.'; font-family: var(--font-title); color: var(--accent); }
+  .borne__liste :global(.pseudo) { font-weight: 600; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .borne__liste :global(.score) { font-family: var(--font-title); letter-spacing: 0.06em; }
   .borne__liste :global(li.moi) { color: var(--accent); }
   /* La liste vide n'est pas un rang : elle ne doit pas afficher « 1. ». */
   .borne__liste :global(li.borne__vide) { opacity: 0.75; font-size: 0.92rem; }
   .borne__liste :global(li.borne__vide)::before { content: none; }
-  .borne__rang { margin-top: 12px; font-family: var(--font-title); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .borne__note { margin-top: 12px; font-size: 0.82rem; opacity: 0.75; }
+  .borne__rang { flex: 1 0 100%; font-family: var(--font-title); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .borne__note { flex: 1 0 100%; font-size: 0.78rem; opacity: 0.75; }
   @media (max-width: 960px) {
-    .borne__corps { grid-template-columns: 1fr; }
     /* En mobile l'écran fait ~200 px de haut : le formulaire de fin (~260 px) se range SOUS le canvas au lieu de le recouvrir */
     .borne__fin { position: static; inset: auto; padding: 16px; gap: 8px; }
+    /* Même logique pour l'invite : sur deux lignes elle couvrait l'avatar d'un canvas de 200 px de haut */
+    .borne__message { position: static; padding: 10px 8px; font-size: 0.8rem; }
     .borne__hud { font-size: 0.95rem; gap: 14px; }
     /* Le rappel des touches prend toute la largeur et passe SOUS le titre :
        sans lui sur la première ligne, la croix de fermeture reste là où on la

@@ -2,6 +2,7 @@
    classement du mois (borne + top 3 du hero). Amélioration progressive :
    sans JS le bouton START n'existe pas (hidden dans le HTML). */
 import { chargerSprites, creerJeu, type Jeu } from './moteur';
+import { loadGsap } from '../motion';
 
 const CLE_RECORD = 'dps:record';
 const CLE_PSEUDO = 'dps:pseudo';
@@ -35,6 +36,51 @@ export function initBorne() {
 
   let jeu: Jeu | null = null;
   let dernierScore = -1, dernierTemps = -1;
+  /* ===== Allumage / extinction en GSAP (le hero DEVIENT la borne) =====
+     Le nom et le pied du générique reculent et s'éteignent, l'écran s'ouvre
+     depuis une ligne horizontale (clip-path piloté par --ouv, façon tube cathodique) sous un
+     éclair blanc, puis en-tête, HUD, écran et classement entrent en cascade.
+     Le hero n'est touché QUE par ses conteneurs (.gen__titre, .gen__pied) :
+     le scrub du générique anime leurs ENFANTS, aucun tween ne se marche dessus.
+     `y: '-=…'` relatif et clearProps au retour : .gen__titre porte un
+     translateY(-54%) en CSS qu'une valeur absolue écraserait.
+     Reduced-motion ou GSAP absent : apparition immédiate, comme avant. */
+  const partiesBorne = ['.borne__tete', '.borne__hud', '.borne__ecran', '.borne__classement']
+    .map((s) => borne.querySelector<HTMLElement>(s)).filter((el): el is HTMLElement => el !== null);
+  const partiesHero = ['.gen__titre', '.gen__pied']
+    .map((s) => document.querySelector<HTMLElement>(s)).filter((el): el is HTMLElement => el !== null);
+  const flash = borne.querySelector<HTMLElement>('.borne__flash');
+  let enTransition = false;
+  async function gsapOuNull() {
+    if (reduced) return null;
+    try { return (await loadGsap()).gsap; } catch { return null; }
+  }
+  async function allumer() {
+    const gsap = await gsapOuNull();
+    if (!gsap) { borne.hidden = false; return; }
+    /* États de départ posés AVANT de dévoiler l'élément : aucun flash de la borne entière */
+    gsap.set(borne, { '--ouv': 50 });
+    gsap.set(partiesBorne, { autoAlpha: 0, y: 24 });
+    borne.hidden = false;
+    await new Promise<void>((resolve) => {
+      const tl = gsap.timeline({ onComplete: resolve });
+      tl.to(partiesHero, { autoAlpha: 0, scale: 0.94, y: '-=24', duration: 0.35, ease: 'power2.in' }, 0)
+        .to(borne, { '--ouv': 0, duration: 0.55, ease: 'power3.inOut' }, 0.15);
+      if (flash) tl.fromTo(flash, { opacity: 0.85 }, { opacity: 0, duration: 0.5, ease: 'power2.out' }, 0.3);
+      tl.to(partiesBorne, { autoAlpha: 1, y: 0, duration: 0.45, stagger: 0.07, ease: 'power3.out' }, 0.45);
+    });
+  }
+  async function eteindre() {
+    const gsap = await gsapOuNull();
+    if (!gsap) { borne.hidden = true; return; }
+    await new Promise<void>((resolve) => {
+      gsap.timeline({ onComplete: resolve })
+        .to(partiesBorne, { autoAlpha: 0, y: 12, duration: 0.2, ease: 'power2.in' }, 0)
+        .to(borne, { '--ouv': 50, duration: 0.4, ease: 'power3.in' }, 0.1)
+        .to(partiesHero, { autoAlpha: 1, scale: 1, y: '+=24', duration: 0.4, ease: 'power2.out', clearProps: 'transform,opacity,visibility' }, 0.35);
+    });
+    borne.hidden = true;
+  }
   let dernier = { score: 0, duree: 0 };
   let record = Number(lire(CLE_RECORD)) || 0;
   let dernierPseudo = '';
@@ -79,9 +125,12 @@ export function initBorne() {
   }
 
   async function ouvrir() {
-    borne.hidden = false;
+    if (enTransition || !borne.hidden) return;
+    enTransition = true;
     document.body.style.overflow = 'hidden';
     inertReste(true);
+    await allumer();
+    enTransition = false;
     if (!jeu) {
       elMessage.textContent = 'Chargement…';
       const sprites = await chargerSprites();
@@ -113,9 +162,12 @@ export function initBorne() {
     chargerTop();
   }
 
-  function fermer() {
+  async function fermer() {
+    if (enTransition || borne.hidden) return;
+    enTransition = true;
     jeu?.arreter();
-    borne.hidden = true;
+    await eteindre();
+    enTransition = false;
     document.body.style.overflow = '';
     inertReste(false);
     start.focus();

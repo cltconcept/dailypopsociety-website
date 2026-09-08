@@ -88,6 +88,9 @@ Lundi fermé · Mardi 16h-20h · Mercredi 13h-20h · Jeudi 16h-20h · Vendredi 1
 
 Signature du site, pilotée par le scroll sur desktop (règle des sites vitrines : pin + scrub, rejouable, impossible à rater).
 
+> **Amendement du 2026-09-08 (décision utilisateur)** : les deux bandes obliques de badges sont retirées du hero (« pas terrible sauf dans la typo ») ; les logos ne vivent plus que dans les lettres de « DAILY POP », dont le défilé accéléré constitue tout le générique. Le bouton START du mini-jeu (spec `2026-09-08-jeu-nakama-run-design.md`) transforme le hero en borne plein écran par une transition GSAP.
+
+
 Desktop (≥ 1024 px) :
 1. Hero épinglé sur ~250 vh de scroll. État initial : champ bordeaux, « Daily Pop Society présente » en petites capitales espacées, deux bandes obliques de cases (les logos mensuels) immobiles.
 2. Temps 1 (0 → 40 %) : les bandes défilent à vitesse croissante, léger flou de mouvement, cases en rotation 3D légère.
