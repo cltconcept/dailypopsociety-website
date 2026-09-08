@@ -148,7 +148,7 @@ Les pages ne contiennent aucune donnée en dur : la mise à jour mensuelle se fa
 
 ## 12. À demander à la cliente, et sécurité de l'ancien site
 
-À demander (non bloquant pour la maquette) : la carte réelle avec prix ; le logo en HD et les logos mensuels en fichiers séparés ; des photos des events passés et du lieu ; la confirmation des horaires de rentrée et de l'e-mail public ; les dates des soirées d'octobre à décembre et le canal de réservation des JDR ; la raison sociale pour les mentions légales ; la réservation du domaine.
+À demander (non bloquant pour la maquette) : la carte réelle avec prix ; le logo en HD et les logos mensuels en fichiers séparés ; des photos des events passés et du lieu ; la confirmation des horaires de rentrée et de l'e-mail public ; les dates des soirées d'octobre à décembre et le canal de réservation des JDR ; la raison sociale pour les mentions légales ; le nom et l'adresse de l'hébergeur (à nommer dans les mentions légales, où ils sont aujourd'hui remplacés par une mention d'attente) ; la réservation du domaine.
 
 Sécurité : le site Netlify actuel écrit et lit sa base Firebase Realtime Database directement depuis le navigateur sans jeton, ce qui n'est possible que si les règles de la base sont ouvertes. Conséquence : noms, e-mails, points et drapeau admin de tous les clients sont lisibles et modifiables par n'importe qui. Le nouveau site ne stocke aucune donnée client. À la mise en ligne, l'ancien site doit être coupé et le projet Firebase supprimé (ou ses règles verrouillées). À expliquer à la cliente en termes simples ; c'est une étape de mise en production, pas une tâche du site.
 

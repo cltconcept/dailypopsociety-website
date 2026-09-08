@@ -77,10 +77,18 @@ for (const p of PAGES) {
         ok(HEURE.test(c.opens), `${p} : JSON-LD opens mal formé : ${JSON.stringify(c.opens)}`);
         ok(HEURE.test(c.closes), `${p} : JSON-LD closes mal formé : ${JSON.stringify(c.closes)}`);
         // Comparaison de chaînes : au format HH:MM elle vaut la comparaison d'heures.
-        ok(!(HEURE.test(c.opens) && HEURE.test(c.closes)) || c.opens < c.closes, `${p} : JSON-LD créneau à l'envers : ${c.opens} → ${c.closes}`);
+        // Un bar ferme APRÈS minuit : « 18:00 → 01:00 » est licite (schema.org le
+        // lit comme une fermeture au petit matin), « 18:00 → 12:00 » ne l'est pas.
+        // On tolère donc un closes <= 06:00, et rien d'autre au-dessous d'opens.
+        const sensOk = c.opens < c.closes || c.closes <= '06:00';
+        ok(!(HEURE.test(c.opens) && HEURE.test(c.closes)) || sensOk, `${p} : JSON-LD créneau à l'envers : ${c.opens} → ${c.closes}`);
       }
       // Un horaire qui perdrait la moitié de la semaine en silence se voit ici.
-      ok(jours.size >= 5, `${p} : JSON-LD ${jours.size} jours d'ouverture distincts (5 attendus au minimum)`);
+      // Seuil à 3 et non 5 : c'est un filet contre l'effondrement d'un tableau,
+      // pas un avis sur le commerce. Un bar qui n'ouvrirait que du jeudi au
+      // samedi est un horaire parfaitement valable, il ne doit pas faire rougir
+      // le contrôleur — 0, 1 ou 2 jours, en revanche, sent la transformation ratée.
+      ok(jours.size >= 3, `${p} : JSON-LD ${jours.size} jours d'ouverture distincts (3 attendus au minimum)`);
     }
   }
 }

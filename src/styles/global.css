@@ -113,8 +113,10 @@ main:focus { outline: none; }
 }
 
 /* ===== Surfaces sombres : elles ne changent QUE les six jetons =====
-   .skip-link en fait partie : il est noir, quel que soit le fond de la page. */
-.tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir,
+   .skip-link en fait partie : il est noir, quel que soit le fond de la page.
+   .gen aussi : le hero du générique est un champ bordeaux, ses jetons doivent
+   y basculer comme partout ailleurs (sinon le focus y reste rouge sur rouge). */
+.tc--bordeaux, .tc--bordeaux-sombre, .tc--noir, .section--noir, .gen,
 .footer, .nav__capsule, .nav__menu, .skip-link {
   --txt: var(--blanc);
   --txt-doux: rgba(255, 255, 255, .78);
@@ -252,7 +254,10 @@ a.case:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--bdx
 .ligne__points { flex: 1; border-bottom: 2px dotted var(--gris-ligne); transform: translateY(-5px); min-width: 24px; }
 .ligne__prix { font-family: var(--font-title); font-size: 1.15rem; color: var(--voix); letter-spacing: 0.04em; white-space: nowrap; }
 
-/* ===== Transition douce entre sections (feuille arrondie) ===== */
+/* ===== Transition douce entre sections (feuille arrondie) =====
+   z-index: 1 : la feuille passe AU-DESSUS du hero épinglé parce que `.gen` n'a
+   pas de z-index (il reste au niveau du flux). Ne pas en donner un au hero :
+   il repasserait devant et mangerait le bord arrondi de la section suivante. */
 .feuille { position: relative; margin-top: -28px; border-radius: 28px 28px 0 0; z-index: 1; overflow: hidden; }
 
 /* ===== Générique (états sans JS et reduced-motion) : cf. Generique.astro ===== */

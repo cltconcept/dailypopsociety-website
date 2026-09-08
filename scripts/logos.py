@@ -43,28 +43,38 @@ LOGOS = [
     ('2026-05-daily-pop-society', 'timeline-2026', 712, 303, 82, '2026-05', 'Daily Pop Society — nouveau logo'),
 ]
 # L'ordre chronologique du fichier généré est un INVARIANT, pas une convention
-# de saisie : la frise et le générique le lisent tel quel.
-LOGOS = sorted(LOGOS, key=lambda l: (l[5], l[0]))
-assert len({l[0] for l in LOGOS}) == len(LOGOS), 'id en double'
+# de saisie : la frise et le générique le lisent tel quel. On trie sur le MOIS
+# seul ; `sorted` étant stable, deux logos d'un même mois gardent l'ordre de
+# saisie de la table ci-dessus (le principal avant son alternative, jamais
+# l'alphabet — « 2024-12-dragon-ball » n'a pas à passer devant « 2024-12-noel »
+# pour une raison typographique).
+LOGOS = sorted(LOGOS, key=lambda l: l[5])
+doublons = sorted({l[0] for l in LOGOS if [x[0] for x in LOGOS].count(l[0]) > 1})
+if doublons:
+    raise SystemExit(f'id en double dans la table LOGOS : {", ".join(doublons)}')
 
 TAILLE = 160
+MARGE = 6  # pixels de planche gardés autour du disque, dans les coordonnées source
 
 # Masque circulaire : les planches sources sont des timelines, chaque logo y est
 # posé sur un trait noir qui traversait les coins des vignettes carrées. On
-# découpe donc un disque. Le masque est dessiné en 4× puis réduit : le bord du
-# cercle est lissé, sinon il ressort en escalier à 160 px.
+# découpe donc un disque — mais un disque INSCRIT dans la marge, pas dans la
+# vignette : la découpe garde MARGE pixels de planche autour du logo, donc le
+# trait noir tombe dans cet anneau. Un masque plein-cadre le laissait passer et
+# semait des ergots noirs dans les coins. Le rayon du disque source vaut
+# r / (r + MARGE) de la demi-vignette : l'inset s'en déduit, et il dépend du
+# logo (r va de 50 à 82). Le masque est dessiné en ECH× puis réduit en BOX
+# (moyenne de boîte exacte, aucun dépassement) : le bord est lissé, sinon il
+# ressort en escalier à 160 px.
 ECH = 4
-_m = Image.new('L', (TAILLE * ECH, TAILLE * ECH), 0)
-ImageDraw.Draw(_m).ellipse((0, 0, TAILLE * ECH - 1, TAILLE * ECH - 1), fill=255)
-MASQUE = _m.resize((TAILLE, TAILLE), Image.LANCZOS)
-
-# Vignettes orphelines : un logo retiré de la table laissait son WebP sur le
-# disque, référencé par plus personne mais embarqué dans l'image de prod.
-attendus = {f'{l[0]}.webp' for l in LOGOS} | {'montage.webp'}
-for f in OUT.glob('*.webp'):
-    if f.name not in attendus:
-        f.unlink()
-        print(f'orphelin supprimé : {f.name}')
+_masques = {}
+def masque(r, marge):
+    if (r, marge) not in _masques:
+        inset = round(ECH * TAILLE / 2 * marge / (r + marge))
+        m = Image.new('L', (TAILLE * ECH, TAILLE * ECH), 0)
+        ImageDraw.Draw(m).ellipse((inset, inset, TAILLE * ECH - 1 - inset, TAILLE * ECH - 1 - inset), fill=255)
+        _masques[(r, marge)] = m.resize((TAILLE, TAILLE), Image.BOX)
+    return _masques[(r, marge)]
 
 planches = {}
 def planche(nom):
@@ -75,15 +85,24 @@ def planche(nom):
 lignes = []
 vignettes = []
 for id_, pl, cx, cy, r, mois, licence in LOGOS:
-    marge = 6
     pl_im = planche(pl)
-    # PIL.crop remplit de NOIR, en silence, tout ce qui dépasse la planche.
-    assert (
-        0 <= cx - r - marge and cx + r + marge <= pl_im.width
-        and 0 <= cy - r - marge and cy + r + marge <= pl_im.height
-    ), f'{id_} : hors planche'
-    im = pl_im.crop((cx - r - marge, cy - r - marge, cx + r + marge, cy + r + marge)).resize((TAILLE, TAILLE), Image.LANCZOS).convert('RGBA')
-    im.putalpha(MASQUE)
+    # PIL.crop remplit de NOIR, en silence, tout ce qui dépasse la planche : on
+    # refuse la vignette plutôt que de la livrer amputée. SystemExit et non
+    # assert (que `python -O` désactive), et un message qui nomme le bord fautif
+    # et sa borne — « hors planche » tout court n'aide personne à recadrer.
+    boite = (cx - r - MARGE, cy - r - MARGE, cx + r + MARGE, cy + r + MARGE)
+    debords = []
+    if boite[0] < 0: debords.append(f'gauche {boite[0]} < 0')
+    if boite[1] < 0: debords.append(f'haut {boite[1]} < 0')
+    if boite[2] > pl_im.width: debords.append(f'droite {boite[2]} > {pl_im.width}')
+    if boite[3] > pl_im.height: debords.append(f'bas {boite[3]} > {pl_im.height}')
+    if debords:
+        raise SystemExit(
+            f'{id_} : découpe hors planche {pl} ({pl_im.width}×{pl_im.height} px), '
+            f'centre ({cx}, {cy}) rayon {r} + marge {MARGE} → ' + ', '.join(debords)
+        )
+    im = pl_im.crop(boite).resize((TAILLE, TAILLE), Image.LANCZOS).convert('RGBA')
+    im.putalpha(masque(r, MARGE))
     im.save(OUT / f'{id_}.webp', 'WEBP', quality=84, method=6)
     vignettes.append(im)
     # json.dumps, pas d'interpolation brute : une apostrophe ou un guillemet
@@ -93,6 +112,17 @@ for id_, pl, cx, cy, r, mois, licence in LOGOS:
         for cle, val in (('id', id_), ('mois', mois), ('licence', licence), ('src', f'/media/logos/{id_}.webp'))
     )
     lignes.append(f'  {{ {champs} }},')
+
+# Vignettes orphelines : un logo retiré de la table laissait son WebP sur le
+# disque, référencé par plus personne mais embarqué dans l'image de prod.
+# APRÈS la boucle, jamais avant : une découpe refusée (hors planche) coupait
+# le script une fois les fichiers déjà supprimés — le dossier restait amputé et
+# la relance suivante ne savait plus quoi regénérer.
+attendus = {f'{l[0]}.webp' for l in LOGOS} | {'montage.webp'}
+for f in OUT.glob('*.webp'):
+    if f.name not in attendus:
+        f.unlink()
+        print(f'orphelin supprimé : {f.name}')
 
 # Montage 10 colonnes : remplissage des lettres « DAILY POP » (background-clip: text)
 cols = 10

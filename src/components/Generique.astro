@@ -22,7 +22,15 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
 
   <h1 class="gen__titre">
     <span class="gen__nom">
-      <span class="gen__nom-fill" aria-hidden="true" style={`background-image: url(${MONTAGE.src})`}>Daily Pop</span>
+      {/* data-montage-ratio : le <script> client est compilé à part, il ne peut
+          pas importer les données Astro. Le ratio du montage voyage donc par le
+          markup, et le script en déduit la largeur réelle d'une tuile. */}
+      <span
+        class="gen__nom-fill"
+        aria-hidden="true"
+        data-montage-ratio={MONTAGE.largeur / MONTAGE.hauteur}
+        style={`background-image: url(${MONTAGE.src})`}
+      >Daily Pop</span>
       <span class="gen__nom-blanc">Daily Pop</span>
     </span>
     <span class="gen__society">Society</span>
@@ -44,8 +52,13 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
 <style>
   .gen {
     position: relative; overflow: hidden;
-    height: 100svh; min-height: 620px;
-    color: var(--blanc);
+    /* Repli empilé : les navigateurs sans svh gardent vh, les autres écrasent. */
+    height: 100vh;
+    height: 100svh;
+    min-height: 620px;
+    /* .gen est déclaré « surface sombre » dans global.css : il lit ses jetons
+       (--txt, --focus, --accent) comme n'importe quelle autre surface. */
+    color: var(--txt);
     background: radial-gradient(ellipse at 50% 60%, #9A2334 0%, var(--bdx) 45%, var(--bdx-deep) 100%);
   }
   .gen__grain {
@@ -91,7 +104,9 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
   }
-  .gen__nom-blanc { position: relative; color: var(--blanc); filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.18)); }
+  /* text-shadow et non filter: drop-shadow — le filtre crée un contexte
+     d'empilement et repasse tout le nom par le compositeur à chaque frame. */
+  .gen__nom-blanc { position: relative; color: var(--blanc); text-shadow: 0 6px 0 rgba(0, 0, 0, 0.18); }
   .gen__society { display: block; margin-top: 0.35em; font-size: clamp(1.3rem, 3.6vw, 2.6rem); letter-spacing: 0.6em; text-indent: 0.6em; }
   .gen__pied {
     position: absolute; left: var(--gutter); right: var(--gutter); bottom: clamp(34px, 5vh, 48px);
@@ -102,7 +117,12 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
      les deux mentions latérales n'ayant pas la même largeur. On leur donne la
      même part de place, la carte garde la sienne. */
   .gen__scroll, .gen__lieu { flex: 1 1 0; }
-  .gen__scroll { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.75; font-size: 0.62rem; }
+  /* « Scroll pour lancer le générique » ne dit vrai QUE là où le générique est
+     scrubé : caché par défaut, il n'apparaît que si le script a posé
+     .gen--scrub (branche desktop). Sans JS, sans GSAP ou en mobile, la phrase
+     promettrait une animation qui n'existe pas. */
+  .gen__scroll { display: none; flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.75; font-size: 0.7rem; }
+  .gen--scrub .gen__scroll { display: flex; }
   .gen__scroll span { display: block; width: 1px; height: 28px; background: var(--blanc); }
   .gen__lieu { text-align: right; opacity: 0.8; }
   .gen__carte {
@@ -117,70 +137,116 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
   .gen__carte:hover { background: var(--blanc); color: var(--noir); }
   .gen__carte:hover b { color: var(--bdx); }
   @media (max-width: 600px) {
-    .gen__scroll, .gen__lieu { display: none; }
+    /* .gen__scroll est déjà caché par défaut : seule sa variante scrub, qu'un
+       redimensionnement aurait laissée derrière, doit être refermée ici. */
+    .gen--scrub .gen__scroll, .gen__lieu { display: none; }
     .gen__pied { justify-content: center; }
     .gen__carte { font-size: 0.82rem; letter-spacing: 0.06em; padding: 8px 12px; line-height: 1.4; }
     .gen__bande--1 { top: 20%; } .gen__bande--2 { bottom: 18%; }
   }
   /* Pré-paint (class js-intro posée avant le premier rendu par index.astro) :
-     les éléments que GSAP fait entrer partent invisibles — aucun flash. */
+     les éléments que GSAP fait entrer partent invisibles — aucun flash.
+     Le h1 (nom blanc + « Society ») ne reçoit QUE opacity : il doit rester dans
+     l'arbre d'accessibilité, un h1 en visibility:hidden n'est plus annoncé. */
   :global(html.js-intro) .gen__nom-blanc,
-  :global(html.js-intro) .gen__society,
-  :global(html.js-intro) .gen__carte { opacity: 0; }
+  :global(html.js-intro) .gen__society { opacity: 0; }
+  /* La carte, elle, est un LIEN : transparente mais toujours dans l'ordre de
+     tabulation, elle se faisait atteindre au clavier avant d'exister (lien
+     fantôme). visibility:hidden la retire du parcours ET du pointeur ; GSAP
+     prend le relais avec autoAlpha, qui pilote les deux propriétés. */
+  :global(html.js-intro) .gen__carte { opacity: 0; visibility: hidden; }
+  /* Filet : si un focus l'atteint malgré tout (recherche dans la page,
+     extension, restauration de scroll), elle se montre plutôt que de laisser
+     un contour posé sur du vide. */
+  .gen__carte:focus-visible { opacity: 1 !important; visibility: visible !important; }
 </style>
 
 <script>
   import { REDUCED, isDesktop, loadGsap } from '../lib/motion';
 
   if (!REDUCED && document.documentElement.classList.contains('js-intro')) {
-    loadGsap().then(({ gsap, ScrollTrigger }) => {
-      const gen = document.querySelector<HTMLElement>('.gen');
-      if (!gen) return;
-      const pistes = gen.querySelectorAll('.gen__piste');
-      const bandes = gen.querySelectorAll('.gen__bande');
-      const fill = gen.querySelector('.gen__nom-fill');
-      const blanc = gen.querySelector('.gen__nom-blanc');
-      const society = gen.querySelector('.gen__society');
-      const carte = gen.querySelector('.gen__carte');
-      const presente = gen.querySelector('.gen__presente');
-      const scroll = gen.querySelector('.gen__scroll');
+    loadGsap()
+      .then(({ gsap, ScrollTrigger }) => {
+        /* Le garde-fou de 3 s a pu tomber avant nous (GSAP lent à arriver) : la
+           page est alors déjà dans son état final. Reposer les états initiaux
+           la ferait clignoter, et rejouer l'intro après coup n'a plus de sens. */
+        if (!document.documentElement.classList.contains('js-intro')) return;
 
-      /* Les trois temps du générique, en fractions de la timeline (0 → 1) :
-         1. 0 → 0.40  les bandes défilent, de plus en plus vite
-         2. 0.28 → 0.72  « DAILY POP » se remplit du défilé puis se fige en blanc
-         3. 0.72 → 1  « SOCIETY » se compose, les bandes s'estompent, title card */
-      const composer = (tl: ReturnType<typeof gsap.timeline>, mobile: boolean) => {
-        const d = mobile ? 2.6 : 1; // durée totale : secondes en mobile, fraction en scrub
-        tl.to(pistes, { xPercent: -50, duration: d, ease: mobile ? 'power2.inOut' : 'power1.in' }, 0)
-          .to(presente, { opacity: 0, y: -20, duration: 0.1 * d }, 0.25 * d)
-          .fromTo(fill, { opacity: 0 }, { opacity: 1, duration: 0.12 * d }, 0.28 * d)
-          .fromTo(fill, { backgroundPositionX: '0px' }, { backgroundPositionX: '-1600px', duration: 0.5 * d, ease: 'none' }, 0.28 * d)
-          .fromTo(blanc, { opacity: 0 }, { opacity: 1, duration: 0.1 * d }, 0.64 * d)
-          .to(fill, { opacity: 0, duration: 0.08 * d }, 0.68 * d)
-          .fromTo(society, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.72 * d)
-          .to(bandes, { opacity: 0.22, duration: 0.15 * d }, 0.78 * d)
-          .fromTo(carte, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.86 * d)
-          .to(scroll, { opacity: 0, duration: 0.06 * d }, 0.9 * d);
-      };
+        const gen = document.querySelector<HTMLElement>('.gen');
+        if (!gen) return;
+        const pistes = gen.querySelectorAll('.gen__piste');
+        const bandes = gen.querySelectorAll('.gen__bande');
+        const fill = gen.querySelector<HTMLElement>('.gen__nom-fill');
+        const blanc = gen.querySelector('.gen__nom-blanc');
+        const society = gen.querySelector('.gen__society');
+        const carte = gen.querySelector('.gen__carte');
+        const presente = gen.querySelector('.gen__presente');
+        const scroll = gen.querySelector('.gen__scroll');
 
-      if (isDesktop()) {
-        /* Desktop : scène épinglée, scrubée. end = 250 % de hauteur de viewport. */
-        const tl = gsap.timeline({
-          defaults: { ease: 'power2.out' },
-          scrollTrigger: { trigger: gen, start: 'top top', end: '+=250%', scrub: 0.6, pin: true, anticipatePin: 1 },
-        });
-        composer(tl, false);
-        /* Duo obligatoire après chaque création de pin (cf. motion.ts) */
-        ScrollTrigger.sort();
-        ScrollTrigger.refresh();
-      } else {
-        /* Mobile / tablette : intro courte au chargement, pas de pin (fragile au tactile) */
-        composer(gsap.timeline({ defaults: { ease: 'power3.out' } }), true);
-      }
+        /* Course des bandes : une demi-piste (elle est doublée, la boucle est
+           donc parfaite) MAIS jamais plus que ce qui dépasse du cadre. Le
+           xPercent: -50 d'avant vidait la moitié droite des bandes sur un écran
+           large, où la piste ne dépasse presque pas. Math.max(0, …) : une piste
+           qui tient entièrement dans le cadre ne bouge pas, elle ne recule pas. */
+        const course = (_i: number, t: HTMLElement) => {
+          const cadre = t.parentElement ? t.parentElement.offsetWidth : t.scrollWidth / 2;
+          return -Math.max(0, Math.min(t.scrollWidth / 2, t.scrollWidth - cadre));
+        };
 
-      /* GSAP a posé tous les états initiaux : le pré-paint peut tomber. */
-      clearTimeout((window as unknown as { __introSecours?: number }).__introSecours);
-      document.documentElement.classList.remove('js-intro');
-    });
+        /* Largeur RÉELLE d'une tuile du montage : background-size: auto 100% met
+           l'image à la hauteur de la couche, sa largeur suit donc le ratio. Le
+           -1600px en dur d'avant ne parcourait pas le même nombre de tuiles
+           selon la taille du titre (clamp de 4,4rem à 15rem). */
+        const tuile = fill ? fill.offsetHeight * (Number(fill.dataset.montageRatio) || 1) : 0;
+
+        /* Les trois temps du générique, en fractions de la timeline (0 → 1) :
+           1. 0 → 0.40  les bandes défilent, de plus en plus vite
+           2. 0.28 → 0.72  « DAILY POP » se remplit du défilé puis se fige en blanc
+           3. 0.72 → 1  « SOCIETY » se compose, les bandes s'estompent, title card */
+        const composer = (tl: ReturnType<typeof gsap.timeline>, mobile: boolean) => {
+          const d = mobile ? 2.6 : 1; // durée totale : secondes en mobile, fraction en scrub
+          tl.to(pistes, { x: course, duration: d, ease: mobile ? 'power2.inOut' : 'power1.in' }, 0)
+            .to(presente, { opacity: 0, y: -20, duration: 0.1 * d }, 0.25 * d)
+            .fromTo(fill, { opacity: 0 }, { opacity: 1, duration: 0.12 * d }, 0.28 * d)
+            .fromTo(fill, { backgroundPositionX: '0px' }, { backgroundPositionX: `-${2 * tuile}px`, duration: 0.5 * d, ease: 'none' }, 0.28 * d)
+            .fromTo(blanc, { opacity: 0 }, { opacity: 1, duration: 0.1 * d }, 0.64 * d)
+            .to(fill, { opacity: 0, duration: 0.08 * d }, 0.68 * d)
+            .fromTo(society, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1 * d }, 0.72 * d)
+            .to(bandes, { opacity: 0.22, duration: 0.15 * d }, 0.78 * d)
+            /* autoAlpha et non opacity : la carte est un LIEN, elle doit rester
+               non focusable et non cliquable tant qu'elle n'est pas apparue. */
+            .fromTo(carte, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.1 * d }, 0.86 * d)
+            .to(scroll, { opacity: 0, duration: 0.06 * d }, 0.9 * d);
+        };
+
+        if (isDesktop()) {
+          /* Desktop : scène épinglée, scrubée. end = 250 % de hauteur de viewport. */
+          const tl = gsap.timeline({
+            defaults: { ease: 'power2.out' },
+            scrollTrigger: { trigger: gen, start: 'top top', end: '+=250%', scrub: 0.6, pin: true },
+          });
+          composer(tl, false);
+          /* L'invite « scroll pour lancer le générique » ne se montre que là où
+             elle dit vrai : ici, et seulement une fois le scrub en place. */
+          gen.classList.add('gen--scrub');
+          /* Duo obligatoire après chaque création de pin (cf. motion.ts) */
+          ScrollTrigger.sort();
+          ScrollTrigger.refresh();
+        } else {
+          /* Mobile / tablette : intro courte au chargement, pas de pin (fragile au tactile) */
+          composer(gsap.timeline({ defaults: { ease: 'power3.out' } }), true);
+        }
+
+        /* GSAP a posé tous les états initiaux : le pré-paint peut tomber. */
+        clearTimeout(window.__introSecours);
+        document.documentElement.classList.remove('js-intro');
+      })
+      .catch(() => {
+        /* GSAP n'a pas chargé (réseau, bloqueur d'extension) : plutôt que
+           d'attendre les 3 s du garde-fou, on rend le hero statique tout de
+           suite. Le générique est un bonus, jamais une condition de lecture. */
+        clearTimeout(window.__introSecours);
+        document.documentElement.classList.remove('js-intro');
+      });
   }
 </script>

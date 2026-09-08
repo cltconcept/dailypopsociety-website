@@ -10,7 +10,7 @@ import { IDENTITE } from '../data/site';
       <h2 class="titre titre--sm">Éditeur</h2>
       <p>
         {IDENTITE.nom} — {IDENTITE.rue}, {IDENTITE.codePostal} {IDENTITE.ville}, Belgique.<br />
-        Numéro d'entreprise (BCE) et TVA : {IDENTITE.tva}<br />
+        TVA {IDENTITE.tva} · numéro d'entreprise (BCE) {IDENTITE.tva.replace('BE ', '')}<br />
         <a href={`tel:${IDENTITE.telephoneIntl}`}>{IDENTITE.telephone}</a> · <a href={`mailto:${IDENTITE.email}`}>{IDENTITE.email}</a>
       </p>
       <h2 class="titre titre--sm">Hébergement</h2>
@@ -27,7 +27,7 @@ import { IDENTITE } from '../data/site';
      (--container), donc le MÊME bord gauche que le titre ; c'est le CONTENU qui
      est borné à une largeur de lecture. Poser le max-width sur `.ml` lui-même
      le recentrerait — c'était précisément le défaut de `container--narrow`. */
-  .ml > * { max-width: 760px; }
+  .ml > * { max-width: 660px; }
   .ml h2 { margin-top: 40px; }
   .ml h2:first-child { margin-top: 0; }
   .ml p { margin-top: 12px; color: var(--txt-doux); line-height: 1.65; }
