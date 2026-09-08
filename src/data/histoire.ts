@@ -1,4 +1,4 @@
-/* Les trois temps de l'histoire du bar, pour la page « À propos ». */
+/* Les trois temps de l'histoire du bar, pour la page « À propos ». */
 import { IDENTITE } from './site';
 
 export type Etape = { date: string; titre: string; texte: string };
@@ -12,7 +12,7 @@ export const ETAPES: Etape[] = [
   {
     date: 'Décembre 2025',
     titre: 'Le concept fait peau neuve',
-    texte: "Face à l'engouement de la communauté, l'univers s'ouvre à toute la pop culture : films, séries, animés, jeux. Le nom « Nakama's Coffee » disait « manga » ; il fallait un nom qui dise tout le reste.",
+    texte: "Face à l'engouement de la communauté, l'univers s'ouvre à toute la pop culture : films, séries, animés, jeux. Le nom « Nakama's Coffee » disait « manga » ; il fallait un nom qui dise tout le reste.",
   },
   {
     date: 'Juin 2026',
@@ -21,5 +21,9 @@ export const ETAPES: Etape[] = [
   },
 ];
 
+/* À CONFIRMER CLIENTE : le sens du nom n'est pas dans le brief, formulation à valider par Rachel. */
 export const POURQUOI_LE_NOM =
-  "« Daily », parce qu'il s'y passe quelque chose tous les jours. « Pop », pour toute la pop culture, pas seulement les mangas. « Society », parce que c'est une communauté avant d'être un bar : un lieu de partage où la pop culture rassemble toutes les générations.";
+  "Un nom qui dit ce qu'on fait ici. « Pop », pour toute la pop culture, pas seulement les mangas. "
+  + "« Society », parce que c'est une communauté avant d'être un bar : un lieu de partage où la pop "
+  + "culture rassemble toutes les générations. « Daily », parce qu'un repaire, on y revient — pas "
+  + "comme dans un bar qu'on visite une fois.";

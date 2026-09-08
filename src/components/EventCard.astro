@@ -1,6 +1,6 @@
 ---
 import type { Evenement } from '../data/events';
-import { visuel } from '../lib/illu';
+import { visuel, SIZES_EVENT, SIZES_EVENT_PASSE } from '../lib/illu';
 /* Carte d'event : média à gauche, texte à droite (une colonne en mobile).
    `niveau` suit la hiérarchie de la page qui pose la carte (h3 par défaut),
    comme Case. `passe` grise l'illustration et annonce les photos à venir. */
@@ -21,7 +21,7 @@ const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
     <img
       src={v.src}
       srcset={v.srcset}
-      sizes={v.logo ? '(max-width: 600px) 160px, 144px' : passe ? '(max-width: 600px) 100vw, (max-width: 960px) 46vw, 540px' : '(max-width: 600px) 100vw, 240px'}
+      sizes={v.logo ? '(max-width: 600px) 160px, 144px' : passe ? SIZES_EVENT_PASSE : SIZES_EVENT}
       alt={v.alt}
       width={v.largeur}
       height={v.hauteur}

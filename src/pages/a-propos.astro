@@ -7,15 +7,17 @@ import { ETAPES, POURQUOI_LE_NOM } from '../data/histoire';
 import { IDENTITE } from '../data/site';
 ---
 <Base title="À propos — de Nakama's Coffee à Daily Pop Society" description="L'histoire du bar pop culture de Charleroi : un café manga né en avril 2024, une communauté, un nouveau nom en 2025 et une nouvelle adresse en 2026. Rachel, alias l'Hokage, raconte pourquoi.">
-  <TitleCard kicker="Chapitre 4 · L'histoire" variante="bordeaux-sombre" letterbox>De Nakama's Coffee<br />à <em>Daily Pop Society</em><Fragment slot="copy">Pourquoi on a changé de nom, qui est {IDENTITE.surnom}, et ce que veut dire « safe place » ici.</Fragment></TitleCard>
+  <TitleCard kicker="Chapitre 4 · L'histoire" variante="bordeaux-sombre" letterbox>De Nakama's Coffee<br />à <em>Daily Pop Society</em><Fragment slot="copy">Pourquoi on a changé de nom, qui est {IDENTITE.gerante}, alias {IDENTITE.surnom}, et ce que veut dire « safe place » ici.</Fragment></TitleCard>
 
   <section class="section">
     <div class="container container--narrow">
-      <ol class="etapes" role="list">
+      <span class="kicker">L'histoire</span>
+      <h2 class="titre titre--md">En trois <em>temps</em></h2>
+      <ol class="etapes" role="list" data-reveal data-reveal-stagger>
         {ETAPES.map((e) => (
-          <li class="etape" data-reveal>
+          <li class="etape">
             <p class="etape__date">{e.date}</p>
-            <h2 class="titre titre--sm">{e.titre}</h2>
+            <h3 class="titre titre--sm">{e.titre}</h3>
             <p class="etape__texte">{e.texte}</p>
           </li>
         ))}
@@ -43,7 +45,7 @@ import { IDENTITE } from '../data/site';
   <section class="section">
     <div class="container qui">
       <div class="qui__logo bloc-creme">
-        <img src="/media/logo-640.webp" alt={`Le logo de Daily Pop Society : ${IDENTITE.gerante}, un cocktail dans une main, un burger dans l'autre`} width="640" height="640" loading="lazy" />
+        <img src="/media/logo-640.webp" srcset="/media/logo-320.webp 320w, /media/logo-640.webp 640w" sizes="min(92vw, 352px)" alt={`Le logo de Daily Pop Society : ${IDENTITE.gerante}, un cocktail dans une main, un burger dans l'autre`} width="640" height="640" loading="lazy" decoding="async" />
       </div>
       <div class="qui__texte">
         <span class="kicker">{IDENTITE.surnom}</span>
@@ -61,9 +63,9 @@ import { IDENTITE } from '../data/site';
 </Base>
 
 <style>
-  .etapes { display: grid; gap: 40px; }
+  .etapes { display: grid; gap: 40px; margin-top: 40px; }
   .etape { position: relative; padding-left: 36px; border-left: 3px solid var(--voix); }
-  .etape::before { content: ''; position: absolute; left: -9px; top: 6px; width: 15px; height: 15px; background: var(--voix); border: 2px solid var(--txt); }
+  .etape::before { content: ''; position: absolute; left: -6px; top: 6px; width: 15px; height: 15px; background: var(--voix); border: 2px solid var(--txt); }
   .etape__date { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
   .etape__texte { margin-top: 10px; color: var(--txt-doux); line-height: 1.65; font-size: 1.05rem; }
   .qui { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(32px, 6vw, 80px); align-items: center; }

@@ -14,6 +14,9 @@ const vus = new Set<string>();
 for (const c of CATEGORIES) {
   if (RESERVES.has(c.slug)) throw new Error(`la-carte : slug réservé « ${c.slug} » — il désigne déjà un autre élément de la page`);
   if (vus.has(c.slug)) throw new Error(`la-carte : slug en double « ${c.slug} » — deux catégories ne peuvent pas partager une ancre`);
+  /* Un logo mensuel (id préfixé « logo: ») n'est pas une illustration de carte :
+     `visuel()` le résoudrait sans broncher, en 160 px, dans un cadre de 380. */
+  if (visuel(c.visuel).logo) throw new Error(`la-carte : « ${c.slug} » pointe un logo mensuel — une catégorie veut une illustration (src/lib/illu.ts)`);
   vus.add(c.slug);
 }
 ---

@@ -42,6 +42,13 @@ export const illu = (id: string) => {
   };
 };
 
+/* Largeurs RENDUES d'un visuel d'EventCard — elles vivent ici, à côté de
+   `visuel()`, plutôt qu'en ligne dans le composant.
+   · carte normale : colonne média de 240 px, pleine largeur en mobile ;
+   · carte d'event PASSÉ : deux colonnes, (1180 − 64 − 30) / 2 ≈ 540 px. */
+export const SIZES_EVENT = '(max-width: 600px) 100vw, 240px';
+export const SIZES_EVENT_PASSE = '(max-width: 600px) 100vw, (max-width: 960px) 46vw, 540px';
+
 /* Largeur RENDUE d'une case de comics dans la grille à 3 colonnes :
    pleine largeur en mobile, moitié en tablette, 380 px au-delà. */
 export const SIZES_CASE = '(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380px';

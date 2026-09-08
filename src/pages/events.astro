@@ -42,12 +42,12 @@ const adresse = {
    donner, et un event `aPlanifier` (fin = fin de mois provisoire, sans début)
    annoncerait une date qui n'est pas la vraie — mieux vaut ne rien publier
    qu'un startDate inventé. */
-const schemas = aVenir.filter((e) => e.debut && e.fin).map((e) => ({
+const schemas = aVenir.filter((e) => e.debut && e.fin && !e.aPlanifier).map((e) => ({
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: e.titre,
   description: e.desc,
-  startDate: e.debut ?? e.fin,
+  startDate: e.debut,
   endDate: e.fin,
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',

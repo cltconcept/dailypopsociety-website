@@ -17,6 +17,10 @@ export const IDENTITE = {
   domaine: 'https://dailypopsociety.be',
   facebook: 'https://www.facebook.com/p/Daily-Pop-Society-By-Nakamas-Coffee-61554198456761/',
   instagram: 'https://www.instagram.com/dailypopsociety',
+  // À CONFIRMER CLIENTE : coordonnées GPS (geo) et lien Messenger
+  // (m.me/<id-page>) — ne jamais les deviner. L'itinéraire part donc de
+  // l'ADRESSE, que Google résout lui-même, et le JSON-LD ne publie pas de
+  // bloc `geo` : un point faux vaut moins que pas de point du tout.
   itineraire: 'https://www.google.com/maps/dir/?api=1&destination=Quai+Arthur+Rimbaud+9%2C+6000+Charleroi',
   gerante: 'Rachel',
   surnom: "l'Hokage",
