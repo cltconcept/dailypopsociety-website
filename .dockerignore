@@ -1,0 +1,9 @@
+node_modules
+dist
+.astro
+.git
+.gstack
+.superpowers
+docs
+brief
+scripts
