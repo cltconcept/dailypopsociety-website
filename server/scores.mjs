@@ -1,6 +1,6 @@
 // Validation et stockage des scores — fonctions pures + une classe de stockage
 // fichier (un JSON par mois, écriture atomique, écritures sérialisées).
-import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile, rename, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const PSEUDO_MIN = 2;
@@ -37,7 +37,19 @@ export function moisCourant(date = new Date()) {
   return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Brussels', year: 'numeric', month: '2-digit' }).format(date);
 }
 
+/** Mois AAAA-MM d'il y a `n` mois, compté depuis le mois courant à Bruxelles. */
+export function moisIlYA(n, date = new Date()) {
+  const [annee, mois] = moisCourant(date).split('-').map(Number);
+  const total = annee * 12 + (mois - 1) - n; // mois absolus depuis l'an 0
+  return `${String(Math.floor(total / 12)).padStart(4, '0')}-${String((total % 12) + 1).padStart(2, '0')}`;
+}
+
 export const MOIS_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+/* Fichiers du dossier de données qui appartiennent à un mois : le classement
+   lui-même et ses éventuelles mises de côté horodatées (.corrompu). Les .tmp
+   ne sont pas visés : ce sont des orphelins d'écriture, sans mois de rattache. */
+const FICHIER_MOIS_RE = /^scores-(\d{4}-(?:0[1-9]|1[0-2]))\.json(?:\..*\.corrompu)?$/;
 
 /** Windows : l'antivirus ou l'indexeur peut tenir le fichier quelques ms. */
 const RENAME_ESSAIS = 3;
@@ -108,6 +120,29 @@ export class Stockage {
 
   /** Nombre d'entrées CONSERVÉES pour le mois (plafonné à TOP_CONSERVE). */
   async conserves(mois) { return (await this.#lire(mois)).length; }
+
+  /**
+   * Supprime les classements des mois strictement antérieurs à `moisLimite`
+   * (et leurs .corrompu). La rétention annoncée aux mentions légales doit être
+   * TENUE, pas seulement écrite : sans cela les fichiers restent sur le volume.
+   * Renvoie le nombre de fichiers retirés. Sérialisé avec les écritures.
+   */
+  purger(moisLimite) {
+    return this.#enFile(async () => {
+      const fichiers = await readdir(this.#dir).catch((e) => {
+        if (e.code === 'ENOENT') return []; // rien d'écrit encore : rien à purger
+        throw e;
+      });
+      let retires = 0;
+      for (const f of fichiers) {
+        const m = FICHIER_MOIS_RE.exec(f);
+        if (!m || m[1] >= moisLimite) continue; // AAAA-MM se compare en chaîne
+        try { await unlink(join(this.#dir, f)); retires++; }
+        catch (e) { if (e.code !== 'ENOENT') console.error(`scores : purge de ${f} impossible — ${e.message}`); }
+      }
+      return retires;
+    });
+  }
 
   /** Ajoute une entrée, renvoie { rang, top } — rang 1 = meilleur. */
   ajouter(mois, { pseudo, score, duree }) {

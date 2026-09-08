@@ -8,13 +8,16 @@ import { compress } from 'hono/compress';
 import { readFile, stat } from 'node:fs/promises';
 import { join, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validerEnvoi, moisCourant, MOIS_RE, Stockage, LimiteurDebit } from './scores.mjs';
+import { validerEnvoi, moisCourant, moisIlYA, MOIS_RE, Stockage, LimiteurDebit } from './scores.mjs';
 
 const PORT = Number(process.env.PORT ?? 80);
 const DIST = resolve(process.env.DIST_DIR ?? join(import.meta.dirname, '..', 'dist'));
 const DATA = resolve(process.env.DATA_DIR ?? join(import.meta.dirname, '..', 'data'));
 const MAQUETTE = process.env.MAQUETTE === '1';
 const CORPS_MAX = 1024;
+// Rétention annoncée aux mentions légales : douze mois, puis suppression.
+const RETENTION_MOIS = 12;
+const PURGE_MS = 24 * 60 * 60 * 1000;
 
 const stockage = new Stockage(DATA);
 const limiteur = new LimiteurDebit(20_000);
@@ -128,9 +131,23 @@ app.use('*', async (c, next) => {
 // par `relative(process.cwd(), DIST)` (import { relative } from 'node:path').
 app.use('*', serveStatic({ root: DIST, rewriteRequestPath: (p) => (p.endsWith('/') ? `${p}index.html` : p) }));
 
+/* La rétention doit être TENUE, pas seulement annoncée : sans purge, les
+   classements des mois passés restaient indéfiniment sur le volume /data.
+   Une erreur de purge ne doit jamais empêcher le serveur de servir. */
+async function purger() {
+  try {
+    const retires = await stockage.purger(moisIlYA(RETENTION_MOIS));
+    console.log(`scores : purge (rétention ${RETENTION_MOIS} mois) — ${retires} fichier(s) retiré(s)`);
+  } catch (e) {
+    console.error(`scores : purge impossible — ${e.message}`);
+  }
+}
+
 // Démarrage seulement en exécution directe : les tests importent `app` et
 // appellent app.request() sans ouvrir de port.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  purger();
+  setInterval(purger, PURGE_MS).unref(); // .unref() : la purge ne retient pas le process
   serve({ fetch: app.fetch, port: PORT }, (info) => {
     console.log(`dailypopsociety : http://localhost:${info.port} — dist=${DIST} data=${DATA}${MAQUETTE ? ' (maquette, noindex)' : ''}`);
   });

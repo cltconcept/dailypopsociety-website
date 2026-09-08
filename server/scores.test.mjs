@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { validerEnvoi, moisCourant, Stockage, LimiteurDebit } from './scores.mjs';
+import { validerEnvoi, moisCourant, moisIlYA, Stockage, LimiteurDebit } from './scores.mjs';
 
 test('validerEnvoi accepte un envoi correct et normalise le pseudo', () => {
   // Note d'implémentation (écart signalé au rapport) : le plan proposait
@@ -143,5 +143,46 @@ test('Stockage : aucun fichier .tmp orphelin après écriture', async () => {
     assert.deepEqual(fichiers, ['scores-2026-10.json']);
   } finally {
     await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('moisIlYA recule de n mois, y compris par-dessus le changement d\'année', () => {
+  assert.equal(moisIlYA(12, new Date('2026-09-08T12:00:00Z')), '2025-09');
+  assert.equal(moisIlYA(1, new Date('2026-01-15T12:00:00Z')), '2025-12');
+  assert.equal(moisIlYA(0, new Date('2026-01-15T12:00:00Z')), '2026-01');
+  assert.equal(moisIlYA(13, new Date('2026-03-10T12:00:00Z')), '2025-02');
+  // Bruxelles : 00:30 le 1er novembre, donc le mois de référence est novembre.
+  assert.equal(moisIlYA(12, new Date('2026-10-31T23:30:00Z')), '2025-11');
+});
+
+test('Stockage : purger retire les mois antérieurs à la limite, garde les autres', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'dps-'));
+  try {
+    const s = new Stockage(dir);
+    for (const mois of ['2024-12', '2025-08', '2025-09', '2026-01']) {
+      await s.ajouter(mois, { pseudo: 'Franky', score: 10, duree: 5 });
+    }
+    // Une mise de côté horodatée d'un mois périmé part avec son classement.
+    await writeFile(join(dir, 'scores-2025-08.json.2025-08-31T10-00-00-000Z.corrompu'), 'x', 'utf8');
+    // Un fichier étranger au format n'est jamais touché.
+    await writeFile(join(dir, 'notes.txt'), 'x', 'utf8');
+
+    assert.equal(await s.purger('2025-09'), 3); // 2024-12 + 2025-08 + son .corrompu
+    const restants = (await readdir(dir)).sort();
+    assert.deepEqual(restants, ['notes.txt', 'scores-2025-09.json', 'scores-2026-01.json']);
+    assert.equal((await s.top('2025-09', 10)).length, 1);
+
+    assert.equal(await s.purger('2025-09'), 0); // idempotent : plus rien à retirer
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('Stockage : purger sur un dossier inexistant ne casse pas', async () => {
+  const base = await mkdtemp(join(tmpdir(), 'dps-'));
+  try {
+    assert.equal(await new Stockage(join(base, 'jamais-ecrit')).purger('2026-01'), 0);
+  } finally {
+    await rm(base, { recursive: true, force: true });
   }
 });
