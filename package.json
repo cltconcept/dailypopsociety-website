@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "verifier": "node scripts/verifier.mjs",
-    "test": "pnpm check && pnpm build && pnpm verifier"
+    "dev:api": "node --env-file=server/.env.dev server/index.mjs",
+    "test": "pnpm check && pnpm build && pnpm verifier && cd server && node --test"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

@@ -4,3 +4,5 @@ dist/
 .gstack/
 .superpowers/
 brief/
+data/
+server/node_modules/
