@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { validerEnvoi, moisCourant, Stockage, LimiteurDebit } from './scores.mjs';
@@ -82,4 +82,57 @@ test('LimiteurDebit : un envoi par fenêtre et par clé', () => {
   assert.equal(l.autorise('2.2.2.2'), true);
   t += 20_001;
   assert.equal(l.autorise('1.1.1.1'), true);
+});
+
+test('validerEnvoi : mots refusés comparés en mots entiers', () => {
+  for (const pseudo of ['Panique', 'Monique', 'Députe', 'Nazaire', 'Reputes']) {
+    assert.equal(validerEnvoi({ pseudo, score: 10, duree: 5 }).ok, true, pseudo);
+  }
+  for (const pseudo of ['connard', 'sale pute', 'Putain', 'nazi', 'Nique ta']) {
+    assert.equal(validerEnvoi({ pseudo, score: 10, duree: 5 }).ok, false, pseudo);
+  }
+});
+
+test('Stockage : à score égal, le dernier arrivé passe derrière', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'dps-'));
+  try {
+    const s = new Stockage(dir);
+    const a = await s.ajouter('2026-10', { pseudo: 'Ace', score: 500, duree: 10 });
+    const b = await s.ajouter('2026-10', { pseudo: 'Sabo', score: 500, duree: 10 });
+    assert.equal(a.rang, 1);
+    assert.equal(b.rang, 2); // pas deux « rang 1 » pour le même score
+    const c = await s.ajouter('2026-10', { pseudo: 'Shanks', score: 900, duree: 20 });
+    assert.equal(c.rang, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('Stockage : JSON corrompu mis de côté, le mois repart vide', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'dps-'));
+  try {
+    const s = new Stockage(dir);
+    await writeFile(join(dir, 'scores-2026-10.json'), '{ "scores": [ ceci n\'est pas du JSON', 'utf8');
+    assert.deepEqual(await s.top('2026-10', 10), []);
+    const fichiers = await readdir(dir);
+    assert.ok(fichiers.includes('scores-2026-10.json.corrompu'), fichiers.join(','));
+    assert.equal(fichiers.includes('scores-2026-10.json'), false);
+    const r = await s.ajouter('2026-10', { pseudo: 'Robin', score: 42, duree: 5 });
+    assert.equal(r.rang, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('Stockage : aucun fichier .tmp orphelin après écriture', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'dps-'));
+  try {
+    const s = new Stockage(dir);
+    await Promise.all(Array.from({ length: 5 }, (_, i) => s.ajouter('2026-10', { pseudo: `T${i}`, score: i, duree: 5 })));
+    const fichiers = await readdir(dir);
+    assert.deepEqual(fichiers.filter((f) => f.endsWith('.tmp')), []);
+    assert.deepEqual(fichiers, ['scores-2026-10.json']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
