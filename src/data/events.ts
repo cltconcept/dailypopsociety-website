@@ -31,7 +31,7 @@ export const EVENTS: Evenement[] = [
     debut: '2026-10-21',
     fin: '2026-10-31',
     quand: LICENCE_DU_MOIS.dates,
-    desc: LICENCE_DU_MOIS.accroche,
+    desc: 'Carte éphémère, déco et soirées à thème pendant toute la période. Le programme détaillé se dévoile sur Instagram.',
     visuel: { id: 'logo:2026-05-daily-pop-society', alt: 'Logo de Daily Pop Society' },
   },
   {

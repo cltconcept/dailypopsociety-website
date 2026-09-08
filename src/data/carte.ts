@@ -6,6 +6,7 @@
    lui, le build casse en TypeError au moment de construire l'URL de l'image.
    Un id d'illustration inconnu, lui, est refusé par `illu()` (lib/illu.ts). */
 import { LICENCE_DU_MOIS } from './site';
+import type { RefVisuel } from '../lib/illu';
 
 /* Mention « carte de démonstration » affichée tant que ceci vaut true : passer
    à false quand la vraie carte est en place — cela retire la mention ET
@@ -13,10 +14,10 @@ import { LICENCE_DU_MOIS } from './site';
 export const DEMO = true;
 
 export type Item = { nom: string; desc: string; prix: string; tags?: ('végé' | 'sans alcool' | 'signature')[] };
-/* `visuel` : l'id d'une illustration de public/media/illu/ + son alternative
-   textuelle. Il vit ICI et non dans la page : ajouter une catégorie ne doit
-   pas obliger à ouvrir un second fichier pour lui donner une image. */
-export type Categorie = { slug: string; nom: string; intro: string; visuel: { id: string; alt: string }; items: Item[] };
+/* `visuel` : l'id d'une illustration de public/media/illu/, résolu par
+   `visuel()` de lib/illu.ts — l'alternative textuelle par défaut y vit déjà
+   (ALT) ; `alt` ici ne sert qu'à la remplacer quand le contexte le demande. */
+export type Categorie = { slug: string; nom: string; intro: string; visuel: RefVisuel; items: Item[] };
 export type Ephemere = { licence: string; intro: string; items: Item[] };
 
 export const EPHEMERE: Ephemere = {
@@ -32,7 +33,7 @@ export const EPHEMERE: Ephemere = {
 export const CATEGORIES: Categorie[] = [
   {
     slug: 'cocktails', nom: 'Cocktails', intro: 'Des cocktails créés d\'après les personnages : leur caractère dans le verre.',
-    visuel: { id: 'cocktail-zoro', alt: 'Illustration : cocktail vert aux trois lames de citron vert' },
+    visuel: { id: 'cocktail-zoro' },
     items: [
       { nom: 'Le Zoro', desc: 'gin, yuzu, basilic, trois lames de citron vert', prix: '9 €', tags: ['signature'] },
       { nom: 'Le Stark', desc: 'whisky, miel, gingembre, twist d\'orange', prix: '10 €' },
@@ -42,7 +43,7 @@ export const CATEGORIES: Categorie[] = [
   },
   {
     slug: 'mocktails', nom: 'Mocktails', intro: 'Les mêmes univers, sans alcool.',
-    visuel: { id: 'mocktail-fraise', alt: 'Illustration : mocktail fraise basilic' },
+    visuel: { id: 'mocktail-fraise' },
     items: [
       { nom: 'Le Totoro', desc: 'concombre, menthe, citron vert, eau pétillante', prix: '6,50 €', tags: ['sans alcool'] },
       { nom: 'Le Pikachu', desc: 'mangue, passion, gingembre, jus de citron', prix: '6,50 €', tags: ['sans alcool'] },
@@ -51,7 +52,7 @@ export const CATEGORIES: Categorie[] = [
   },
   {
     slug: 'bubble-teas', nom: 'Bubble teas', intro: 'Perles de tapioca ou perles de fruit, chaud ou glacé.',
-    visuel: { id: 'bubble-tea', alt: 'Illustration : bubble tea mangue aux perles de tapioca' },
+    visuel: { id: 'bubble-tea' },
     items: [
       { nom: 'Mangue passion', desc: 'thé vert, perles passion', prix: '6 €', tags: ['sans alcool'] },
       { nom: 'Taro', desc: 'lait, taro, perles de tapioca', prix: '6 €', tags: ['sans alcool'] },
@@ -60,7 +61,7 @@ export const CATEGORIES: Categorie[] = [
   },
   {
     slug: 'cafes', nom: 'Cafés & boissons chaudes', intro: 'Depuis l\'époque Nakama\'s Coffee, on prend le café au sérieux.',
-    visuel: { id: 'cafe-latte', alt: 'Illustration : latte avec un latte art en étoile' },
+    visuel: { id: 'cafe-latte' },
     items: [
       { nom: 'Espresso', desc: 'arabica torréfié en Belgique', prix: '2,50 €', tags: ['sans alcool'] },
       { nom: 'Latte de l\'Hokage', desc: 'latte, sirop de sésame noir, latte art étoile', prix: '4,50 €', tags: ['sans alcool'] },
@@ -69,7 +70,7 @@ export const CATEGORIES: Categorie[] = [
   },
   {
     slug: 'starters', nom: 'Starters', intro: 'À partager, ou pas.',
-    visuel: { id: 'starters', alt: 'Illustration : planche de nachos et bouchées à partager' },
+    visuel: { id: 'starters' },
     items: [
       { nom: 'Nachos Nakama', desc: 'cheddar fondu, guacamole, pico de gallo, jalapeños', prix: '9 €', tags: ['végé'] },
       { nom: 'Chicken pop', desc: 'bouchées de poulet croustillant, sauce sriracha-miel', prix: '8,50 €' },
@@ -78,7 +79,7 @@ export const CATEGORIES: Categorie[] = [
   },
   {
     slug: 'burgers', nom: 'Burgers', intro: 'Pain brioché, frites maison, et une sauce qui a un nom.',
-    visuel: { id: 'burger-hokage', alt: 'Illustration : burger signature au cheddar fondant' },
+    visuel: { id: 'burger-hokage' },
     items: [
       { nom: 'Burger Hokage', desc: 'bœuf, cheddar, sauce ramen, oignons crispy', prix: '15 €', tags: ['signature'] },
       { nom: 'Burger Vador', desc: 'pain noir, bœuf, bacon, cheddar fumé, sauce BBQ', prix: '15,50 €' },
@@ -88,7 +89,7 @@ export const CATEGORIES: Categorie[] = [
   },
   {
     slug: 'patisseries', nom: 'Pâtisseries', intro: 'Faites maison, elles changent avec la licence du mois.',
-    visuel: { id: 'patisserie', alt: 'Illustration : part de cheesecake au coulis de fruits rouges' },
+    visuel: { id: 'patisserie' },
     items: [
       { nom: 'Cheesecake Spider', desc: 'coulis de fruits rouges en toile', prix: '6 €', tags: ['végé'] },
       { nom: 'Cookie Cookie Monster', desc: 'triple chocolat, cœur fondant', prix: '3,50 €', tags: ['végé'] },

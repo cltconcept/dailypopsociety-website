@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import TitleCard from '../components/TitleCard.astro';
 import { EPHEMERE, CATEGORIES, DEMO } from '../data/carte';
-import { illu } from '../lib/illu';
+import { visuel } from '../lib/illu';
 
 /* Chaque catégorie devient une ancre #slug. Deux catégories qui partagent un
    slug se voleraient leur ancre ; un slug qui existe déjà ailleurs dans le
@@ -51,7 +51,9 @@ for (const c of CATEGORIES) {
     </div>
   </section>
 
-  {CATEGORIES.map((c, i) => (
+  {CATEGORIES.map((c, i) => {
+    const v = visuel(c.visuel);
+    return (
     <section class:list={['section', 'cat', { 'section--creme': i % 2 === 1 }]} id={c.slug}>
       <div class="container cat__grid">
         {/* sizes : la colonne est plafonnée à 420 px. « 92vw au-dessous de
@@ -59,12 +61,12 @@ for (const c of CATEGORIES) {
             rendu ; `min()` dit la vraie largeur à toutes les tailles. */}
         <div class="cat__visuel" data-reveal>
           <img
-            src={illu(c.visuel.id).src}
-            srcset={illu(c.visuel.id).srcset}
+            src={v.src}
+            srcset={v.srcset}
             sizes="min(92vw, 420px)"
-            alt={c.visuel.alt}
-            width="960"
-            height="720"
+            alt={v.alt}
+            width={v.largeur}
+            height={v.hauteur}
             loading="lazy"
             decoding="async"
           />
@@ -88,7 +90,8 @@ for (const c of CATEGORIES) {
         </div>
       </div>
     </section>
-  ))}
+    );
+  })}
 
   <section class="section center">
     <div class="container container--narrow">

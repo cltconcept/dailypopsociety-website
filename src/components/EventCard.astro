@@ -16,7 +16,7 @@ const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
     <img
       src={v.src}
       srcset={v.srcset}
-      sizes={v.srcset ? '(max-width: 600px) 100vw, 240px' : undefined}
+      sizes={v.srcset ? (passe ? '(max-width: 600px) 100vw, (max-width: 960px) 46vw, 540px' : '(max-width: 600px) 100vw, 240px') : undefined}
       alt={v.alt}
       width={v.largeur}
       height={v.hauteur}

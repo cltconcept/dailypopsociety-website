@@ -2,7 +2,7 @@
 export type LogoMensuel = { id: string; mois: string; licence: string; src: string };
 
 export const LOGOS: LogoMensuel[] = [
-  { id: "2024-04-nakamas", mois: "2024-04", licence: "Nakama's Coffee — naissance", src: "/media/logos/2024-04-nakamas.webp" },
+  { id: "2024-04-nakamas", mois: "2024-04", licence: "Nakama's Coffee (naissance)", src: "/media/logos/2024-04-nakamas.webp" },
   { id: "2024-06-demon-slayer", mois: "2024-06", licence: "Demon Slayer", src: "/media/logos/2024-06-demon-slayer.webp" },
   { id: "2024-07-one-piece", mois: "2024-07", licence: "One Piece", src: "/media/logos/2024-07-one-piece.webp" },
   { id: "2024-08-jujutsu-kaisen", mois: "2024-08", licence: "Jujutsu Kaisen", src: "/media/logos/2024-08-jujutsu-kaisen.webp" },
@@ -29,7 +29,7 @@ export const LOGOS: LogoMensuel[] = [
   { id: "2026-02-saint-valentin", mois: "2026-02", licence: "Saint-Valentin", src: "/media/logos/2026-02-saint-valentin.webp" },
   { id: "2026-03-hunter-x-hunter", mois: "2026-03", licence: "Hunter × Hunter", src: "/media/logos/2026-03-hunter-x-hunter.webp" },
   { id: "2026-04-deux-ans", mois: "2026-04", licence: "Les 2 ans", src: "/media/logos/2026-04-deux-ans.webp" },
-  { id: "2026-05-daily-pop-society", mois: "2026-05", licence: "Daily Pop Society — nouveau logo", src: "/media/logos/2026-05-daily-pop-society.webp" },
+  { id: "2026-05-daily-pop-society", mois: "2026-05", licence: "Daily Pop Society (nouveau logo)", src: "/media/logos/2026-05-daily-pop-society.webp" },
 ];
 
 export const MONTAGE = { src: '/media/logos/montage.webp', largeur: 1600, hauteur: 480 };

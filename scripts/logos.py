@@ -13,7 +13,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 # (id, planche, cx, cy, rayon, mois AAAA-MM, licence)
 LOGOS = [
-    ('2024-04-nakamas', 'timeline-2024', 300, 800, 75, '2024-04', "Nakama's Coffee — naissance"),
+    ('2024-04-nakamas', 'timeline-2024', 300, 800, 75, '2024-04', "Nakama's Coffee (naissance)"),
     ('2024-06-demon-slayer', 'timeline-2024', 505, 305, 80, '2024-06', 'Demon Slayer'),
     ('2024-07-one-piece', 'timeline-2024', 640, 800, 75, '2024-07', 'One Piece'),
     ('2024-08-jujutsu-kaisen', 'timeline-2024', 825, 305, 80, '2024-08', 'Jujutsu Kaisen'),
@@ -40,7 +40,7 @@ LOGOS = [
     ('2026-02-saint-valentin', 'timeline-2026', 215, 770, 60, '2026-02', 'Saint-Valentin'),
     ('2026-03-hunter-x-hunter', 'timeline-2026', 425, 365, 60, '2026-03', 'Hunter × Hunter'),
     ('2026-04-deux-ans', 'timeline-2026', 480, 770, 60, '2026-04', 'Les 2 ans'),
-    ('2026-05-daily-pop-society', 'timeline-2026', 712, 303, 82, '2026-05', 'Daily Pop Society — nouveau logo'),
+    ('2026-05-daily-pop-society', 'timeline-2026', 712, 303, 82, '2026-05', 'Daily Pop Society (nouveau logo)'),
 ]
 # L'ordre chronologique du fichier généré est un INVARIANT, pas une convention
 # de saisie : la frise et le générique le lisent tel quel. On trie sur le MOIS

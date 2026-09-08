@@ -11,7 +11,7 @@ import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
    passe tout seul de « à venir » à « passé » au lendemain de sa dernière
    journée. Le site est statique — c'est donc la date de BUILD qui fait foi :
    republier tous les mois (la licence du mois l'impose déjà) suffit. */
-const AUJ = new Date().toISOString().slice(0, 10);
+const AUJ = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Brussels' }).format(new Date());
 
 const dates = EVENTS.filter((e) => e.fin);
 /* Deux events voisins qui portent la même image, c'est le lecteur qui croit
@@ -37,9 +37,12 @@ const adresse = {
   addressLocality: IDENTITE.ville,
   addressCountry: 'BE',
 };
-/* Un Event par event À VENIR : un event passé n'a plus rien à proposer dans une
-   SERP, et une soirée récurrente n'a pas de date à donner. */
-const schemas = aVenir.map((e) => ({
+/* Un Event par event À VENIR avec des dates FIXÉES : un event passé n'a plus
+   rien à proposer dans une SERP, une soirée récurrente n'a pas de date à
+   donner, et un event `aPlanifier` (fin = fin de mois provisoire, sans début)
+   annoncerait une date qui n'est pas la vraie — mieux vaut ne rien publier
+   qu'un startDate inventé. */
+const schemas = aVenir.filter((e) => e.debut && e.fin).map((e) => ({
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: e.titre,

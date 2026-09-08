@@ -1,0 +1,36 @@
+---
+/* Frise horizontale des logos mensuels, groupés par année. Scroll natif (aucun JS). */
+import { LOGOS } from '../data/logos';
+const annees = [...new Set(LOGOS.map((l) => l.mois.slice(0, 4)))];
+const libelle = (mois: string) => new Date(`${mois}-01T12:00:00`).toLocaleDateString('fr-BE', { month: 'long' });
+---
+<div class="frise" tabindex="0" aria-label="Frise des logos mensuels, défilement horizontal">
+  {annees.map((a) => (
+    <div class="frise__annee">
+      <p class="frise__an">{a}</p>
+      <ul class="frise__liste" role="list">
+        {LOGOS.filter((l) => l.mois.startsWith(a)).map((l) => (
+          <li class="frise__item">
+            <img src={l.src} alt={`Logo ${l.licence}, ${libelle(l.mois)} ${a}`} width="160" height="160" loading="lazy" decoding="async" />
+            <p class="frise__mois">{libelle(l.mois)}</p>
+            <p class="frise__licence">{l.licence}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</div>
+
+<style>
+  .frise { display: flex; gap: 40px; overflow-x: auto; padding: 24px 0 32px; scroll-snap-type: x proximity; }
+  /* outline-offset négatif : un offset positif se ferait couper par le
+     overflow-x: auto du conteneur, qui clippe la peinture de sa propre boîte. */
+  .frise:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  .frise__annee { flex: 0 0 auto; }
+  .frise__an { font-family: var(--font-title); font-size: 3rem; line-height: 1; color: var(--accent); margin-bottom: 14px; }
+  .frise__liste { display: flex; gap: 18px; }
+  .frise__item { flex: 0 0 120px; text-align: center; scroll-snap-align: start; }
+  .frise__item img { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--blanc); background: var(--blanc); margin-inline: auto; }
+  .frise__mois { margin-top: 8px; font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
+  .frise__licence { font-size: 0.82rem; font-weight: 600; line-height: 1.25; }
+</style>
