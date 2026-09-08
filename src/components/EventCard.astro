@@ -6,17 +6,22 @@ import { visuel } from '../lib/illu';
    comme Case. `passe` grise l'illustration et annonce les photos à venir. */
 interface Props { ev: Evenement; sombre?: boolean; passe?: boolean; niveau?: 2 | 3 | 4 }
 const { ev, sombre = false, passe = false, niveau = 3 } = Astro.props;
-/* La résolution du visuel (illustration à trois largeurs, ou logo mensuel à
-   160 px sans srcset) vit dans lib/illu — pas dans une regex sur l'URL. */
+/* La résolution du visuel (illustration en 480/960/1440, ou logo mensuel en
+   160/256) vit dans lib/illu — pas dans une regex sur l'URL. Les deux familles
+   portent un srcset : ce qui les distingue est `v.logo`, jamais sa présence. */
 const v = visuel(ev.visuel);
 const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
 ---
 <article class:list={['evc', { 'evc--sombre': sombre, 'evc--passe': passe, 'evc--logo': v.logo }]}>
   <div class="evc__media">
+    {/* `sizes` : un logo n'occupe pas la colonne média, il y est centré à sa
+        taille (144 px de haut dans les 240×180 de la colonne, 160 px en mobile
+        où il reprend sa dimension propre). Les largeurs de colonne qui suivent
+        ne valent que pour une illustration cadrée en 4/3. */}
     <img
       src={v.src}
       srcset={v.srcset}
-      sizes={v.srcset ? (passe ? '(max-width: 600px) 100vw, (max-width: 960px) 46vw, 540px' : '(max-width: 600px) 100vw, 240px') : undefined}
+      sizes={v.logo ? '(max-width: 600px) 160px, 144px' : passe ? '(max-width: 600px) 100vw, (max-width: 960px) 46vw, 540px' : '(max-width: 600px) 100vw, 240px'}
       alt={v.alt}
       width={v.largeur}
       height={v.hauteur}
@@ -43,9 +48,11 @@ const H = `h${niveau}` as 'h2' | 'h3' | 'h4';
      colonnes de texte qui ne commencent pas au même endroit. */
   .evc__media { border-right: var(--bord); background: var(--creme); aspect-ratio: 4 / 3; overflow: hidden; }
   .evc__media img { width: 100%; height: 100%; object-fit: cover; }
-  /* Un logo mensuel est une vignette de 160 px : `object-fit: contain` sur une
-     image en width:100% le ferait AGRANDIR à 240 px (il bave). On le centre à
-     sa taille, jamais au-delà — d'où max-width/max-height plutôt que 100 %. */
+  /* Un logo mensuel se rend à 160 px au plus (sa taille intrinsèque, que le
+     srcset 160/256 ne change pas : avec des descripteurs `w`, elle vaut le
+     `sizes`). `object-fit: contain` sur une image en width:100% le ferait
+     AGRANDIR à 240 px (il bave). On le centre à sa taille, jamais au-delà —
+     d'où max-width/max-height plutôt que 100 %. */
   .evc--logo .evc__media { display: grid; place-items: center; }
   .evc--logo .evc__media img { width: auto; height: auto; max-width: 80%; max-height: 80%; object-fit: contain; }
   .evc__body { padding: 20px 22px; }

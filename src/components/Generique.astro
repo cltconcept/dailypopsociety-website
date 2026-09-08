@@ -9,14 +9,38 @@ import { LOGOS, MONTAGE } from '../data/logos';
 import { LICENCE_DU_MOIS, IDENTITE } from '../data/site';
 const bande1 = LOGOS.filter((_, i) => i % 2 === 0);
 const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
+/* Une vignette de bande est haute comme la bande et carrée (aspect-ratio: 1) :
+   sa largeur rendue est donc exactement `clamp(70px, 9vw, 130px)`, la hauteur
+   déclarée plus bas en CSS. On n'en garde que les deux bornes — un `sizes` ne
+   sait pas lire un clamp, et 9vw ne dépasse 130 px qu'au-delà de 1444 px de
+   large. Cette valeur DOIT suivre la hauteur de .gen__bande : les deux se
+   contredisant, le navigateur choisirait la mauvaise vignette. */
+const SIZES_BANDE = '(min-width: 1024px) 130px, 90px';
 ---
+{/* Le montage est la ressource du plus grand élément peint de la page (le titre
+    est détouré DEDANS) et c'est aussi le plus gros fichier du site : tant qu'il
+    n'arrive pas, « DAILY POP » ne peut pas se peindre. Or il est annoncé par un
+    `background-image` en style inline, que l'analyseur de préchargement ne lit
+    pas : il ne partait qu'une fois le DOM construit, sans indice de priorité.
+    Un preload dans le corps est vu par l'analyseur comme s'il était dans le
+    head — le générique est le premier bloc de <main>, il tient dans le premier
+    paquet — et il n'a pas à voyager jusqu'au layout, qui le poserait alors sur
+    les SEPT pages qui n'ont pas de générique. */}
+<link rel="preload" as="image" href={MONTAGE.src} fetchpriority="high" />
 <section class="gen letterbox" id="generique" aria-label="Daily Pop Society, le bar pop culture de Charleroi">
   <div class="gen__grain" aria-hidden="true"></div>
   <p class="gen__presente">Daily Pop Society présente</p>
 
+  {/* loading="eager" ET fetchpriority="low" : ces 56 vignettes sont dans le
+      premier écran, elles ne doivent donc pas être différées (lazy les ferait
+      apparaître après coup, en pleine animation) — mais elles pèsent ~190 Ko à
+      elles seules, décoratives (aria-hidden, alt vide) et estompées à 0,22 dès
+      la fin du générique. Sans le frein, elles se servaient AVANT le script qui
+      lance ce générique : le titre était le dernier élément peint de la page.
+      Le frein ne les retarde pas, il les met derrière ce qui bloque le rendu. */}
   <div class="gen__bande gen__bande--1" aria-hidden="true">
     <div class="gen__piste">
-      {[...bande1, ...bande1].map((l) => <img src={l.src} alt="" width="160" height="160" loading="eager" decoding="async" />)}
+      {[...bande1, ...bande1].map((l) => <img src={l.src} srcset={l.srcset} sizes={SIZES_BANDE} alt="" width="160" height="160" loading="eager" fetchpriority="low" decoding="async" />)}
     </div>
   </div>
 
@@ -38,7 +62,7 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
 
   <div class="gen__bande gen__bande--2" aria-hidden="true">
     <div class="gen__piste">
-      {[...bande2, ...bande2].map((l) => <img src={l.src} alt="" width="160" height="160" loading="eager" decoding="async" />)}
+      {[...bande2, ...bande2].map((l) => <img src={l.src} srcset={l.srcset} sizes={SIZES_BANDE} alt="" width="160" height="160" loading="eager" fetchpriority="low" decoding="async" />)}
     </div>
   </div>
 
@@ -251,6 +275,36 @@ const bande2 = LOGOS.filter((_, i) => i % 2 === 1);
           /* Duo obligatoire après chaque création de pin (cf. motion.ts) */
           ScrollTrigger.sort();
           ScrollTrigger.refresh();
+
+          /* ===== Retour arrière : reprendre la lecture où on l'a laissée =====
+             Le `scrollRestoration = 'manual'` ci-dessus ne fait pas le tri : il
+             enlève AUSSI la restauration au retour arrière, la seule qu'on
+             voulait garder. Un lecteur arrivé au bas de l'accueil, parti voir la
+             carte et revenu se retrouvait rejeté tout en haut, générique compris.
+             On la refait donc à la main, mais seulement quand le navigateur dit
+             qu'il s'agit d'un retour (`back_forward`) : sur une ouverture
+             normale de l'accueil, la page doit s'ouvrir sur le générique.
+             APRÈS le refresh, jamais avant : c'est lui qui insère les 250 % de
+             hauteur du pin, donc qui donne son sens à une position de scroll.
+             sessionStorage peut lever (mode privé strict, cookies bloqués) :
+             une position de lecture ne vaut pas de casser l'intro. */
+          const cleScroll = `dps:scroll:${location.pathname}`;
+          try {
+            const memo = sessionStorage.getItem(cleScroll);
+            /* Consommée dans TOUS les cas, même sans restauration : une position
+               laissée derrière se rejouerait à la prochaine ouverture. */
+            sessionStorage.removeItem(cleScroll);
+            const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+            if (memo && (!nav || nav.type === 'back_forward')) {
+              window.scrollTo({ top: Number(memo), behavior: 'instant' });
+            }
+          } catch {}
+          /* pagehide et non beforeunload : c'est le seul événement qui parte
+             aussi quand la page entre en cache arrière/avant, et le seul que
+             Safari mobile émette de façon fiable. */
+          addEventListener('pagehide', () => {
+            try { sessionStorage.setItem(cleScroll, String(window.scrollY)); } catch {}
+          });
         } else {
           /* Mobile / tablette : intro courte au chargement, pas de pin (fragile au tactile) */
           composer(gsap.timeline({ defaults: { ease: 'power3.out' } }), true);

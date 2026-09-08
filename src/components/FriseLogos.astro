@@ -11,7 +11,10 @@ const libelle = (mois: string) => new Date(`${mois}-01T12:00:00`).toLocaleDateSt
       <ul class="frise__liste" role="list">
         {LOGOS.filter((l) => l.mois.startsWith(a)).map((l) => (
           <li class="frise__item">
-            <img src={l.src} alt={`Logo ${l.licence}, ${libelle(l.mois)} ${a}`} width="160" height="160" loading="lazy" decoding="async" />
+            {/* 120px : la largeur FIXE de .frise__item, à toutes les tailles
+                d'écran. En DPR 2 il faut 240 pixels réels — d'où la variante
+                256 du srcset (scripts/logos.py). */}
+            <img src={l.src} srcset={l.srcset} sizes="120px" alt={`Logo ${l.licence}, ${libelle(l.mois)} ${a}`} width="160" height="160" loading="lazy" decoding="async" />
             <p class="frise__mois">{libelle(l.mois)}</p>
             <p class="frise__licence">{l.licence}</p>
           </li>

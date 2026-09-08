@@ -53,8 +53,16 @@ doublons = sorted({l[0] for l in LOGOS if [x[0] for x in LOGOS].count(l[0]) > 1}
 if doublons:
     raise SystemExit(f'id en double dans la table LOGOS : {", ".join(doublons)}')
 
+# Deux variantes de la MÊME découpe : la base à 160 px (dimension intrinsèque
+# annoncée par les <img>, celle qui compose le montage) et une variante à
+# 256 px servie par srcset aux écrans à forte densité — un logo rendu à 130 px
+# sur un écran DPR 2 réclame 260 pixels réels, la 160 y bavait.
+# Le suffixe de fichier se DÉDUIT de la taille : il n'est écrit à la main ni
+# dans le srcset, ni dans la purge des orphelins.
 TAILLE = 160
+TAILLES = (160, 256)
 MARGE = 6  # pixels de planche gardés autour du disque, dans les coordonnées source
+suffixe = lambda t: '' if t == TAILLE else f'-{t}'
 
 # Masque circulaire : les planches sources sont des timelines, chaque logo y est
 # posé sur un trait noir qui traversait les coins des vignettes carrées. On
@@ -68,13 +76,22 @@ MARGE = 6  # pixels de planche gardés autour du disque, dans les coordonnées s
 # ressort en escalier à 160 px.
 ECH = 4
 _masques = {}
-def masque(r, marge):
-    if (r, marge) not in _masques:
-        inset = round(ECH * TAILLE / 2 * marge / (r + marge))
-        m = Image.new('L', (TAILLE * ECH, TAILLE * ECH), 0)
-        ImageDraw.Draw(m).ellipse((inset, inset, TAILLE * ECH - 1 - inset, TAILLE * ECH - 1 - inset), fill=255)
-        _masques[(r, marge)] = m.resize((TAILLE, TAILLE), Image.BOX)
-    return _masques[(r, marge)]
+def masque(r, marge, taille):
+    if (r, marge, taille) not in _masques:
+        inset = round(ECH * taille / 2 * marge / (r + marge))
+        m = Image.new('L', (taille * ECH, taille * ECH), 0)
+        ImageDraw.Draw(m).ellipse((inset, inset, taille * ECH - 1 - inset, taille * ECH - 1 - inset), fill=255)
+        _masques[(r, marge, taille)] = m.resize((taille, taille), Image.BOX)
+    return _masques[(r, marge, taille)]
+
+# La découpe elle-même, la taille en paramètre : les deux variantes partagent
+# le même cadrage, le même masque et le même rééchantillonnage, à l'échelle
+# près. Deux corps de boucle séparés auraient dérivé au premier réglage de
+# MARGE — et la 256 n'aurait plus été la même image que la 160.
+def decouper(pl_im, boite, r, taille):
+    im = pl_im.crop(boite).resize((taille, taille), Image.LANCZOS).convert('RGBA')
+    im.putalpha(masque(r, MARGE, taille))
+    return im
 
 planches = {}
 def planche(nom):
@@ -101,15 +118,26 @@ for id_, pl, cx, cy, r, mois, licence in LOGOS:
             f'{id_} : découpe hors planche {pl} ({pl_im.width}×{pl_im.height} px), '
             f'centre ({cx}, {cy}) rayon {r} + marge {MARGE} → ' + ', '.join(debords)
         )
-    im = pl_im.crop(boite).resize((TAILLE, TAILLE), Image.LANCZOS).convert('RGBA')
-    im.putalpha(masque(r, MARGE))
-    im.save(OUT / f'{id_}.webp', 'WEBP', quality=84, method=6)
-    vignettes.append(im)
+    for t in TAILLES:
+        im = decouper(pl_im, boite, r, t)
+        im.save(OUT / f'{id_}{suffixe(t)}.webp', 'WEBP', quality=84, method=6)
+        # Le montage se construit sur la BASE, pas sur la plus grande : c'est un
+        # remplissage de lettres (background-clip: text), pas une image à
+        # zoomer. Le passer en 256 quadruplerait son poids pour rien.
+        if t == TAILLE:
+            vignettes.append(im)
     # json.dumps, pas d'interpolation brute : une apostrophe ou un guillemet
     # dans une licence (« Nakama's Coffee ») casserait le fichier généré.
+    srcset = ', '.join(f'/media/logos/{id_}{suffixe(t)}.webp {t}w' for t in TAILLES)
     champs = ', '.join(
         f'{cle}: {json.dumps(val, ensure_ascii=False)}'
-        for cle, val in (('id', id_), ('mois', mois), ('licence', licence), ('src', f'/media/logos/{id_}.webp'))
+        for cle, val in (
+            ('id', id_),
+            ('mois', mois),
+            ('licence', licence),
+            ('src', f'/media/logos/{id_}.webp'),
+            ('srcset', srcset),
+        )
     )
     lignes.append(f'  {{ {champs} }},')
 
@@ -118,7 +146,10 @@ for id_, pl, cx, cy, r, mois, licence in LOGOS:
 # APRÈS la boucle, jamais avant : une découpe refusée (hors planche) coupait
 # le script une fois les fichiers déjà supprimés — le dossier restait amputé et
 # la relance suivante ne savait plus quoi regénérer.
-attendus = {f'{l[0]}.webp' for l in LOGOS} | {'montage.webp'}
+# Le jeu attendu couvre TOUTES les variantes de taille (dont le suffixe -256) :
+# une purge qui ne connaîtrait que la base effacerait, à chaque exécution, les
+# vignettes que la boucle vient d'écrire.
+attendus = {f'{l[0]}{suffixe(t)}.webp' for l in LOGOS for t in TAILLES} | {'montage.webp'}
 for f in OUT.glob('*.webp'):
     if f.name not in attendus:
         f.unlink()
@@ -127,22 +158,36 @@ for f in OUT.glob('*.webp'):
 # Montage 10 colonnes : remplissage des lettres « DAILY POP » (background-clip: text)
 cols = 10
 rows = (len(vignettes) + cols - 1) // cols
+# …monté en pleine résolution à partir des vignettes de BASE, puis SERVI à la
+# moitié. Ce n'est pas une perte de qualité : `background-size: auto 100%` met
+# le montage à la hauteur de la couche de remplissage, qui vaut au plus 240 px
+# (`clamp(4.4rem, 15vw, 15rem)` dans Generique.astro) — les 480 px du collage
+# étaient donc TOUJOURS réduits, jamais affichés tels quels, et 3,4× de trop sur
+# un téléphone. Mesuré sur Lighthouse mobile le 2026-09-08 : 133 Ko → 47 Ko,
+# LCP 4,0 s → 2,6 s, performance 87 → 96 — c'est le plus gros fichier du site
+# ET la ressource du plus grand élément peint, il gouvernait le LCP à lui seul.
+# Le RAPPORT largeur/hauteur ne bouge pas (3,333) : le `data-montage-ratio` du
+# générique et la course du remplissage qui s'en déduit sont intacts.
+# ⚠️ Si la taille du titre grandissait au-delà de 240 px, ce diviseur devrait
+# baisser d'autant : c'est la seule chose qui rend la réduction gratuite.
+SERVI = 2
 # Le montage reste en RGB sur fond blanc (il sert de background-image derrière
 # du texte détouré : pas d'alpha à y traîner). Les disques y sont collés avec
 # leur propre alpha, le hors-cercle redevient donc blanc.
 mont = Image.new('RGB', (TAILLE * cols, TAILLE * rows), 'white')
 for i, v in enumerate(vignettes):
     mont.paste(v, ((i % cols) * TAILLE, (i // cols) * TAILLE), v)
+mont = mont.resize((TAILLE * cols // SERVI, TAILLE * rows // SERVI), Image.LANCZOS)
 mont.save(OUT / 'montage.webp', 'WEBP', quality=80, method=6)
 
 ts = (RACINE / 'src' / 'data' / 'logos.ts')
 ts.parent.mkdir(parents=True, exist_ok=True)
 ts.write_text(
     "/* GÉNÉRÉ par scripts/logos.py — ne pas éditer à la main. */\n"
-    "export type LogoMensuel = { id: string; mois: string; licence: string; src: string };\n\n"
+    "export type LogoMensuel = { id: string; mois: string; licence: string; src: string; srcset: string };\n\n"
     "export const LOGOS: LogoMensuel[] = [\n" + "\n".join(lignes) + "\n];\n\n"
-    f"export const MONTAGE = {{ src: '/media/logos/montage.webp', largeur: {TAILLE * cols}, hauteur: {TAILLE * rows} }};\n",
+    f"export const MONTAGE = {{ src: '/media/logos/montage.webp', largeur: {mont.width}, hauteur: {mont.height} }};\n",
     encoding='utf-8',
     newline='\n',  # le dépôt est en LF ; write_text traduisait en CRLF sous Windows
 )
-print(f'{len(LOGOS)} logos → {OUT}, montage {mont.size}, logos.ts écrit')
+print(f'{len(LOGOS)} logos × {len(TAILLES)} tailles {TAILLES} → {OUT}, montage {mont.size}, logos.ts écrit')

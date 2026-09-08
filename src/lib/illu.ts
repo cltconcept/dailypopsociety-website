@@ -49,14 +49,18 @@ export const SIZES_CASE = '(max-width: 600px) 92vw, (max-width: 960px) 46vw, 380
 /* ===== Visuels de contenu (events, galerie) =====
    Un visuel est désigné par un id : une illustration d'ambiance, ou un logo
    mensuel préfixé « logo: ». Les deux familles n'ont ni la même taille, ni le
-   même cadrage, ni de srcset — la règle de résolution vit ICI, une fois, au
-   lieu d'être devinée de l'URL dans chaque composant. */
+   même cadrage, ni les mêmes variantes (480/960/1440 contre 160/256) — la règle
+   de résolution vit ICI, une fois, au lieu d'être devinée de l'URL dans chaque
+   composant. ⚠️ Les DEUX portent un `srcset` : un composant qui veut savoir à
+   quelle famille il a affaire lit `logo`, jamais la présence du srcset. */
 export const PREFIXE_LOGO = 'logo:';
 
 export type RefVisuel = { id: string; alt?: string };
 export type VisuelResolu = {
   src: string;
   srcset?: string;
+  /** Largeur RENDUE par défaut. Un consommateur qui sait mieux la surcharge. */
+  sizes?: string;
   alt: string;
   largeur: number;
   hauteur: number;
@@ -70,6 +74,13 @@ export function visuel(v: RefVisuel): VisuelResolu {
     if (!l) throw new Error(`visuel : logo inconnu « ${id} » (cf. src/data/logos.ts)`);
     return {
       src: l.src,
+      /* Les vignettes existent en 160 et 256 (scripts/logos.py) : un logo posé
+         à 130 px sur un écran DPR 2 réclame 260 pixels réels, et la 160 y
+         bavait. `largeur`/`hauteur` restent celles de la variante de BASE —
+         c'est la dimension intrinsèque que le navigateur doit réserver, pas
+         celle du candidat qu'il finira par choisir. */
+      srcset: l.srcset,
+      sizes: '160px',
       alt: v.alt ?? `Logo mensuel ${l.licence}`,
       largeur: 160,
       hauteur: 160,

@@ -26,10 +26,16 @@ const items = THEMES.flatMap((t) => t.visuels.map((v) => ({ theme: t, v, r: visu
         {items.map(({ theme, v, r }, i) => (
           <figure class:list={['gal__item', { 'gal__item--contain': v.ajustement === 'contain' }]} data-theme={theme.slug}>
             <div class="gal__media">
+              {/* Le discriminant est `logo`, JAMAIS la présence d'un srcset :
+                  depuis que les vignettes existent en 160 et 256, les deux
+                  familles en portent un. Un logo est centré à sa taille, jamais
+                  étiré à la case — lui servir SIZES_CASE ferait croire au
+                  navigateur qu'il occupe 380 px, et lui ferait charger la 256
+                  partout, même en DPR 1. */}
               <img
                 src={r.src}
                 srcset={r.srcset}
-                sizes={r.srcset ? SIZES_CASE : undefined}
+                sizes={r.logo ? r.sizes : SIZES_CASE}
                 alt={r.alt}
                 width={r.largeur}
                 height={r.hauteur}
@@ -87,8 +93,11 @@ const items = THEMES.flatMap((t) => t.visuels.map((v) => ({ theme: t, v, r: visu
      promettait une action qui n'existe pas. */
   .gal__item figcaption { padding: 12px 16px 14px; font-size: 0.95rem; color: var(--txt-doux); }
   .gal__theme { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
-  /* Un logo mensuel fait 160 px : centré à sa taille, jamais agrandi à la
-     largeur de la case (cf. la même règle dans EventCard). */
+  /* Un logo mensuel est servi à sa largeur RENDUE (160 px, cf. le `sizes` de
+     lib/illu) : centré à sa taille, jamais agrandi à la largeur de la case
+     (cf. la même règle dans EventCard). Le srcset ne change rien à cette
+     taille : avec des descripteurs `w`, la taille intrinsèque de l'image vaut
+     le `sizes`, quelle que soit la variante que le navigateur télécharge. */
   .gal__item--contain .gal__media { display: grid; place-items: center; }
   .gal__item--contain .gal__media img { width: auto; height: auto; max-width: 76%; max-height: 76%; object-fit: contain; }
 </style>
